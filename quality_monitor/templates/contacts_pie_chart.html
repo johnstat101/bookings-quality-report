@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PNR Contacts Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #pieChart {
+            max-width: 250px;
+            max-height: 250px;
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h2>PNRs with vs. without Contacts</h2>
+    <canvas id="pieChart" width="250" height="250"></canvas>
+    <script>
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['With Contacts', 'Without Contacts'],
+                datasets: [{
+                    data: [{{ with_contacts }}, {{ without_contacts }}],
+                    backgroundColor: ['#4caf50', '#f44336'],
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
