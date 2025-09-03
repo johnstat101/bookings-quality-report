@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel Data - KQ Bookings Quality</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { color: #d32f2f; text-align: center; }
+        .form-group { margin: 20px 0; }
+        input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #d32f2f; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; }
+        .back-link { display: inline-block; margin-top: 20px; color: #d32f2f; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Excel Data</h1>
+        <p>Upload your SBR Excel file with booking data. Required columns: pnr, phone, email, ff_number, meal_selection, seat, booking_channel, office_id, agency_iata, staff_id</p>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="file" name="excel_file" accept=".xlsx,.xls" required>
+            </div>
+            <button type="submit">Upload Data</button>
+        </form>
+        
+        <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+    </div>
+</body>
+</html>

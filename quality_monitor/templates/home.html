@@ -6,13 +6,47 @@
     <title>KQ Bookings Quality Report</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 700px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .container { max-width: 900px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         h1 { color: #d32f2f; text-align: center; }
+        .stats { display: flex; justify-content: space-around; margin: 30px 0; }
+        .stat-box { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .nav { margin: 20px 0; text-align: center; }
+        .nav a { margin: 0 10px; padding: 10px 20px; background: #d32f2f; color: white; text-decoration: none; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>KQ Bookings Quality Report</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 10px; margin: 10px 0; background: {% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %}; border-radius: 5px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="stats">
+            <div class="stat-box">
+                <h3>{{ total_pnrs }}</h3>
+                <p>Total PNRs</p>
+            </div>
+            <div class="stat-box">
+                <h3>{{ with_contacts }}</h3>
+                <p>With Contacts</p>
+            </div>
+            <div class="stat-box">
+                <h3>{{ avg_quality }}%</h3>
+                <p>Avg Quality Score</p>
+            </div>
+        </div>
+        
+        <div class="nav">
+            <a href="{% url 'upload_excel' %}">Upload Data</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'contacts_pie_chart' %}">Contact Analysis</a>
+            <a href="{% url 'export_pnrs_to_excel' %}">Export Report</a>
+        </div>
     </div>
 </body>
 </html>
