@@ -3,31 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Excel Data - KQ Bookings Quality</title>
+    <title>Upload Data - KQ Bookings Quality</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h1 { color: #d32f2f; text-align: center; }
-        .form-group { margin: 20px 0; }
-        input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button { background: #d32f2f; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; }
-        .back-link { display: inline-block; margin-top: 20px; color: #d32f2f; text-decoration: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        
+        .upload-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 600px; width: 90%; }
+        
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #d32f2f; font-size: 28px; margin-bottom: 10px; }
+        .header p { color: #666; line-height: 1.6; }
+        
+        .upload-area { border: 2px dashed #ddd; border-radius: 15px; padding: 40px; text-align: center; margin: 30px 0; transition: all 0.3s; cursor: pointer; }
+        .upload-area:hover, .upload-area.dragover { border-color: #d32f2f; background: rgba(211, 47, 47, 0.05); }
+        .upload-area.has-file { border-color: #4caf50; background: rgba(76, 175, 80, 0.05); }
+        
+        .upload-icon { font-size: 48px; color: #ddd; margin-bottom: 20px; }
+        .upload-area.has-file .upload-icon { color: #4caf50; }
+        
+        .file-input { display: none; }
+        .upload-text { color: #666; font-size: 16px; margin-bottom: 10px; }
+        .file-info { color: #4caf50; font-weight: 600; margin-top: 15px; }
+        
+        .requirements { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .requirements h3 { color: #333; margin-bottom: 15px; }
+        .requirements ul { list-style: none; }
+        .requirements li { padding: 5px 0; color: #666; }
+        .requirements li::before { content: '✓'; color: #4caf50; font-weight: bold; margin-right: 10px; }
+        
+        .form-actions { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #d32f2f; color: white; }
+        .btn-primary:hover { background: #b71c1c; transform: translateY(-2px); }
+        .btn-secondary { background: #666; color: white; }
+        .btn-secondary:hover { background: #555; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .progress-bar { width: 100%; height: 6px; background: #eee; border-radius: 3px; margin: 20px 0; overflow: hidden; display: none; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); width: 0%; transition: width 0.3s; }
+        
+        @media (max-width: 768px) {
+            .upload-container { padding: 30px 20px; }
+            .form-actions { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Upload Excel Data</h1>
-        <p>Upload your SBR Excel file with booking data. Required columns: pnr, phone, email, ff_number, meal_selection, seat, booking_channel, office_id, agency_iata, staff_id</p>
-        
-        <form method="post" enctype="multipart/form-data">
+    <div class="upload-container">
+        <div class="header">
+            <h1>📁 Upload Booking Data</h1>
+            <p>Import your SBR Excel file to analyze booking quality and generate comprehensive reports</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 15px; margin: 15px 0; background: {% if message.tags == 'error' %}#ffebee{% else %}#e8f5e8{% endif %}; border-radius: 10px; border-left: 4px solid {% if message.tags == 'error' %}#f44336{% else %}#4caf50{% endif %}; color: {% if message.tags == 'error' %}#c62828{% else %}#2e7d32{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
             {% csrf_token %}
-            <div class="form-group">
-                <input type="file" name="excel_file" accept=".xlsx,.xls" required>
+            
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click to select Excel file or drag and drop</div>
+                <div class="file-info" id="fileInfo"></div>
+                <input type="file" name="excel_file" id="fileInput" class="file-input" accept=".xlsx,.xls" required>
             </div>
-            <button type="submit">Upload Data</button>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="requirements">
+                <h3>📋 Required Excel Columns</h3>
+                <ul>
+                    <li><strong>pnr</strong> - Passenger Name Record (unique identifier)</li>
+                    <li><strong>phone</strong> - Contact phone number</li>
+                    <li><strong>email</strong> - Contact email address</li>
+                    <li><strong>ff_number</strong> - Frequent Flyer Number</li>
+                    <li><strong>meal_selection</strong> - Meal preference</li>
+                    <li><strong>seat</strong> - Seat assignment</li>
+                    <li><strong>booking_channel</strong> - Channel (web, mobile, office, agency, ndc)</li>
+                    <li><strong>office_id</strong> - Booking office identifier</li>
+                    <li><strong>agency_iata</strong> - Travel agency IATA code</li>
+                    <li><strong>staff_id</strong> - Staff member identifier</li>
+                </ul>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                    🚀 Upload & Process Data
+                </button>
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    ← Back to Dashboard
+                </a>
+            </div>
         </form>
-        
-        <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
     </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+
+        // File input change handler
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                const fileName = file.name;
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.innerHTML = `📊 ${fileName} (${fileSize} MB)`;
+                uploadArea.classList.add('has-file');
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // Form submission with progress
+        uploadForm.addEventListener('submit', (e) => {
+            if (fileInput.files.length === 0) {
+                e.preventDefault();
+                alert('Please select a file to upload');
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '⏳ Processing...';
+            progressBar.style.display = 'block';
+            
+            // Simulate progress (since we can't track actual upload progress easily)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+
+            // Clean up on form submission
+            setTimeout(() => {
+                clearInterval(interval);
+                progressFill.style.width = '100%';
+            }, 2000);
+        });
+
+        // File type validation
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const validTypes = ['.xlsx', '.xls'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!validTypes.includes(fileExtension)) {
+                    alert('Please select a valid Excel file (.xlsx or .xls)');
+                    fileInput.value = '';
+                    fileInfo.innerHTML = '';
+                    uploadArea.classList.remove('has-file');
+                    uploadBtn.disabled = true;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
