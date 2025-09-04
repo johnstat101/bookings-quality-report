@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('quality_monitor.urls')), # Include URLs from quality_monitor app
+    path('api-auth/', include('rest_framework.urls')),  # DRF login/logout
+    path('', include('quality_monitor.urls')),
 ]
