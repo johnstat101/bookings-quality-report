@@ -4,25 +4,32 @@ from django.db.models import Count, Q, Case, When, IntegerField, Avg
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from datetime import datetime, timedelta
-from .models import Booking
+from .models import Booking, TravelAgency, KQOffice, KQStaff
 import pandas as pd
 import json
 
 def get_filtered_bookings(request):
-    bookings = Booking.objects.all()
+    bookings = Booking.objects.select_related('kq_office', 'kq_staff', 'travel_agency').all()
+    
+    # Date filters
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    channel = request.GET.get('channel')
-    office = request.GET.get('office')
+    departure_date = request.GET.get('departure_date')
+    
+    # Multi-select filters
+    channels = request.GET.getlist('channels')
+    offices = request.GET.getlist('offices')
     
     if start_date:
         bookings = bookings.filter(created_at__gte=start_date)
     if end_date:
         bookings = bookings.filter(created_at__lte=end_date)
-    if channel:
-        bookings = bookings.filter(booking_channel=channel)
-    if office:
-        bookings = bookings.filter(office_id=office)
+    if departure_date:
+        bookings = bookings.filter(departure_date=departure_date)
+    if channels:
+        bookings = bookings.filter(booking_channel__in=channels)
+    if offices:
+        bookings = bookings.filter(kq_office__office_id__in=offices)
     
     return bookings
 
@@ -43,9 +50,21 @@ def home_view(request):
     )
     avg_quality = quality_calc['avg_score'] or 0
     
-    # Get channel and office options for filters
+    # Get filter options
     channels = Booking.objects.values_list('booking_channel', flat=True).distinct()
-    offices = Booking.objects.exclude(office_id='').values_list('office_id', flat=True).distinct()
+    offices = KQOffice.objects.all()
+    agencies = TravelAgency.objects.all()
+    
+    # Contact failure analysis
+    contact_failures = bookings.filter(phone='', email='').values('booking_channel').annotate(
+        failure_count=Count('id')
+    ).order_by('-failure_count')
+    
+    office_contact_failures = bookings.filter(
+        phone='', email='', kq_office__isnull=False
+    ).values('kq_office__name', 'kq_office__office_id').annotate(
+        failure_count=Count('id')
+    ).order_by('-failure_count')[:10]
     
     # Dashboard data
     quality_score_calc = (
@@ -61,7 +80,9 @@ def home_view(request):
         avg_quality=Avg(quality_score_calc)
     ).order_by('-total')
     
-    office_stats = bookings.exclude(office_id='').values('office_id').annotate(
+    office_stats = bookings.filter(kq_office__isnull=False).values(
+        'kq_office__name', 'kq_office__office_id'
+    ).annotate(
         total=Count('id'),
         avg_quality=Avg(quality_score_calc)
     ).order_by('-total')[:10]
@@ -90,10 +111,13 @@ def home_view(request):
         'avg_quality': round(avg_quality, 1),
         'channels': channels,
         'offices': offices,
+        'agencies': agencies,
         'channel_stats': channel_stats,
         'office_stats': office_stats,
+        'contact_failures': contact_failures,
+        'office_contact_failures': office_contact_failures,
         'pnrs_no_contacts': pnrs_no_contacts,
-        'trends': json.dumps(trends[::-1]),  # Reverse for chronological order
+        'trends': json.dumps(trends[::-1]),
     }
     return render(request, "home.html", context)
 

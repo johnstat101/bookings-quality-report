@@ -1,6 +1,39 @@
 from django.db import models
 from django.utils.html import escape
 
+class TravelAgency(models.Model):
+    iata_code = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=100)
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.iata_code})"
+    
+    class Meta:
+        verbose_name_plural = "Travel Agencies"
+
+class KQOffice(models.Model):
+    office_id = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+    manager = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.office_id})"
+
+class KQStaff(models.Model):
+    staff_id = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=100)
+    office = models.ForeignKey(KQOffice, on_delete=models.CASCADE, related_name='staff')
+    email = models.EmailField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.staff_id})"
+
 class Booking(models.Model):
     CHANNEL_CHOICES = [
         ('web', 'Web'),
@@ -17,11 +50,13 @@ class Booking(models.Model):
     meal_selection = models.CharField(max_length=50, blank=True)
     seat = models.CharField(max_length=10, blank=True)
     booking_channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='web')
-    office_id = models.CharField(max_length=10, blank=True)
-    agency_iata = models.CharField(max_length=10, blank=True)
-    agency_name = models.CharField(max_length=100, blank=True)
-    staff_id = models.CharField(max_length=10, blank=True)
-    staff_name = models.CharField(max_length=100, blank=True)
+    departure_date = models.DateField(null=True, blank=True)
+    
+    # Channel-specific relationships
+    kq_office = models.ForeignKey(KQOffice, on_delete=models.SET_NULL, null=True, blank=True)
+    kq_staff = models.ForeignKey(KQStaff, on_delete=models.SET_NULL, null=True, blank=True)
+    travel_agency = models.ForeignKey(TravelAgency, on_delete=models.SET_NULL, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,3 +76,26 @@ class Booking(models.Model):
     @property
     def has_contacts(self):
         return bool(self.phone or self.email)
+    
+    @property
+    def booking_agent(self):
+        """Return the booking agent based on channel"""
+        if self.booking_channel == 'office' and self.kq_staff:
+            return self.kq_staff.name
+        elif self.booking_channel == 'agency' and self.travel_agency:
+            return self.travel_agency.name
+        return None
+    
+    def clean(self):
+        """Validate channel-specific data"""
+        from django.core.exceptions import ValidationError
+        
+        if self.booking_channel == 'office' and not self.kq_office:
+            raise ValidationError("Office bookings must have a KQ Office assigned")
+        elif self.booking_channel == 'agency' and not self.travel_agency:
+            raise ValidationError("Agency bookings must have a Travel Agency assigned")
+        elif self.booking_channel in ['web', 'mobile', 'ndc']:
+            # Clear agency/office data for direct bookings
+            self.kq_office = None
+            self.kq_staff = None
+            self.travel_agency = None
