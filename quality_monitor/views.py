@@ -73,6 +73,7 @@ def home_view(request):
     ]
     offices = list(KQOffice.objects.all().order_by('name'))
     agencies = list(TravelAgency.objects.all())
+    staff_members = list(KQStaff.objects.select_related('office').all().order_by('name'))
     
     # Contact failure analysis
     contact_failures = bookings.filter(phone='', email='').values('channel').annotate(
@@ -106,7 +107,7 @@ def home_view(request):
         avg_quality=Avg(quality_score_calc)
     ).order_by('-total')[:10]
     
-    print(f"Debug - Channels: {[c[0] for c in channels]}")
+    print(f"Debug - Channels: {[c[0] for c in Booking.CHANNEL_CHOICES]}")
     print(f"Debug - Offices: {[o.name for o in offices]}")
     print(f"Debug - Channel Stats: {list(channel_stats)}")
     print(f"Debug - Office Stats: {list(office_stats)}")
@@ -128,22 +129,63 @@ def home_view(request):
             'quality': round(day_quality, 1)
         })
     
+    # Element counts for donut charts
+    phone_count = bookings.filter(phone__gt='').count()
+    email_count = bookings.filter(email__gt='').count()
+    ff_count = bookings.filter(ff_number__gt='').count()
+    meal_count = bookings.filter(meal_selection__gt='').count()
+    seat_count = bookings.filter(seat__gt='').count()
+    
+    # Quality score distribution
+    quality_ranges = [0, 0, 0, 0, 0]  # 0-20, 21-40, 41-60, 61-80, 81-100
+    for booking in bookings:
+        score = booking.quality_score
+        if score <= 20:
+            quality_ranges[0] += 1
+        elif score <= 40:
+            quality_ranges[1] += 1
+        elif score <= 60:
+            quality_ranges[2] += 1
+        elif score <= 80:
+            quality_ranges[3] += 1
+        else:
+            quality_ranges[4] += 1
+    
+    # Get current filter values
+    current_channels = request.GET.getlist('channels')
+    current_offices = request.GET.getlist('offices')
+    
     context = {
         'total_pnrs': total_pnrs,
         'with_contacts': with_contacts,
         'without_contacts': without_contacts,
         'avg_quality': round(avg_quality, 1),
+        'channel_types': ['direct', 'indirect'],
+        'channels': [c[0] for c in Booking.CHANNEL_CHOICES],
         'channel_groupings': channel_groupings,
         'offices': offices,
         'agencies': agencies,
+        'staff_members': staff_members,
         'channel_stats': channel_stats,
         'office_stats': office_stats,
         'contact_failures': contact_failures,
         'office_contact_failures': office_contact_failures,
         'pnrs_no_contacts': pnrs_no_contacts,
         'trends': json.dumps(trends[::-1]),
+        'office_channels': json.dumps(list(Booking.OFFICE_CHANNELS)),
+        'staff_channels': json.dumps(list(Booking.STAFF_CHANNELS)),
+        'direct_channels': json.dumps(list(Booking.DIRECT_CHANNELS)),
+        'indirect_channels': json.dumps(list(Booking.INDIRECT_CHANNELS)),
+        'current_channels': current_channels,
+        'current_offices': current_offices,
+        'phone_count': phone_count,
+        'email_count': email_count,
+        'ff_count': ff_count,
+        'meal_count': meal_count,
+        'seat_count': seat_count,
+        'quality_ranges': quality_ranges,
     }
-    return render(request, "home_new.html", context)
+    return render(request, "home.html", context)
 
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('excel_file'):
@@ -296,3 +338,69 @@ def api_quality_trends(request):
         })
     
     return JsonResponse({'trends': trends[::-1]})
+
+def api_channel_groupings(request):
+    """API endpoint for channel groupings"""
+    groupings = [
+        {
+            'id': 'direct',
+            'label': 'Direct Channels', 
+            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.DIRECT_CHANNELS]
+        },
+        {
+            'id': 'indirect',
+            'label': 'Indirect Channels',
+            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.INDIRECT_CHANNELS]
+        }
+    ]
+    return JsonResponse({'groupings': groupings})
+
+def api_offices_by_channels(request):
+    """API endpoint to get offices/agencies available for selected channels"""
+    selected_channels = request.GET.getlist('channels')
+    
+    if not selected_channels:
+        # Return all offices when no channels selected
+        offices = list(KQOffice.objects.all().values('office_id', 'name').order_by('name'))
+        return JsonResponse({'offices': offices, 'agencies': [], 'staff': []})
+    
+    relevant_offices = set()
+    relevant_agencies = set()
+    relevant_staff = set()
+    
+    for channel in selected_channels:
+        if channel == 'website':
+            relevant_offices.add('WEB001')
+        elif channel == 'mobile_app':
+            relevant_offices.add('MOB001')
+        elif channel == 'call_center':
+            relevant_offices.add('CC001')
+        elif channel in ['airport_counter', 'kiosk']:
+            physical_office_ids = KQOffice.objects.exclude(
+                office_id__in=['WEB001', 'MOB001', 'CC001']
+            ).values_list('office_id', flat=True)
+            relevant_offices.update(physical_office_ids)
+        elif channel == 'travel_agents':
+            agency_ids = TravelAgency.objects.values_list('iata_code', flat=True)
+            relevant_agencies.update(agency_ids)
+        elif channel in ['corporate_sales', 'group_sales']:
+            staff_ids = KQStaff.objects.values_list('staff_id', flat=True)
+            relevant_staff.update(staff_ids)
+    
+    offices = list(KQOffice.objects.filter(
+        office_id__in=relevant_offices
+    ).values('office_id', 'name').order_by('name'))
+    
+    agencies = list(TravelAgency.objects.filter(
+        iata_code__in=relevant_agencies
+    ).values('iata_code', 'name').order_by('name'))
+    
+    staff = list(KQStaff.objects.filter(
+        staff_id__in=relevant_staff
+    ).values('staff_id', 'name', 'office__name').order_by('name'))
+    
+    return JsonResponse({
+        'offices': offices,
+        'agencies': agencies, 
+        'staff': staff
+    })

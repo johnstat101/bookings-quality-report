@@ -8,31 +8,31 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         
-        .upload-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 600px; width: 90%; }
+        .upload-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 25px; border-radius: 15px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); max-width: 500px; width: 90%; }
         
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #d32f2f; font-size: 28px; margin-bottom: 10px; }
-        .header p { color: #666; line-height: 1.6; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: #d32f2f; font-size: 22px; margin-bottom: 5px; }
+        .header p { color: #666; line-height: 1.4; font-size: 14px; }
         
-        .upload-area { border: 2px dashed #ddd; border-radius: 15px; padding: 40px; text-align: center; margin: 30px 0; transition: all 0.3s; cursor: pointer; }
+        .upload-area { border: 2px dashed #ddd; border-radius: 10px; padding: 25px; text-align: center; margin: 20px 0; transition: all 0.3s; cursor: pointer; }
         .upload-area:hover, .upload-area.dragover { border-color: #d32f2f; background: rgba(211, 47, 47, 0.05); }
         .upload-area.has-file { border-color: #4caf50; background: rgba(76, 175, 80, 0.05); }
         
-        .upload-icon { font-size: 48px; color: #ddd; margin-bottom: 20px; }
+        .upload-icon { font-size: 32px; color: #ddd; margin-bottom: 10px; }
         .upload-area.has-file .upload-icon { color: #4caf50; }
         
         .file-input { display: none; }
-        .upload-text { color: #666; font-size: 16px; margin-bottom: 10px; }
-        .file-info { color: #4caf50; font-weight: 600; margin-top: 15px; }
+        .upload-text { color: #666; font-size: 14px; margin-bottom: 8px; }
+        .file-info { color: #4caf50; font-weight: 600; margin-top: 10px; font-size: 13px; }
         
-        .requirements { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
-        .requirements h3 { color: #333; margin-bottom: 15px; }
-        .requirements ul { list-style: none; }
-        .requirements li { padding: 5px 0; color: #666; }
-        .requirements li::before { content: '✓'; color: #4caf50; font-weight: bold; margin-right: 10px; }
+        .requirements { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .requirements h3 { color: #333; margin-bottom: 10px; font-size: 16px; }
+        .requirements ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+        .requirements li { padding: 2px 0; color: #666; font-size: 12px; }
+        .requirements li::before { content: '✓'; color: #4caf50; font-weight: bold; margin-right: 5px; }
         
-        .form-actions { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
-        .btn { padding: 12px 30px; border: none; border-radius: 25px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .form-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
         .btn-primary { background: #d32f2f; color: white; }
         .btn-primary:hover { background: #b71c1c; transform: translateY(-2px); }
         .btn-secondary { background: #666; color: white; }
@@ -43,8 +43,8 @@
         .progress-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); width: 0%; transition: width 0.3s; }
         
         @media (max-width: 768px) {
-            .upload-container { padding: 30px 20px; }
-            .form-actions { flex-direction: column; }
+            .upload-container { padding: 20px 15px; }
+            .requirements ul { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -86,10 +86,11 @@
                     <li><strong>ff_number</strong> - Frequent Flyer Number</li>
                     <li><strong>meal_selection</strong> - Meal preference</li>
                     <li><strong>seat</strong> - Seat assignment</li>
-                    <li><strong>booking_channel</strong> - Channel (web, mobile, office, agency, ndc)</li>
+                    <li><strong>channel</strong> - Channel (website, mobile, ato, cto, cec, kq_gsa, travel_agents, ndc, msafiri_connect)</li>
                     <li><strong>office_id</strong> - Booking office identifier</li>
                     <li><strong>agency_iata</strong> - Travel agency IATA code</li>
                     <li><strong>staff_id</strong> - Staff member identifier</li>
+                    <li><strong>departure_date</strong> - Flight departure date (YYYY-MM-DD)</li>
                 </ul>
             </div>
 
