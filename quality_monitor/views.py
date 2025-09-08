@@ -11,15 +11,14 @@ import json
 def get_filtered_bookings(request):
     bookings = Booking.objects.select_related('kq_office', 'kq_staff', 'travel_agency').all()
     
-    # Date filters - only apply if values exist (open filter when empty)
+    # Date filters
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     departure_start = request.GET.get('departure_start')
     departure_end = request.GET.get('departure_end')
     
-    # Multi-select filters
-    channel_types = request.GET.getlist('channel_types')
-    office_types = request.GET.getlist('office_types')
+    # Channel and office filters
+    channels = request.GET.getlist('channels')
     offices = request.GET.getlist('offices')
     
     # Apply filters only if values are provided
@@ -31,12 +30,14 @@ def get_filtered_bookings(request):
         bookings = bookings.filter(departure_date__gte=departure_start)
     if departure_end and departure_end.strip():
         bookings = bookings.filter(departure_date__lte=departure_end)
-    if channel_types and len(channel_types) > 0:
-        bookings = bookings.filter(channel_type__in=channel_types)
-    if office_types and len(office_types) > 0:
-        bookings = bookings.filter(office_type__in=office_types)
+    if channels and len(channels) > 0:
+        bookings = bookings.filter(channel__in=channels)
     if offices and len(offices) > 0:
-        bookings = bookings.filter(kq_office__office_id__in=offices)
+        # Filter by office for both direct office bookings and staff office associations
+        bookings = bookings.filter(
+            Q(kq_office__office_id__in=offices) | 
+            Q(kq_staff__office__office_id__in=offices)
+        )
     
     return bookings
 
@@ -57,15 +58,24 @@ def home_view(request):
     )
     avg_quality = quality_calc['avg_score'] or 0
     
-    # Get filter options
-    channel_types = [choice[0] for choice in Booking.CHANNEL_TYPE_CHOICES]
-    direct_offices = [choice[0] for choice in Booking.DIRECT_OFFICE_CHOICES]
-    indirect_offices = [choice[0] for choice in Booking.INDIRECT_OFFICE_CHOICES]
-    offices = list(KQOffice.objects.all())
+    # Get filter options - channel groupings
+    channel_groupings = [
+        {
+            'id': 'direct',
+            'label': 'Direct Channels', 
+            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.DIRECT_CHANNELS]
+        },
+        {
+            'id': 'indirect',
+            'label': 'Indirect Channels',
+            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.INDIRECT_CHANNELS]
+        }
+    ]
+    offices = list(KQOffice.objects.all().order_by('name'))
     agencies = list(TravelAgency.objects.all())
     
     # Contact failure analysis
-    contact_failures = bookings.filter(phone='', email='').values('channel_type', 'office_type').annotate(
+    contact_failures = bookings.filter(phone='', email='').values('channel').annotate(
         failure_count=Count('id')
     ).order_by('-failure_count')
     
@@ -84,7 +94,7 @@ def home_view(request):
         Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
     )
     
-    channel_stats = bookings.values('channel_type', 'office_type').annotate(
+    channel_stats = bookings.values('channel').annotate(
         total=Count('id'),
         avg_quality=Avg(quality_score_calc)
     ).order_by('-total')
@@ -96,7 +106,7 @@ def home_view(request):
         avg_quality=Avg(quality_score_calc)
     ).order_by('-total')[:10]
     
-    print(f"Debug - Channels: {channels}")
+    print(f"Debug - Channels: {[c[0] for c in channels]}")
     print(f"Debug - Offices: {[o.name for o in offices]}")
     print(f"Debug - Channel Stats: {list(channel_stats)}")
     print(f"Debug - Office Stats: {list(office_stats)}")
@@ -123,9 +133,7 @@ def home_view(request):
         'with_contacts': with_contacts,
         'without_contacts': without_contacts,
         'avg_quality': round(avg_quality, 1),
-        'channel_types': channel_types,
-        'direct_offices': direct_offices,
-        'indirect_offices': indirect_offices,
+        'channel_groupings': channel_groupings,
         'offices': offices,
         'agencies': agencies,
         'channel_stats': channel_stats,
@@ -135,13 +143,25 @@ def home_view(request):
         'pnrs_no_contacts': pnrs_no_contacts,
         'trends': json.dumps(trends[::-1]),
     }
-    return render(request, "home.html", context)
+    return render(request, "home_new.html", context)
 
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('excel_file'):
         try:
             df = pd.read_excel(request.FILES['excel_file'])
             for _, row in df.iterrows():
+                # Get related objects
+                office = None
+                staff = None
+                agency = None
+                
+                if row.get('office_id'):
+                    office = KQOffice.objects.filter(office_id=row.get('office_id')).first()
+                if row.get('staff_id'):
+                    staff = KQStaff.objects.filter(staff_id=row.get('staff_id')).first()
+                if row.get('agency_iata'):
+                    agency = TravelAgency.objects.filter(iata_code=row.get('agency_iata')).first()
+                
                 Booking.objects.update_or_create(
                     pnr=row.get('pnr', ''),
                     defaults={
@@ -150,8 +170,11 @@ def upload_excel(request):
                         'ff_number': row.get('ff_number', ''),
                         'meal_selection': row.get('meal_selection', ''),
                         'seat': row.get('seat', ''),
-                        'booking_channel': row.get('booking_channel', 'web'),
-                        # Note: office_id, agency_iata, staff_id should be handled via ForeignKey relationships
+                        'channel': row.get('channel', 'website'),
+                        'kq_office': office,
+                        'kq_staff': staff,
+                        'travel_agency': agency,
+                        'departure_date': row.get('departure_date'),
                     }
                 )
             messages.success(request, f'Successfully imported {len(df)} records')
@@ -169,7 +192,7 @@ def dashboard(request):
         Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
     )
     
-    channel_stats = Booking.objects.values('channel_type', 'office_type').annotate(
+    channel_stats = Booking.objects.values('channel').annotate(
         total=Count('id'),
         avg_quality=Avg(quality_score_calc)
     ).order_by('-total')
@@ -224,8 +247,9 @@ def export_pnrs_to_excel(request):
         
         qs = bookings.values(
             'pnr', 'phone', 'email', 'ff_number', 'meal_selection', 'seat',
-            'booking_channel', 'kq_office__office_id', 'travel_agency__iata_code', 
-            'kq_staff__staff_id', 'created_at'
+            'channel', 'kq_office__office_id', 'kq_office__name', 
+            'kq_staff__staff_id', 'kq_staff__name', 'kq_staff__office__office_id',
+            'travel_agency__iata_code', 'travel_agency__name', 'created_at', 'departure_date'
         )
         df = pd.DataFrame(list(qs))
         

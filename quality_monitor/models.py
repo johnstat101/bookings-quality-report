@@ -35,25 +35,38 @@ class KQStaff(models.Model):
         return f"{self.name} ({self.staff_id})"
 
 class Booking(models.Model):
-    CHANNEL_TYPE_CHOICES = [
-        ('direct', 'Direct'),
-        ('indirect', 'Indirect'),
-    ]
-    
-    DIRECT_OFFICE_CHOICES = [
+    CHANNEL_CHOICES = [
+        # Direct channels
         ('website', 'Website'),
         ('mobile', 'Mobile'),
         ('ato', 'ATO'),
         ('cto', 'CTO'),
         ('cec', 'Contact Center (CEC)'),
         ('kq_gsa', 'KQ GSA'),
+        # Indirect channels
+        ('travel_agents', 'Travel Agents'),
+        ('ndc', 'NDC'),
+        ('msafiri_connect', 'Msafiri Connect'),
     ]
     
-    INDIRECT_OFFICE_CHOICES = [
-        ('agents', 'Agents'),
-        ('ndc', 'NDC'),
-        ('msafiri_connect', 'Msafiri-Connect'),
-    ]
+    DIRECT_CHANNELS = ['website', 'mobile', 'ato', 'cto', 'cec', 'kq_gsa']
+    INDIRECT_CHANNELS = ['travel_agents', 'ndc', 'msafiri_connect']
+    
+    # Channel groupings for filtering
+    CHANNEL_GROUPINGS = {
+        'direct': {
+            'label': 'Direct Channels',
+            'channels': DIRECT_CHANNELS
+        },
+        'indirect': {
+            'label': 'Indirect Channels', 
+            'channels': INDIRECT_CHANNELS
+        }
+    }
+    
+    # Office requirements by channel
+    OFFICE_CHANNELS = ['website', 'mobile']  # Channels that require office_id
+    STAFF_CHANNELS = ['ato', 'cto', 'cec', 'kq_gsa', 'travel_agents', 'ndc', 'msafiri_connect']  # Channels that require staff_id
     
     pnr = models.CharField(max_length=20, unique=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -61,8 +74,7 @@ class Booking(models.Model):
     ff_number = models.CharField("Frequent Flyer Number", max_length=20, blank=True)
     meal_selection = models.CharField(max_length=50, blank=True)
     seat = models.CharField(max_length=10, blank=True)
-    channel_type = models.CharField(max_length=10, choices=CHANNEL_TYPE_CHOICES, default='direct')
-    office_type = models.CharField(max_length=20, blank=True)
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='website')
     departure_date = models.DateField(null=True, blank=True)
     
     # Channel-specific relationships
@@ -75,6 +87,9 @@ class Booking(models.Model):
 
     def __str__(self):
         return escape(f"PNR: {self.pnr}")
+    
+    class Meta:
+        ordering = ['-created_at']
     
     @property
     def quality_score(self):
@@ -91,27 +106,53 @@ class Booking(models.Model):
         return bool(self.phone or self.email)
     
     @property
+    def channel_type(self):
+        """Return channel type (direct/indirect)"""
+        return 'direct' if self.channel in self.DIRECT_CHANNELS else 'indirect'
+    
+    @property
+    def office_id(self):
+        """Return office ID based on channel"""
+        if self.kq_office:
+            return self.kq_office.office_id
+        return None
+    
+    @property
+    def staff_id(self):
+        """Return staff ID"""
+        if self.kq_staff:
+            return self.kq_staff.staff_id
+        return None
+    
+    @property
     def booking_agent(self):
         """Return the booking agent based on channel"""
-        if self.channel_type == 'direct' and self.kq_staff:
+        if self.kq_staff:
             return self.kq_staff.name
-        elif self.channel_type == 'indirect' and self.travel_agency:
+        elif self.travel_agency:
             return self.travel_agency.name
-        return self.office_type or 'Direct Booking'
+        elif self.kq_office:
+            return self.kq_office.name
+        return dict(self.CHANNEL_CHOICES).get(self.channel, 'Unknown')
+    
+    @classmethod
+    def get_offices_for_channel(cls, channel):
+        """Get available offices for a specific channel"""
+        if channel in cls.OFFICE_CHANNELS:
+            return KQOffice.objects.all()
+        elif channel in cls.STAFF_CHANNELS:
+            return KQOffice.objects.filter(staff__isnull=False).distinct()
+        return KQOffice.objects.none()
     
     def clean(self):
         """Validate channel-specific data"""
         from django.core.exceptions import ValidationError
         
-        if self.channel_type == 'direct':
-            if self.office_type not in [choice[0] for choice in self.DIRECT_OFFICE_CHOICES]:
-                raise ValidationError("Direct channels must have a valid direct office type")
-            # Clear indirect data
-            self.travel_agency = None
-        elif self.channel_type == 'indirect':
-            if self.office_type not in [choice[0] for choice in self.INDIRECT_OFFICE_CHOICES]:
-                raise ValidationError("Indirect channels must have a valid indirect office type")
-            # Clear direct staff for indirect bookings
-            if self.office_type != 'agents':
-                self.kq_staff = None
-                self.kq_office = None
+        if self.channel in self.OFFICE_CHANNELS:
+            if not self.kq_office:
+                raise ValidationError(f"{self.get_channel_display()} bookings must have an office")
+        elif self.channel in self.STAFF_CHANNELS:
+            if not self.kq_staff:
+                raise ValidationError(f"{self.get_channel_display()} bookings must have a staff member")
+            if self.channel == 'travel_agents' and not self.travel_agency:
+                raise ValidationError("Travel agent bookings must have an associated agency")

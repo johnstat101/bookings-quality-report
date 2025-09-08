@@ -11,6 +11,6 @@ urlpatterns = [
     path('export/', export_pnrs_to_excel, name='export_pnrs_to_excel'),
     path('api/trends/', api_quality_trends, name='api_quality_trends'),
     
-    # DRF API URLs
-    path('api/v1/', include('quality_monitor.api_urls')),
+    # API URLs
+    path('api/', include('quality_monitor.api_urls')),
 ]

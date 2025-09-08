@@ -110,7 +110,7 @@
                 <input type="text" placeholder="Select channel type..." readonly>
                 <div class="multi-select-dropdown" id="channel_types-dropdown">
                     {% for ct in channel_types %}
-                    <div class="multi-select-option" onclick="toggleOption('channel_types', '{{ ct }}', '{{ ct|capfirst }}'); updateOfficeOptions();">
+                    <div class="multi-select-option" onclick="toggleOption('channel_types', '{{ ct }}', '{{ ct|capfirst }}');">
                         <input type="checkbox" id="ct-{{ ct }}">
                         <label for="ct-{{ ct }}">{{ ct|capfirst }}</label>
                     </div>
@@ -119,27 +119,7 @@
             </div>
             <div class="multi-select-tags" id="channel_types-tags"></div>
         </div>
-        <div class="filter-group multi-select">
-            <label>Office Type</label>
-            <div class="multi-select-input" onclick="toggleDropdown('office_types')">
-                <input type="text" placeholder="Select office type..." readonly>
-                <div class="multi-select-dropdown" id="office_types-dropdown">
-                    {% for do in direct_offices %}
-                    <div class="multi-select-option direct-office" onclick="toggleOption('office_types', '{{ do }}', '{{ do|title }}')" style="display:none;">
-                        <input type="checkbox" id="do-{{ do }}">
-                        <label for="do-{{ do }}">{{ do|title }}</label>
-                    </div>
-                    {% endfor %}
-                    {% for io in indirect_offices %}
-                    <div class="multi-select-option indirect-office" onclick="toggleOption('office_types', '{{ io }}', '{{ io|title }}')" style="display:none;">
-                        <input type="checkbox" id="io-{{ io }}">
-                        <label for="io-{{ io }}">{{ io|title }}</label>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="multi-select-tags" id="office_types-tags"></div>
-        </div>
+
         <div class="filter-group multi-select">
             <label>Offices</label>
             <div class="multi-select-input" onclick="toggleDropdown('offices')">
@@ -315,23 +295,7 @@
 
     <script>
         // Multi-select functionality
-        let selectedOptions = { channel_types: [], office_types: [], offices: [] };
-        
-        function updateOfficeOptions() {
-            const directOffices = document.querySelectorAll('.direct-office');
-            const indirectOffices = document.querySelectorAll('.indirect-office');
-            const selectedChannelTypes = selectedOptions.channel_types;
-            
-            directOffices.forEach(el => el.style.display = 'none');
-            indirectOffices.forEach(el => el.style.display = 'none');
-            
-            if (selectedChannelTypes.includes('direct')) {
-                directOffices.forEach(el => el.style.display = 'block');
-            }
-            if (selectedChannelTypes.includes('indirect')) {
-                indirectOffices.forEach(el => el.style.display = 'block');
-            }
-        }
+        let selectedOptions = { channel_types: [], offices: [] };
 
         function toggleDropdown(type) {
             const dropdown = document.getElementById(type + '-dropdown');
@@ -339,7 +303,7 @@
         }
 
         function toggleOption(type, value, label) {
-            const checkbox = document.getElementById((type === 'channels' ? 'ch-' : 'off-') + value);
+            const checkbox = document.getElementById((type === 'channel_types' ? 'ct-' : 'off-') + value);
             checkbox.checked = !checkbox.checked;
             
             if (checkbox.checked) {
@@ -365,7 +329,7 @@
         function removeTag(type, value) {
             const tag = document.getElementById(type + '-tag-' + value);
             if (tag) tag.remove();
-            const checkbox = document.getElementById((type === 'channels' ? 'ch-' : 'off-') + value);
+            const checkbox = document.getElementById((type === 'channel_types' ? 'ct-' : 'off-') + value);
             if (checkbox) checkbox.checked = false;
             selectedOptions[type] = selectedOptions[type].filter(v => v !== value);
         }
@@ -440,7 +404,6 @@
             if (departureEnd) params.append('departure_end', departureEnd);
             
             selectedOptions.channel_types.forEach(ct => params.append('channel_types', ct));
-            selectedOptions.office_types.forEach(ot => params.append('office_types', ot));
             selectedOptions.offices.forEach(off => params.append('offices', off));
             
             window.location.href = '?' + params.toString();
@@ -457,11 +420,10 @@
         }
 
         function clearFilters() {
-            selectedOptions = { channel_types: [], office_types: [], offices: [] };
+            selectedOptions = { channel_types: [], offices: [] };
             clearDateRange('booking');
             clearDateRange('departure');
             document.getElementById('channel_types-tags').innerHTML = '';
-            document.getElementById('office_types-tags').innerHTML = '';
             document.getElementById('offices-tags').innerHTML = '';
             document.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(cb => cb.checked = false);
             window.location.href = '/';
@@ -489,15 +451,7 @@
                 addTag('channel_types', ct, ct.charAt(0).toUpperCase() + ct.slice(1));
             }
         });
-        urlParams.getAll('office_types').forEach(ot => {
-            selectedOptions.office_types.push(ot);
-            const checkbox = document.getElementById('do-' + ot) || document.getElementById('io-' + ot);
-            if (checkbox) {
-                checkbox.checked = true;
-                addTag('office_types', ot, ot.charAt(0).toUpperCase() + ot.slice(1));
-            }
-        });
-        updateOfficeOptions();
+
         urlParams.getAll('offices').forEach(off => {
             selectedOptions.offices.push(off);
             const checkbox = document.getElementById('off-' + off);
@@ -510,9 +464,9 @@
 
         // Charts data with fallbacks
         const trendsData = {{ trends|safe }} || [];
-        const channelStats = [{% for stat in channel_stats %}{'booking_channel': '{{ stat.booking_channel }}', 'total': {{ stat.total }}, 'avg_quality': {{ stat.avg_quality|default:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const channelStats = [{% for stat in channel_stats %}{'channel_type': '{{ stat.channel_type }}', 'total': {{ stat.total }}, 'avg_quality': {{ stat.avg_quality|default:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}];
         const officeStats = [{% for stat in office_stats %}{'kq_office__name': '{{ stat.kq_office__name|default:stat.kq_office__office_id }}', 'total': {{ stat.total }}, 'avg_quality': {{ stat.avg_quality|default:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}];
-        const contactFailures = [{% for fail in contact_failures %}{'booking_channel': '{{ fail.booking_channel }}', 'failure_count': {{ fail.failure_count }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const contactFailures = [{% for fail in contact_failures %}{'channel_type': '{{ fail.channel_type }}', 'failure_count': {{ fail.failure_count }}}{% if not forloop.last %},{% endif %}{% endfor %}];
         const officeContactFailures = [{% for fail in office_contact_failures %}{'kq_office__name': '{{ fail.kq_office__name }}', 'failure_count': {{ fail.failure_count }}}{% if not forloop.last %},{% endif %}{% endfor %}];
 
         // Quality Distribution Chart
@@ -542,7 +496,7 @@
             new Chart(channelVolumeCtx, {
                 type: 'bar',
                 data: {
-                    labels: channelStats.map(s => s.booking_channel.charAt(0).toUpperCase() + s.booking_channel.slice(1)),
+                    labels: channelStats.map(s => s.channel_type.charAt(0).toUpperCase() + s.channel_type.slice(1)),
                     datasets: [{
                         label: 'Booking Volume',
                         data: channelStats.map(s => s.total),
@@ -587,7 +541,7 @@
         new Chart(channelQualityCtx, {
             type: 'bar',
             data: {
-                labels: channelStats.map(s => s.booking_channel.charAt(0).toUpperCase() + s.booking_channel.slice(1)),
+                labels: channelStats.map(s => s.channel_type.charAt(0).toUpperCase() + s.channel_type.slice(1)),
                 datasets: [{
                     label: 'Quality Score %',
                     data: channelStats.map(s => s.avg_quality || 0),
@@ -632,7 +586,7 @@
             new Chart(contactFailureCtx, {
                 type: 'bar',
                 data: {
-                    labels: contactFailures.map(f => f.booking_channel.charAt(0).toUpperCase() + f.booking_channel.slice(1)),
+                    labels: contactFailures.map(f => f.channel_type.charAt(0).toUpperCase() + f.channel_type.slice(1)),
                     datasets: [{
                         label: 'Contact Failures',
                         data: contactFailures.map(f => f.failure_count),

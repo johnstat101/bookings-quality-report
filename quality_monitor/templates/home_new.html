@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KQ Bookings Quality Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        
+        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; padding: 0 20px; }
+        .logo { font-size: 28px; font-weight: bold; color: #d32f2f; }
+        
+        .filters { background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 1200px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 200px; }
+        .filter-group label { font-weight: 600; color: #333; font-size: 12px; }
+        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .filter-btn { padding: 10px 20px; background: #d32f2f; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .filter-btn:hover { background: #b71c1c; }
+        
+        .channel-filter { position: relative; }
+        .channel-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .channel-group { border-bottom: 1px solid #eee; }
+        .channel-group-header { padding: 10px 15px; background: #f8f9fa; font-weight: 600; color: #333; }
+        .channel-option { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .channel-option:hover { background: #f5f5f5; }
+        .channel-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+        .channel-tag { background: #d32f2f; color: white; padding: 4px 8px; border-radius: 15px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+        .channel-tag .close { cursor: pointer; font-weight: bold; }
+        
+        .office-filter { position: relative; }
+        .office-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .office-option { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .office-option:hover { background: #f5f5f5; }
+        .office-option.disabled { color: #ccc; cursor: not-allowed; }
+        .office-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+        .office-tag { background: #667eea; color: white; padding: 4px 8px; border-radius: 15px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+        .office-tag .close { cursor: pointer; font-weight: bold; }
+        
+        .nav-tabs { display: flex; gap: 15px; margin: 20px auto; max-width: 1200px; padding: 0 20px; justify-content: center; flex-wrap: wrap; }
+        .nav-tab { padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 30px; color: white; cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+        .nav-tab.active, .nav-tab:hover { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+        
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .content-section { display: none; background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .content-section.active { display: block; animation: fadeIn 0.5s ease-in; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; }
+        .stat-number { font-size: 36px; font-weight: bold; margin-bottom: 10px; }
+        .stat-label { font-size: 16px; opacity: 0.9; }
+        
+        .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .data-table th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 600; color: #333; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; }
+        .data-table tr:hover { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">✈️ KQ Bookings Quality Report</div>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label>Booking Date Range</label>
+            <input type="text" id="booking_range" placeholder="mm/dd/yyyy → mm/dd/yyyy" readonly onclick="toggleDateRange('booking')" style="cursor: pointer;">
+            <div id="booking_range_picker" style="display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="date" id="start_date" value="{{ request.GET.start_date }}" onchange="updateDateRange('booking')">
+                    <span>to</span>
+                    <input type="date" id="end_date" value="{{ request.GET.end_date }}" onchange="updateDateRange('booking')">
+                    <button type="button" onclick="clearDateRange('booking')" style="padding: 4px 8px; background: #666; color: white; border: none; border-radius: 4px; font-size: 10px;">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-group channel-filter">
+            <label>Channel</label>
+            <div onclick="toggleChannelDropdown()">
+                <input type="text" placeholder="Select channels..." readonly style="cursor: pointer;">
+                <div class="channel-dropdown" id="channel-dropdown">
+                    <!-- Channel groups will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="channel-tags" id="channel-tags"></div>
+        </div>
+
+        <div class="filter-group office-filter">
+            <label>Office</label>
+            <div onclick="toggleOfficeDropdown()">
+                <input type="text" placeholder="Select offices..." readonly style="cursor: pointer;" id="office-input">
+                <div class="office-dropdown" id="office-dropdown">
+                    <!-- Offices will be populated based on selected channels -->
+                </div>
+            </div>
+            <div class="office-tags" id="office-tags"></div>
+        </div>
+
+        <button class="filter-btn" onclick="applyFilters()">🔍 Apply Filters</button>
+        <button class="filter-btn" onclick="clearFilters()" style="background: #666;">🔄 Clear</button>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showSection('overview')">📊 Overview</button>
+        <button class="nav-tab" onclick="showSection('export')">📤 Export</button>
+        <button class="nav-tab" onclick="window.location.href='{% url 'upload_excel' %}'">📁 Upload</button>
+    </div>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 15px; margin: 10px 0; background: {% if message.tags == 'error' %}#ffebee{% else %}#e8f5e8{% endif %}; border-radius: 10px; border-left: 4px solid {% if message.tags == 'error' %}#f44336{% else %}#4caf50{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Overview Section -->
+        <div id="overview" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_pnrs }}</div>
+                    <div class="stat-label">Total PNRs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ with_contacts }}</div>
+                    <div class="stat-label">With Contacts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ avg_quality }}%</div>
+                    <div class="stat-label">Avg Quality Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ without_contacts }}</div>
+                    <div class="stat-label">Missing Contacts</div>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                <h3>Sample PNR Data</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>PNR</th>
+                            <th>Channel</th>
+                            <th>Office ID</th>
+                            <th>Staff ID</th>
+                            <th>Quality Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in pnrs_no_contacts|slice:":10" %}
+                        <tr>
+                            <td>{{ booking.pnr }}</td>
+                            <td>{{ booking.get_channel_display }}</td>
+                            <td>{{ booking.office_id|default:"-" }}</td>
+                            <td>{{ booking.staff_id|default:"-" }}</td>
+                            <td>{{ booking.quality_score }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div id="export" class="content-section">
+            <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px;">
+                <h2>📤 Export Data</h2>
+                <p>Download filtered booking data in Excel format with Office ID and Staff ID</p>
+                <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('all')">📊 All Data</a>
+                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('no_contacts')">📞 No Contacts</a>
+                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('low_quality')">⚠️ Low Quality</a>
+                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('high_quality')">⭐ High Quality</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedChannels = [];
+        let selectedOffices = [];
+        let channelGroupings = [];
+        let availableOffices = [];
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChannelGroupings();
+            updateDateRange('booking');
+        });
+
+        // Load channel groupings from API
+        async function loadChannelGroupings() {
+            try {
+                const response = await fetch('/api/channel-groupings/');
+                const data = await response.json();
+                channelGroupings = data.groupings;
+                populateChannelDropdown();
+            } catch (error) {
+                console.error('Error loading channel groupings:', error);
+            }
+        }
+
+        // Populate channel dropdown
+        function populateChannelDropdown() {
+            const dropdown = document.getElementById('channel-dropdown');
+            dropdown.innerHTML = '';
+            
+            channelGroupings.forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'channel-group';
+                
+                const header = document.createElement('div');
+                header.className = 'channel-group-header';
+                header.textContent = group.label;
+                groupDiv.appendChild(header);
+                
+                group.channels.forEach(channel => {
+                    const option = document.createElement('div');
+                    option.className = 'channel-option';
+                    option.onclick = () => toggleChannel(channel.id, channel.label);
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `channel-${channel.id}`;
+                    
+                    const label = document.createElement('label');
+                    label.textContent = channel.label;
+                    label.setAttribute('for', `channel-${channel.id}`);
+                    
+                    option.appendChild(checkbox);
+                    option.appendChild(label);
+                    groupDiv.appendChild(option);
+                });
+                
+                dropdown.appendChild(groupDiv);
+            });
+        }
+
+        // Toggle channel selection
+        function toggleChannel(channelId, channelLabel) {
+            const checkbox = document.getElementById(`channel-${channelId}`);
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                if (!selectedChannels.includes(channelId)) {
+                    selectedChannels.push(channelId);
+                    addChannelTag(channelId, channelLabel);
+                }
+            } else {
+                selectedChannels = selectedChannels.filter(id => id !== channelId);
+                removeChannelTag(channelId);
+            }
+            
+            updateAvailableOffices();
+        }
+
+        // Add channel tag
+        function addChannelTag(channelId, channelLabel) {
+            const tagsContainer = document.getElementById('channel-tags');
+            const tag = document.createElement('div');
+            tag.className = 'channel-tag';
+            tag.id = `channel-tag-${channelId}`;
+            tag.innerHTML = `${channelLabel} <span class="close" onclick="removeChannelTag('${channelId}')">&times;</span>`;
+            tagsContainer.appendChild(tag);
+        }
+
+        // Remove channel tag
+        function removeChannelTag(channelId) {
+            const tag = document.getElementById(`channel-tag-${channelId}`);
+            if (tag) tag.remove();
+            
+            const checkbox = document.getElementById(`channel-${channelId}`);
+            if (checkbox) checkbox.checked = false;
+            
+            selectedChannels = selectedChannels.filter(id => id !== channelId);
+            updateAvailableOffices();
+        }
+
+        // Update available offices based on selected channels
+        async function updateAvailableOffices() {
+            if (selectedChannels.length === 0) {
+                availableOffices = [];
+                populateOfficeDropdown();
+                document.getElementById('office-input').disabled = true;
+                document.getElementById('office-input').placeholder = 'Select channels first...';
+                return;
+            }
+            
+            document.getElementById('office-input').disabled = false;
+            document.getElementById('office-input').placeholder = 'Select offices...';
+            
+            try {
+                const params = new URLSearchParams();
+                selectedChannels.forEach(channel => params.append('channels', channel));
+                
+                const response = await fetch(`/api/offices-by-channels/?${params}`);
+                const data = await response.json();
+                availableOffices = data.offices;
+                populateOfficeDropdown();
+            } catch (error) {
+                console.error('Error loading offices:', error);
+            }
+        }
+
+        // Populate office dropdown
+        function populateOfficeDropdown() {
+            const dropdown = document.getElementById('office-dropdown');
+            dropdown.innerHTML = '';
+            
+            if (availableOffices.length === 0) {
+                const option = document.createElement('div');
+                option.className = 'office-option disabled';
+                option.textContent = 'No offices available for selected channels';
+                dropdown.appendChild(option);
+                return;
+            }
+            
+            availableOffices.forEach(office => {
+                const option = document.createElement('div');
+                option.className = 'office-option';
+                option.onclick = () => toggleOffice(office.office_id, office.name);
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `office-${office.office_id}`;
+                
+                const label = document.createElement('label');
+                label.textContent = office.name;
+                label.setAttribute('for', `office-${office.office_id}`);
+                
+                option.appendChild(checkbox);
+                option.appendChild(label);
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Toggle office selection
+        function toggleOffice(officeId, officeName) {
+            const checkbox = document.getElementById(`office-${officeId}`);
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                if (!selectedOffices.includes(officeId)) {
+                    selectedOffices.push(officeId);
+                    addOfficeTag(officeId, officeName);
+                }
+            } else {
+                selectedOffices = selectedOffices.filter(id => id !== officeId);
+                removeOfficeTag(officeId);
+            }
+        }
+
+        // Add office tag
+        function addOfficeTag(officeId, officeName) {
+            const tagsContainer = document.getElementById('office-tags');
+            const tag = document.createElement('div');
+            tag.className = 'office-tag';
+            tag.id = `office-tag-${officeId}`;
+            tag.innerHTML = `${officeName} <span class="close" onclick="removeOfficeTag('${officeId}')">&times;</span>`;
+            tagsContainer.appendChild(tag);
+        }
+
+        // Remove office tag
+        function removeOfficeTag(officeId) {
+            const tag = document.getElementById(`office-tag-${officeId}`);
+            if (tag) tag.remove();
+            
+            const checkbox = document.getElementById(`office-${officeId}`);
+            if (checkbox) checkbox.checked = false;
+            
+            selectedOffices = selectedOffices.filter(id => id !== officeId);
+        }
+
+        // Toggle dropdowns
+        function toggleChannelDropdown() {
+            const dropdown = document.getElementById('channel-dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleOfficeDropdown() {
+            if (selectedChannels.length === 0) return;
+            const dropdown = document.getElementById('office-dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Date range functions
+        function toggleDateRange(type) {
+            const picker = document.getElementById(type + '_range_picker');
+            picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        function updateDateRange(type) {
+            const startId = type === 'booking' ? 'start_date' : 'departure_start';
+            const endId = type === 'booking' ? 'end_date' : 'departure_end';
+            const startDate = document.getElementById(startId).value;
+            const endDate = document.getElementById(endId).value;
+            const display = document.getElementById(type + '_range');
+            
+            if (startDate || endDate) {
+                const start = startDate ? new Date(startDate).toLocaleDateString() : 'Open';
+                const end = endDate ? new Date(endDate).toLocaleDateString() : 'Open';
+                display.value = `${start} → ${end}`;
+            } else {
+                display.value = '';
+            }
+        }
+        
+        function clearDateRange(type) {
+            const startId = type === 'booking' ? 'start_date' : 'departure_start';
+            const endId = type === 'booking' ? 'end_date' : 'departure_end';
+            document.getElementById(startId).value = '';
+            document.getElementById(endId).value = '';
+            document.getElementById(type + '_range').value = '';
+            document.getElementById(type + '_range_picker').style.display = 'none';
+        }
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            event.target.classList.add('active');
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const params = new URLSearchParams();
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            
+            selectedChannels.forEach(channel => params.append('channels', channel));
+            selectedOffices.forEach(office => params.append('offices', office));
+            
+            window.location.href = '?' + params.toString();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            selectedChannels = [];
+            selectedOffices = [];
+            clearDateRange('booking');
+            document.getElementById('channel-tags').innerHTML = '';
+            document.getElementById('office-tags').innerHTML = '';
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            window.location.href = '/';
+        }
+
+        // Export data
+        function exportData(type) {
+            const params = new URLSearchParams(window.location.search);
+            params.set('type', type);
+            window.location.href = '{% url "export_pnrs_to_excel" %}?' + params.toString();
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.channel-filter')) {
+                document.getElementById('channel-dropdown').style.display = 'none';
+            }
+            if (!event.target.closest('.office-filter')) {
+                document.getElementById('office-dropdown').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
