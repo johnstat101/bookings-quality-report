@@ -21,14 +21,14 @@ class KQStaffAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['pnr', 'booking_channel', 'departure_date', 'quality_score', 'has_contacts', 'created_at']
-    list_filter = ['booking_channel', 'departure_date', 'created_at', 'kq_office', 'travel_agency']
+    list_display = ['pnr', 'channel_type', 'office_type', 'departure_date', 'quality_score', 'has_contacts', 'created_at']
+    list_filter = ['channel_type', 'office_type', 'departure_date', 'created_at', 'kq_office', 'travel_agency']
     search_fields = ['pnr', 'phone', 'email', 'ff_number']
     readonly_fields = ['quality_score', 'has_contacts']
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('pnr', 'departure_date', 'booking_channel')
+            'fields': ('pnr', 'departure_date', 'channel_type', 'office_type')
         }),
         ('Contact Information', {
             'fields': ('phone', 'email', 'ff_number')

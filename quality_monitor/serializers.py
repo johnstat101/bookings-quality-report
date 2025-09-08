@@ -1,17 +1,39 @@
 from rest_framework import serializers
-from .models import Booking
+from .models import Booking, KQOffice, KQStaff, TravelAgency
+
+class KQOfficeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KQOffice
+        fields = '__all__'
+
+class KQStaffSerializer(serializers.ModelSerializer):
+    office_name = serializers.CharField(source='office.name', read_only=True)
+    
+    class Meta:
+        model = KQStaff
+        fields = '__all__'
+
+class TravelAgencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TravelAgency
+        fields = '__all__'
 
 class BookingSerializer(serializers.ModelSerializer):
     quality_score = serializers.ReadOnlyField()
     has_contacts = serializers.ReadOnlyField()
+    booking_agent = serializers.ReadOnlyField()
+    kq_office_name = serializers.CharField(source='kq_office.name', read_only=True)
+    kq_staff_name = serializers.CharField(source='kq_staff.name', read_only=True)
+    travel_agency_name = serializers.CharField(source='travel_agency.name', read_only=True)
     
     class Meta:
         model = Booking
         fields = [
             'id', 'pnr', 'phone', 'email', 'ff_number', 'meal_selection', 'seat',
-            'booking_channel', 'office_id', 'agency_iata', 'agency_name',
-            'staff_id', 'staff_name', 'created_at', 'updated_at',
-            'quality_score', 'has_contacts'
+            'channel_type', 'office_type', 'departure_date', 'created_at', 'updated_at',
+            'kq_office', 'kq_staff', 'travel_agency',
+            'kq_office_name', 'kq_staff_name', 'travel_agency_name',
+            'quality_score', 'has_contacts', 'booking_agent'
         ]
         read_only_fields = ['created_at', 'updated_at']
 
@@ -20,8 +42,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             'pnr', 'phone', 'email', 'ff_number', 'meal_selection', 'seat',
-            'booking_channel', 'office_id', 'agency_iata', 'agency_name',
-            'staff_id', 'staff_name'
+            'channel_type', 'office_type', 'departure_date', 'kq_office', 'kq_staff', 'travel_agency'
         ]
 
 class QualityStatsSerializer(serializers.Serializer):
@@ -32,13 +53,15 @@ class QualityStatsSerializer(serializers.Serializer):
     contact_percentage = serializers.FloatField()
 
 class ChannelStatsSerializer(serializers.Serializer):
-    booking_channel = serializers.CharField()
+    channel_type = serializers.CharField()
+    office_type = serializers.CharField()
     total = serializers.IntegerField()
     avg_quality = serializers.FloatField()
     percentage = serializers.FloatField()
 
 class OfficeStatsSerializer(serializers.Serializer):
-    office_id = serializers.CharField()
+    kq_office__office_id = serializers.CharField()
+    kq_office__name = serializers.CharField()
     total = serializers.IntegerField()
     avg_quality = serializers.FloatField()
 

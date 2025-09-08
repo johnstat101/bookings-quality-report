@@ -8,18 +8,42 @@ from django.utils import timezone
 from datetime import timedelta
 import pandas as pd
 
-from .models import Booking
+from .models import Booking, KQOffice, KQStaff, TravelAgency
 from .serializers import (
     BookingSerializer, BookingCreateSerializer, QualityStatsSerializer,
     ChannelStatsSerializer, OfficeStatsSerializer, QualityTrendSerializer,
-    BulkUploadSerializer
+    BulkUploadSerializer, KQOfficeSerializer, KQStaffSerializer, TravelAgencySerializer
 )
+
+class KQOfficeViewSet(viewsets.ModelViewSet):
+    queryset = KQOffice.objects.all()
+    serializer_class = KQOfficeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['office_id']
+    search_fields = ['name', 'office_id']
+
+class KQStaffViewSet(viewsets.ModelViewSet):
+    queryset = KQStaff.objects.select_related('office').all()
+    serializer_class = KQStaffSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['staff_id', 'office']
+    search_fields = ['name', 'staff_id']
+
+class TravelAgencyViewSet(viewsets.ModelViewSet):
+    queryset = TravelAgency.objects.all()
+    serializer_class = TravelAgencySerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['iata_code']
+    search_fields = ['name', 'iata_code']
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['booking_channel', 'office_id', 'agency_iata', 'staff_id']
+    filterset_fields = ['channel_type', 'office_type', 'kq_office__office_id', 'travel_agency__iata_code', 'kq_staff__staff_id']
     search_fields = ['pnr', 'phone', 'email', 'ff_number']
     ordering_fields = ['created_at', 'pnr', 'quality_score']
     ordering = ['-created_at']
@@ -92,7 +116,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
         )
         
-        stats = bookings.values('booking_channel').annotate(
+        stats = bookings.values('channel_type', 'office_type').annotate(
             total=Count('id'),
             avg_quality=Avg(quality_calc)
         ).order_by('-total')
@@ -108,7 +132,7 @@ class BookingViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def office_stats(self, request):
         """Get performance statistics by office"""
-        bookings = self.get_queryset().exclude(office_id='')
+        bookings = self.get_queryset().filter(kq_office__isnull=False)
         
         quality_calc = (
             Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
@@ -118,7 +142,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
         )
         
-        stats = bookings.values('office_id').annotate(
+        stats = bookings.values('kq_office__office_id', 'kq_office__name').annotate(
             total=Count('id'),
             avg_quality=Avg(quality_calc)
         ).order_by('-total')[:20]
@@ -201,6 +225,28 @@ class BookingViewSet(viewsets.ModelViewSet):
                 updated_count = 0
                 
                 for _, row in df.iterrows():
+                    # Handle ForeignKey relationships
+                    kq_office = None
+                    if row.get('office_id'):
+                        kq_office, _ = KQOffice.objects.get_or_create(
+                            office_id=row.get('office_id'),
+                            defaults={'name': row.get('office_name', row.get('office_id'))}
+                        )
+                    
+                    travel_agency = None
+                    if row.get('agency_iata'):
+                        travel_agency, _ = TravelAgency.objects.get_or_create(
+                            iata_code=row.get('agency_iata'),
+                            defaults={'name': row.get('agency_name', row.get('agency_iata'))}
+                        )
+                    
+                    kq_staff = None
+                    if row.get('staff_id') and kq_office:
+                        kq_staff, _ = KQStaff.objects.get_or_create(
+                            staff_id=row.get('staff_id'),
+                            defaults={'name': row.get('staff_name', row.get('staff_id')), 'office': kq_office}
+                        )
+                    
                     booking, created = Booking.objects.update_or_create(
                         pnr=row.get('pnr', ''),
                         defaults={
@@ -210,11 +256,10 @@ class BookingViewSet(viewsets.ModelViewSet):
                             'meal_selection': row.get('meal_selection', ''),
                             'seat': row.get('seat', ''),
                             'booking_channel': row.get('booking_channel', 'web'),
-                            'office_id': row.get('office_id', ''),
-                            'agency_iata': row.get('agency_iata', ''),
-                            'agency_name': row.get('agency_name', ''),
-                            'staff_id': row.get('staff_id', ''),
-                            'staff_name': row.get('staff_name', ''),
+                            'departure_date': row.get('departure_date'),
+                            'kq_office': kq_office,
+                            'kq_staff': kq_staff,
+                            'travel_agency': travel_agency,
                         }
                     )
                     if created:

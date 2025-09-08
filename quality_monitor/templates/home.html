@@ -10,12 +10,14 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
         
         .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
-        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; padding: 0 20px; }
         .logo { font-size: 28px; font-weight: bold; color: #d32f2f; }
         
-        .nav-tabs { display: flex; gap: 10px; margin-top: 20px; }
-        .nav-tab { padding: 12px 24px; background: rgba(255,255,255,0.2); border: none; border-radius: 25px; color: white; cursor: pointer; transition: all 0.3s; font-weight: 500; }
-        .nav-tab.active, .nav-tab:hover { background: rgba(255,255,255,0.9); color: #333; transform: translateY(-2px); }
+        .nav-tabs { display: flex; gap: 15px; margin: 20px auto; max-width: 1200px; padding: 0 20px; justify-content: center; flex-wrap: wrap; }
+        .nav-tab { padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 30px; color: white; cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); position: relative; overflow: hidden; }
+        .nav-tab::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .nav-tab:hover::before { left: 100%; }
+        .nav-tab.active, .nav-tab:hover { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
         
         .filters { background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 1200px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .filter-group { display: flex; flex-direction: column; gap: 5px; }
@@ -73,45 +75,70 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <div class="logo">✈️ KQ Bookings Quality</div>
-            <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showSection('overview')">📊 Overview</button>
-                <button class="nav-tab" onclick="showSection('dashboard')">📈 Analytics</button>
-                <button class="nav-tab" onclick="showSection('contacts')">📞 Contact Issues</button>
-                <button class="nav-tab" onclick="showSection('trends')">📉 Trends</button>
-                <button class="nav-tab" onclick="showSection('export')">📤 Export</button>
-                <button class="nav-tab" onclick="window.location.href='{% url 'upload_excel' %}'">📁 Upload</button>
-            </div>
+            <div class="logo">✈️ KQ Bookings Quality Report</div>
         </div>
     </div>
 
     <div class="filters">
         <div class="filter-group">
-            <label>Booking Date From</label>
-            <input type="date" id="start_date" value="{{ request.GET.start_date }}">
+            <label>Booking Date Range</label>
+            <input type="text" id="booking_range" placeholder="mm/dd/yyyy → mm/dd/yyyy" readonly onclick="toggleDateRange('booking')" style="cursor: pointer;">
+            <div id="booking_range_picker" style="display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="date" id="start_date" value="{{ request.GET.start_date }}" onchange="updateDateRange('booking')">
+                    <span>to</span>
+                    <input type="date" id="end_date" value="{{ request.GET.end_date }}" onchange="updateDateRange('booking')">
+                    <button type="button" onclick="clearDateRange('booking')" style="padding: 4px 8px; background: #666; color: white; border: none; border-radius: 4px; font-size: 10px;">Clear</button>
+                </div>
+            </div>
         </div>
         <div class="filter-group">
-            <label>Booking Date To</label>
-            <input type="date" id="end_date" value="{{ request.GET.end_date }}">
-        </div>
-        <div class="filter-group">
-            <label>Departure Date</label>
-            <input type="date" id="departure_date" value="{{ request.GET.departure_date }}">
+            <label>Departure Date Range</label>
+            <input type="text" id="departure_range" placeholder="mm/dd/yyyy → mm/dd/yyyy" readonly onclick="toggleDateRange('departure')" style="cursor: pointer;">
+            <div id="departure_range_picker" style="display: none; position: absolute; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="date" id="departure_start" value="{{ request.GET.departure_start }}" onchange="updateDateRange('departure')">
+                    <span>to</span>
+                    <input type="date" id="departure_end" value="{{ request.GET.departure_end }}" onchange="updateDateRange('departure')">
+                    <button type="button" onclick="clearDateRange('departure')" style="padding: 4px 8px; background: #666; color: white; border: none; border-radius: 4px; font-size: 10px;">Clear</button>
+                </div>
+            </div>
         </div>
         <div class="filter-group multi-select">
-            <label>Channels</label>
-            <div class="multi-select-input" onclick="toggleDropdown('channels')">
-                <input type="text" placeholder="Select channels..." readonly>
-                <div class="multi-select-dropdown" id="channels-dropdown">
-                    {% for ch in channels %}
-                    <div class="multi-select-option" onclick="toggleOption('channels', '{{ ch }}', '{{ ch|capfirst }}')">
-                        <input type="checkbox" id="ch-{{ ch }}">
-                        <label for="ch-{{ ch }}">{{ ch|capfirst }}</label>
+            <label>Channel Type</label>
+            <div class="multi-select-input" onclick="toggleDropdown('channel_types')">
+                <input type="text" placeholder="Select channel type..." readonly>
+                <div class="multi-select-dropdown" id="channel_types-dropdown">
+                    {% for ct in channel_types %}
+                    <div class="multi-select-option" onclick="toggleOption('channel_types', '{{ ct }}', '{{ ct|capfirst }}'); updateOfficeOptions();">
+                        <input type="checkbox" id="ct-{{ ct }}">
+                        <label for="ct-{{ ct }}">{{ ct|capfirst }}</label>
                     </div>
                     {% endfor %}
                 </div>
             </div>
-            <div class="multi-select-tags" id="channels-tags"></div>
+            <div class="multi-select-tags" id="channel_types-tags"></div>
+        </div>
+        <div class="filter-group multi-select">
+            <label>Office Type</label>
+            <div class="multi-select-input" onclick="toggleDropdown('office_types')">
+                <input type="text" placeholder="Select office type..." readonly>
+                <div class="multi-select-dropdown" id="office_types-dropdown">
+                    {% for do in direct_offices %}
+                    <div class="multi-select-option direct-office" onclick="toggleOption('office_types', '{{ do }}', '{{ do|title }}')" style="display:none;">
+                        <input type="checkbox" id="do-{{ do }}">
+                        <label for="do-{{ do }}">{{ do|title }}</label>
+                    </div>
+                    {% endfor %}
+                    {% for io in indirect_offices %}
+                    <div class="multi-select-option indirect-office" onclick="toggleOption('office_types', '{{ io }}', '{{ io|title }}')" style="display:none;">
+                        <input type="checkbox" id="io-{{ io }}">
+                        <label for="io-{{ io }}">{{ io|title }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="multi-select-tags" id="office_types-tags"></div>
         </div>
         <div class="filter-group multi-select">
             <label>Offices</label>
@@ -130,6 +157,15 @@
         </div>
         <button class="filter-btn" onclick="applyFilters()">🔍 Apply Filters</button>
         <button class="filter-btn" onclick="clearFilters()" style="background: #666;">🔄 Clear</button>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showSection('overview')">📊 Overview</button>
+        <button class="nav-tab" onclick="showSection('dashboard')">📈 Analytics</button>
+        <button class="nav-tab" onclick="showSection('contacts')">📞 Contact Issues</button>
+        <button class="nav-tab" onclick="showSection('trends')">📉 Trends</button>
+        <button class="nav-tab" onclick="showSection('export')">📤 Export</button>
+        <button class="nav-tab" onclick="window.location.href='{% url 'upload_excel' %}'">📁 Upload</button>
     </div>
 
     <div class="container">
@@ -279,7 +315,23 @@
 
     <script>
         // Multi-select functionality
-        let selectedOptions = { channels: [], offices: [] };
+        let selectedOptions = { channel_types: [], office_types: [], offices: [] };
+        
+        function updateOfficeOptions() {
+            const directOffices = document.querySelectorAll('.direct-office');
+            const indirectOffices = document.querySelectorAll('.indirect-office');
+            const selectedChannelTypes = selectedOptions.channel_types;
+            
+            directOffices.forEach(el => el.style.display = 'none');
+            indirectOffices.forEach(el => el.style.display = 'none');
+            
+            if (selectedChannelTypes.includes('direct')) {
+                directOffices.forEach(el => el.style.display = 'block');
+            }
+            if (selectedChannelTypes.includes('indirect')) {
+                indirectOffices.forEach(el => el.style.display = 'block');
+            }
+        }
 
         function toggleDropdown(type) {
             const dropdown = document.getElementById(type + '-dropdown');
@@ -320,33 +372,106 @@
 
         // Navigation
         function showSection(sectionId) {
+            // Hide all sections
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            // Remove active class from all tabs
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            // Add active class to clicked tab
             event.target.classList.add('active');
         }
 
         // Filters
+        function toggleDateRange(type) {
+            const picker = document.getElementById(type + '_range_picker');
+            picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        function updateDateRange(type) {
+            const startId = type === 'booking' ? 'start_date' : 'departure_start';
+            const endId = type === 'booking' ? 'end_date' : 'departure_end';
+            const startDate = document.getElementById(startId).value;
+            const endDate = document.getElementById(endId).value;
+            const display = document.getElementById(type + '_range');
+            
+            if (startDate || endDate) {
+                const start = startDate ? new Date(startDate).toLocaleDateString() : 'Open';
+                const end = endDate ? new Date(endDate).toLocaleDateString() : 'Open';
+                display.value = `${start} → ${end}`;
+            } else {
+                display.value = '';
+            }
+        }
+        
+        function clearDateRange(type) {
+            const startId = type === 'booking' ? 'start_date' : 'departure_start';
+            const endId = type === 'booking' ? 'end_date' : 'departure_end';
+            document.getElementById(startId).value = '';
+            document.getElementById(endId).value = '';
+            document.getElementById(type + '_range').value = '';
+            document.getElementById(type + '_range_picker').style.display = 'none';
+        }
+
         function applyFilters() {
             const params = new URLSearchParams();
             const startDate = document.getElementById('start_date').value;
             const endDate = document.getElementById('end_date').value;
-            const departureDate = document.getElementById('departure_date').value;
+            const departureStart = document.getElementById('departure_start').value;
+            const departureEnd = document.getElementById('departure_end').value;
             
+            // Validate date ranges
+            if (startDate && endDate && startDate > endDate) {
+                alert('Start date must be less than or equal to end date');
+                return;
+            }
+            if (departureStart && departureEnd && departureStart > departureEnd) {
+                alert('Departure start date must be less than or equal to departure end date');
+                return;
+            }
+            
+            // Only add non-empty parameters (open filter when no date selected)
             if (startDate) params.append('start_date', startDate);
             if (endDate) params.append('end_date', endDate);
-            if (departureDate) params.append('departure_date', departureDate);
+            if (departureStart) params.append('departure_start', departureStart);
+            if (departureEnd) params.append('departure_end', departureEnd);
             
-            selectedOptions.channels.forEach(ch => params.append('channels', ch));
+            selectedOptions.channel_types.forEach(ct => params.append('channel_types', ct));
+            selectedOptions.office_types.forEach(ot => params.append('office_types', ot));
             selectedOptions.offices.forEach(off => params.append('offices', off));
             
             window.location.href = '?' + params.toString();
         }
 
+        function validateDateRange(startId, endId) {
+            const startDate = document.getElementById(startId).value;
+            const endDate = document.getElementById(endId).value;
+            
+            if (startDate && endDate && startDate > endDate) {
+                document.getElementById(endId).value = startDate;
+                alert('End date adjusted to match start date');
+            }
+        }
+
         function clearFilters() {
-            selectedOptions = { channels: [], offices: [] };
+            selectedOptions = { channel_types: [], office_types: [], offices: [] };
+            clearDateRange('booking');
+            clearDateRange('departure');
+            document.getElementById('channel_types-tags').innerHTML = '';
+            document.getElementById('office_types-tags').innerHTML = '';
+            document.getElementById('offices-tags').innerHTML = '';
+            document.querySelectorAll('.multi-select-option input[type="checkbox"]').forEach(cb => cb.checked = false);
             window.location.href = '/';
         }
+        
+        // Initialize date ranges on page load
+        window.addEventListener('load', function() {
+            updateDateRange('booking');
+            updateDateRange('departure');
+        });
 
         function exportData(type) {
             const params = new URLSearchParams(window.location.search);
@@ -354,12 +479,41 @@
             window.location.href = '{% url "export_pnrs_to_excel" %}?' + params.toString();
         }
 
-        // Charts
-        const trendsData = {{ trends|safe }};
-        const channelStats = {{ channel_stats|safe }};
-        const officeStats = {{ office_stats|safe }};
-        const contactFailures = {{ contact_failures|safe }};
-        const officeContactFailures = {{ office_contact_failures|safe }};
+        // Initialize selected options from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.getAll('channel_types').forEach(ct => {
+            selectedOptions.channel_types.push(ct);
+            const checkbox = document.getElementById('ct-' + ct);
+            if (checkbox) {
+                checkbox.checked = true;
+                addTag('channel_types', ct, ct.charAt(0).toUpperCase() + ct.slice(1));
+            }
+        });
+        urlParams.getAll('office_types').forEach(ot => {
+            selectedOptions.office_types.push(ot);
+            const checkbox = document.getElementById('do-' + ot) || document.getElementById('io-' + ot);
+            if (checkbox) {
+                checkbox.checked = true;
+                addTag('office_types', ot, ot.charAt(0).toUpperCase() + ot.slice(1));
+            }
+        });
+        updateOfficeOptions();
+        urlParams.getAll('offices').forEach(off => {
+            selectedOptions.offices.push(off);
+            const checkbox = document.getElementById('off-' + off);
+            if (checkbox) {
+                checkbox.checked = true;
+                const label = checkbox.nextElementSibling.textContent;
+                addTag('offices', off, label);
+            }
+        });
+
+        // Charts data with fallbacks
+        const trendsData = {{ trends|safe }} || [];
+        const channelStats = [{% for stat in channel_stats %}{'booking_channel': '{{ stat.booking_channel }}', 'total': {{ stat.total }}, 'avg_quality': {{ stat.avg_quality|default:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const officeStats = [{% for stat in office_stats %}{'kq_office__name': '{{ stat.kq_office__name|default:stat.kq_office__office_id }}', 'total': {{ stat.total }}, 'avg_quality': {{ stat.avg_quality|default:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const contactFailures = [{% for fail in contact_failures %}{'booking_channel': '{{ fail.booking_channel }}', 'failure_count': {{ fail.failure_count }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        const officeContactFailures = [{% for fail in office_contact_failures %}{'kq_office__name': '{{ fail.kq_office__name }}', 'failure_count': {{ fail.failure_count }}}{% if not forloop.last %},{% endif %}{% endfor %}];
 
         // Quality Distribution Chart
         const qualityCtx = document.getElementById('qualityChart').getContext('2d');
@@ -384,41 +538,49 @@
 
         // Channel Volume Chart
         const channelVolumeCtx = document.getElementById('channelVolumeChart').getContext('2d');
-        new Chart(channelVolumeCtx, {
-            type: 'bar',
-            data: {
-                labels: channelStats.map(s => s.booking_channel.charAt(0).toUpperCase() + s.booking_channel.slice(1)),
-                datasets: [{
-                    label: 'Booking Volume',
-                    data: channelStats.map(s => s.total),
-                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        if (channelStats && channelStats.length > 0) {
+            new Chart(channelVolumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: channelStats.map(s => s.booking_channel.charAt(0).toUpperCase() + s.booking_channel.slice(1)),
+                    datasets: [{
+                        label: 'Booking Volume',
+                        data: channelStats.map(s => s.total),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        } else {
+            channelVolumeCtx.canvas.parentElement.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No data available</p>';
+        }
 
         // Office Volume Chart
         const officeVolumeCtx = document.getElementById('officeVolumeChart').getContext('2d');
-        new Chart(officeVolumeCtx, {
-            type: 'bar',
-            data: {
-                labels: officeStats.map(s => s.kq_office__name || s.kq_office__office_id),
-                datasets: [{
-                    label: 'Booking Volume',
-                    data: officeStats.map(s => s.total),
-                    backgroundColor: '#667eea'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        if (officeStats && officeStats.length > 0) {
+            new Chart(officeVolumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: officeStats.map(s => s.kq_office__name),
+                    datasets: [{
+                        label: 'Booking Volume',
+                        data: officeStats.map(s => s.total),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        } else {
+            officeVolumeCtx.canvas.parentElement.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No office data available</p>';
+        }
 
         // Channel Quality Chart
         const channelQualityCtx = document.getElementById('channelQualityChart').getContext('2d');
@@ -466,22 +628,26 @@
 
         // Contact Failure Chart
         const contactFailureCtx = document.getElementById('contactFailureChart').getContext('2d');
-        new Chart(contactFailureCtx, {
-            type: 'bar',
-            data: {
-                labels: contactFailures.map(f => f.booking_channel.charAt(0).toUpperCase() + f.booking_channel.slice(1)),
-                datasets: [{
-                    label: 'Contact Failures',
-                    data: contactFailures.map(f => f.failure_count),
-                    backgroundColor: '#f44336'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        if (contactFailures && contactFailures.length > 0) {
+            new Chart(contactFailureCtx, {
+                type: 'bar',
+                data: {
+                    labels: contactFailures.map(f => f.booking_channel.charAt(0).toUpperCase() + f.booking_channel.slice(1)),
+                    datasets: [{
+                        label: 'Contact Failures',
+                        data: contactFailures.map(f => f.failure_count),
+                        backgroundColor: '#f44336'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        } else {
+            contactFailureCtx.canvas.parentElement.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No contact failure data</p>';
+        }
 
         // Office Failure Chart
         const officeFailureCtx = document.getElementById('officeFailureChart').getContext('2d');
@@ -522,6 +688,12 @@
                 scales: { y: { beginAtZero: true, max: 100 } }
             }
         });
+
+        // Debug data
+        console.log('Channels:', [{% for ch in channels %}'{{ ch }}'{% if not forloop.last %},{% endif %}{% endfor %}]);
+        console.log('Offices:', [{% for office in offices %}{'id': '{{ office.office_id }}', 'name': '{{ office.name }}'}{% if not forloop.last %},{% endif %}{% endfor %}]);
+        console.log('Channel Stats:', channelStats);
+        console.log('Office Stats:', officeStats);
 
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
