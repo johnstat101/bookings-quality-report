@@ -97,7 +97,7 @@
         .score-bar.good { background: linear-gradient(to top, #8bc34a, #4caf50); }
         .score-bar.excellent { background: linear-gradient(to top, #4caf50, #2e7d32); }
         .bar-label { position: absolute; bottom: -25px; font-size: 11px; font-weight: 600; color: #666; }
-        .bar-count { color: white; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+        .bar-count { color: white; font-weight: bold; font-size: 12px; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); line-height: 1.2; }
         
         .text-success { color: #4caf50; font-weight: bold; }
         .text-warning { color: #ff9800; font-weight: bold; }
@@ -332,28 +332,31 @@
         <div id="quality" class="content-section">
             <div style="background: white; padding: 20px; border-radius: 15px;">
                 <h3>📈 Quality Score Distribution</h3>
-                <div class="quality-histogram">
-                    <div class="score-bar critical" style="height: 15%" title="0-20% Quality">
-                        <span class="bar-label">0-20</span>
-                        <span class="bar-count">{{ quality_ranges.0 }}</span>
-                    </div>
-                    <div class="score-bar poor" style="height: 25%" title="21-40% Quality">
-                        <span class="bar-label">21-40</span>
-                        <span class="bar-count">{{ quality_ranges.1 }}</span>
-                    </div>
-                    <div class="score-bar average" style="height: 35%" title="41-60% Quality">
-                        <span class="bar-label">41-60</span>
-                        <span class="bar-count">{{ quality_ranges.2 }}</span>
-                    </div>
-                    <div class="score-bar good" style="height: 60%" title="61-80% Quality">
-                        <span class="bar-label">61-80</span>
-                        <span class="bar-count">{{ quality_ranges.3 }}</span>
-                    </div>
-                    <div class="score-bar excellent" style="height: 80%" title="81-100% Quality">
-                        <span class="bar-label">81-100</span>
-                        <span class="bar-count">{{ quality_ranges.4 }}</span>
-                    </div>
+                <div class="quality-histogram" id="qualityHistogram">
+                    <!-- Bars will be dynamically sized by JavaScript -->
                 </div>
+                <script>
+                    // Calculate proportional bar heights
+                    const qualityData = [{{ quality_ranges.0 }}, {{ quality_ranges.1 }}, {{ quality_ranges.2 }}, {{ quality_ranges.3 }}, {{ quality_ranges.4 }}];
+                    const maxCount = Math.max(...qualityData);
+                    const labels = ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'];
+                    const classes = ['critical', 'poor', 'average', 'good', 'excellent'];
+                    const titles = ['0-20% Quality', '21-40% Quality', '41-60% Quality', '61-80% Quality', '81-100% Quality'];
+                    
+                    const histogram = document.getElementById('qualityHistogram');
+                    qualityData.forEach((count, index) => {
+                        const height = maxCount > 0 ? Math.max((count / maxCount) * 100, 15) : 15; // Min 15% height for visibility
+                        const bar = document.createElement('div');
+                        bar.className = `score-bar ${classes[index]}`;
+                        bar.style.height = height + '%';
+                        bar.title = titles[index];
+                        bar.innerHTML = `
+                            <span class="bar-label">${labels[index]}</span>
+                            <span class="bar-count">${count}<br><small>PNRs</small></span>
+                        `;
+                        histogram.appendChild(bar);
+                    });
+                </script>
             </div>
         </div>
 

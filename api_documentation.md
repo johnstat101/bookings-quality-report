@@ -1,166 +1,105 @@
-# KQ Bookings Quality Report - REST API Documentation
+# KQ Bookings Quality Report - API Documentation
 
 ## Base URL
 ```
-http://localhost:8000/api/v1/
+http://localhost:8000/api/
 ```
 
-## Authentication
-- Session Authentication (for web interface)
-- Token Authentication (for API clients)
+## Available Endpoints
 
-## Endpoints
-
-### 1. Bookings CRUD Operations
-
-#### List Bookings
+### 1. Channel Groupings
 ```http
-GET /api/v1/bookings/
+GET /api/channel-groupings/
 ```
+**Description:** Get channel groupings for filtering (Direct vs Indirect channels)
+
+**Response:**
+```json
+{
+    "groupings": [
+        {
+            "id": "direct",
+            "label": "Direct Channels",
+            "channels": [
+                {"id": "website", "label": "Website"},
+                {"id": "mobile", "label": "Mobile"},
+                {"id": "ato", "label": "ATO"},
+                {"id": "cto", "label": "CTO"},
+                {"id": "cec", "label": "Contact Center (CEC)"},
+                {"id": "kq_gsa", "label": "KQ GSA"}
+            ]
+        },
+        {
+            "id": "indirect",
+            "label": "Indirect Channels",
+            "channels": [
+                {"id": "travel_agents", "label": "Travel Agents"},
+                {"id": "ndc", "label": "NDC"},
+                {"id": "msafiri_connect", "label": "Msafiri Connect"}
+            ]
+        }
+    ]
+}
+```
+
+### 2. Offices by Channels
+```http
+GET /api/offices-by-channels/?channels=website&channels=mobile
+```
+**Description:** Get available offices for selected channels
+
 **Query Parameters:**
-- `page` - Page number (default: 1)
-- `page_size` - Items per page (default: 50)
-- `booking_channel` - Filter by channel (web, mobile, office, agency, ndc)
-- `office_id` - Filter by office ID
-- `agency_iata` - Filter by agency IATA code
-- `staff_id` - Filter by staff ID
-- `start_date` - Filter from date (YYYY-MM-DD)
-- `end_date` - Filter to date (YYYY-MM-DD)
-- `search` - Search in PNR, phone, email, FF number
-- `ordering` - Sort by field (created_at, pnr, -created_at)
+- `channels` - Array of channel IDs
 
-#### Get Single Booking
-```http
-GET /api/v1/bookings/{id}/
-```
-
-#### Create Booking
-```http
-POST /api/v1/bookings/
-Content-Type: application/json
-
-{
-    "pnr": "ABC123",
-    "phone": "123456789",
-    "email": "user@example.com",
-    "ff_number": "FF123456",
-    "meal_selection": "Vegetarian",
-    "seat": "12A",
-    "booking_channel": "web",
-    "office_id": "NBO001",
-    "agency_iata": "12345678",
-    "staff_id": "STAFF001"
-}
-```
-
-#### Update Booking
-```http
-PUT /api/v1/bookings/{id}/
-PATCH /api/v1/bookings/{id}/
-```
-
-#### Delete Booking
-```http
-DELETE /api/v1/bookings/{id}/
-```
-
-### 2. Analytics Endpoints
-
-#### Quality Statistics
-```http
-GET /api/v1/bookings/quality_stats/
-```
 **Response:**
 ```json
 {
-    "total_pnrs": 1500,
-    "with_contacts": 1200,
-    "without_contacts": 300,
+    "offices": [
+        {"office_id": "WEB001", "name": "Website Office"},
+        {"office_id": "MOB001", "name": "Mobile App Office"}
+    ]
+}
+```
+
+### 3. Channel & Office Statistics
+```http
+GET /api/channel-office-stats/?channels=website&offices=WEB001
+```
+**Description:** Get booking statistics for selected channels and offices
+
+**Query Parameters:**
+- `channels` - Array of channel IDs (optional)
+- `offices` - Array of office IDs (optional)
+
+**Response:**
+```json
+{
+    "total_bookings": 1500,
     "avg_quality": 75.5,
-    "contact_percentage": 80.0
+    "with_contacts": 1200
 }
 ```
 
-#### Channel Performance
+### 4. Quality Trends (from views.py)
 ```http
-GET /api/v1/bookings/channel_stats/
+GET /api/trends/?days=30
 ```
-**Response:**
-```json
-[
-    {
-        "booking_channel": "web",
-        "total": 800,
-        "avg_quality": 78.5,
-        "percentage": 53.3
-    },
-    {
-        "booking_channel": "mobile",
-        "total": 400,
-        "avg_quality": 72.1,
-        "percentage": 26.7
-    }
-]
-```
+**Description:** Get quality trends over time
 
-#### Office Performance
-```http
-GET /api/v1/bookings/office_stats/
-```
+**Query Parameters:**
+- `days` - Number of days (default: 30)
+- All filter parameters from main view (channels, offices, dates)
 
-#### Quality Trends
-```http
-GET /api/v1/bookings/quality_trends/?days=30
-```
-**Response:**
-```json
-[
-    {
-        "date": "2024-01-01",
-        "quality": 75.5,
-        "count": 45
-    },
-    {
-        "date": "2024-01-02",
-        "quality": 78.2,
-        "count": 52
-    }
-]
-```
-
-### 3. Filtered Data Endpoints
-
-#### Bookings Without Contacts
-```http
-GET /api/v1/bookings/no_contacts/
-```
-
-#### Low Quality Bookings (<60%)
-```http
-GET /api/v1/bookings/low_quality/
-```
-
-#### High Quality Bookings (≥80%)
-```http
-GET /api/v1/bookings/high_quality/
-```
-
-### 4. Bulk Operations
-
-#### Bulk Upload from Excel
-```http
-POST /api/v1/bookings/bulk_upload/
-Content-Type: multipart/form-data
-
-file: [Excel file]
-```
 **Response:**
 ```json
 {
-    "message": "Upload successful",
-    "created": 150,
-    "updated": 50,
-    "total": 200
+    "trends": [
+        {
+            "date": "2024-01-01",
+            "quality": 75.5,
+            "count": 45
+        }
+    ]
 }
 ```
 
@@ -170,48 +109,55 @@ file: [Excel file]
 ```python
 import requests
 
-# Get quality statistics
-response = requests.get('http://localhost:8000/api/v1/bookings/quality_stats/')
+# Get channel groupings
+response = requests.get('http://localhost:8000/api/channel-groupings/')
+groupings = response.json()
+print(f"Available channels: {groupings['groupings']}")
+
+# Get offices for specific channels
+params = {'channels': ['website', 'mobile']}
+response = requests.get('http://localhost:8000/api/offices-by-channels/', params=params)
+offices = response.json()
+print(f"Available offices: {offices['offices']}")
+
+# Get statistics
+params = {'channels': ['website'], 'offices': ['WEB001']}
+response = requests.get('http://localhost:8000/api/channel-office-stats/', params=params)
 stats = response.json()
 print(f"Average Quality: {stats['avg_quality']}%")
-
-# Create a booking
-booking_data = {
-    "pnr": "KQ123456",
-    "phone": "+254700123456",
-    "email": "passenger@example.com",
-    "booking_channel": "web"
-}
-response = requests.post('http://localhost:8000/api/v1/bookings/', json=booking_data)
 ```
 
 ### JavaScript (fetch)
 ```javascript
-// Get channel statistics
-fetch('http://localhost:8000/api/v1/bookings/channel_stats/')
+// Get channel groupings
+fetch('http://localhost:8000/api/channel-groupings/')
     .then(response => response.json())
-    .then(data => console.log(data));
+    .then(data => console.log(data.groupings));
 
-// Filter bookings by date range
-const params = new URLSearchParams({
-    start_date: '2024-01-01',
-    end_date: '2024-01-31',
-    booking_channel: 'web'
-});
-fetch(`http://localhost:8000/api/v1/bookings/?${params}`)
+// Get offices for selected channels
+const params = new URLSearchParams();
+params.append('channels', 'website');
+params.append('channels', 'mobile');
+fetch(`http://localhost:8000/api/offices-by-channels/?${params}`)
     .then(response => response.json())
-    .then(data => console.log(data));
+    .then(data => console.log(data.offices));
+
+// Get quality trends
+fetch('http://localhost:8000/api/trends/?days=7')
+    .then(response => response.json())
+    .then(data => console.log(data.trends));
 ```
 
 ### cURL
 ```bash
-# Get quality trends for last 7 days
-curl "http://localhost:8000/api/v1/bookings/quality_trends/?days=7"
+# Get channel groupings
+curl "http://localhost:8000/api/channel-groupings/"
 
-# Create a new booking
-curl -X POST "http://localhost:8000/api/v1/bookings/" \
-     -H "Content-Type: application/json" \
-     -d '{"pnr": "TEST123", "phone": "123456", "booking_channel": "web"}'
+# Get offices for website channel
+curl "http://localhost:8000/api/offices-by-channels/?channels=website"
+
+# Get statistics with filters
+curl "http://localhost:8000/api/channel-office-stats/?channels=website&offices=WEB001"
 ```
 
 ## Error Responses
