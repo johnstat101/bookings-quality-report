@@ -41,22 +41,24 @@ def get_filtered_bookings(request):
     
     return bookings
 
+def get_quality_score_calc():
+    """Reusable quality score calculation"""
+    return (
+        Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
+        Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
+        Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
+        Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
+        Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
+    )
+
 def home_view(request):
     bookings = get_filtered_bookings(request)
+    quality_score_calc = get_quality_score_calc()
     
     total_pnrs = bookings.count()
     with_contacts = bookings.filter(Q(phone__isnull=False, phone__gt='') | Q(email__isnull=False, email__gt='')).count()
     
-    quality_calc = bookings.aggregate(
-        avg_score=Avg(
-            Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
-            Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
-            Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
-            Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
-            Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
-        )
-    )
-    avg_quality = quality_calc['avg_score'] or 0
+    avg_quality = bookings.aggregate(avg_score=Avg(quality_score_calc))['avg_score'] or 0
     
     # Get filter options - channel groupings
     channel_groupings = [
@@ -86,14 +88,7 @@ def home_view(request):
         failure_count=Count('id')
     ).order_by('-failure_count')[:10]
     
-    # Dashboard data
-    quality_score_calc = (
-        Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
-    )
+    # Dashboard data using reusable calculation
     
     channel_stats = bookings.values('channel').annotate(
         total=Count('id'),
@@ -171,6 +166,7 @@ def home_view(request):
         'contact_failures': contact_failures,
         'office_contact_failures': office_contact_failures,
         'pnrs_no_contacts': pnrs_no_contacts,
+        'bookings': bookings,
         'trends': json.dumps(trends[::-1]),
         'office_channels': json.dumps(list(Booking.OFFICE_CHANNELS)),
         'staff_channels': json.dumps(list(Booking.STAFF_CHANNELS)),
@@ -225,47 +221,7 @@ def upload_excel(request):
         return redirect('home')
     return render(request, 'upload.html')
 
-def dashboard(request):
-    quality_score_calc = (
-        Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
-    )
-    
-    channel_stats = Booking.objects.values('channel').annotate(
-        total=Count('id'),
-        avg_quality=Avg(quality_score_calc)
-    ).order_by('-total')
-    
-    office_stats = Booking.objects.filter(kq_office__isnull=False).values(
-        'kq_office__name', 'kq_office__office_id'
-    ).annotate(
-        total=Count('id'),
-        avg_quality=Avg(quality_score_calc)
-    ).order_by('-total')[:10]
-    
-    context = {
-        'channel_stats': channel_stats,
-        'office_stats': office_stats,
-    }
-    return render(request, 'dashboard.html', context)
-
-def contacts_pie_chart(request):
-    total_pnrs = Booking.objects.count()
-    with_contacts = Booking.objects.filter(Q(phone__isnull=False, phone__gt='') | Q(email__isnull=False, email__gt='')).count()
-    without_contacts = total_pnrs - with_contacts
-    context = {
-        'with_contacts': with_contacts,
-        'without_contacts': without_contacts,
-        'total_pnrs': total_pnrs,
-    }
-    return render(request, 'contacts_pie_chart.html', context)
-
-def pnrs_without_contacts(request):
-    pnrs = Booking.objects.filter(phone='', email='')
-    return render(request, 'pnrs_without_contacts.html', {'pnrs': pnrs})
+# Removed redundant views - functionality moved to home_view tabs
 
 def export_pnrs_to_excel(request):
     try:
@@ -316,14 +272,7 @@ def export_pnrs_to_excel(request):
 def api_quality_trends(request):
     bookings = get_filtered_bookings(request)
     days = int(request.GET.get('days', 30))
-    
-    quality_calc = (
-        Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
-    )
+    quality_calc = get_quality_score_calc()
     
     trends = []
     for i in range(days):
