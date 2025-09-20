@@ -535,3 +535,17 @@ INFO 2025-09-20 18:49:11,918 autoreload 21088 18120 Watching for file changes wi
 WARNING 2025-09-20 18:54:15,899 log 21088 13716 Not Found: /favicon.ico
 INFO 2025-09-20 22:14:49,034 autoreload 21088 18120 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
 INFO 2025-09-20 22:14:56,465 autoreload 17336 22624 Watching for file changes with StatReloader
+WARNING 2025-09-20 23:25:43,705 log 17336 6324 Not Found: /api/detailed-pnrs/
+WARNING 2025-09-20 23:25:50,749 log 17336 6324 Not Found: /api/detailed-pnrs/
+WARNING 2025-09-20 23:26:07,588 log 17336 20700 Not Found: /api/detailed-pnrs/
+WARNING 2025-09-20 23:26:16,851 log 17336 23060 Not Found: /api/detailed-pnrs/
+WARNING 2025-09-20 23:26:22,008 log 17336 23060 Not Found: /api/detailed-pnrs/
+WARNING 2025-09-20 23:26:30,178 log 17336 23624 Not Found: /api/detailed-pnrs/
+INFO 2025-09-20 23:30:44,301 autoreload 17336 22624 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\urls.py changed, reloading.
+INFO 2025-09-20 23:30:56,872 autoreload 2920 21728 Watching for file changes with StatReloader
+INFO 2025-09-20 23:31:31,608 autoreload 2920 21728 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 23:31:37,658 autoreload 19500 6060 Watching for file changes with StatReloader
+INFO 2025-09-20 23:32:00,162 autoreload 19500 6060 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\urls.py changed, reloading.
+INFO 2025-09-20 23:32:06,783 autoreload 20616 18092 Watching for file changes with StatReloader
+ERROR 2025-09-20 23:33:27,399 log 20616 21640 Internal Server Error: /export/
+ERROR 2025-09-20 23:34:26,936 log 20616 4724 Internal Server Error: /export/

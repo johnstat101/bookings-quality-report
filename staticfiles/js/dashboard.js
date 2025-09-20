@@ -42,7 +42,7 @@ function initDashboard(data) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    cutout: '50%',
+                    cutout: '65%',
                     plugins: {
                         legend: { 
                             display: true,
@@ -263,6 +263,16 @@ function initDashboard(data) {
                     },
                     plugins: {
                         legend: { display: false },
+                        title: {
+                            display: true,
+                            text: '🏢 Office Performance Spotlight: Top 15 by Volume',
+                            align: 'start',
+                            font: {
+                                size: 18,
+                                weight: 'bold',
+                            },
+                            padding: { top: 10, bottom: 20 }
+                        },
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.8)',
                             titleColor: '#fff',
@@ -780,6 +790,109 @@ function initDashboard(data) {
                     })
                     .forEach(tr => tbody.appendChild(tr));
             });
+        });
+
+        // --- MODAL FOR DETAILED DATA ---
+        const modal = getElement('data-modal');
+        const modalTitle = getElement('modal-title');
+        const modalTableHead = getElement('modal-table')?.querySelector('thead tr');
+        const modalTableBody = getElement('modal-table-body');
+        const modalExportBtn = getElement('modal-export-btn');
+
+        // Function to open the modal and fetch data
+        async function openDataModal(metric, title) {
+            if (!modal || !modalTitle || !modalTableBody || !modalTableHead) return;
+
+            modalTitle.textContent = title;
+            modalTableBody.innerHTML = '<tr><td colspan="5">Loading data...</td></tr>';
+            modal.style.display = 'flex';
+
+            try {
+                const params = new URLSearchParams(window.location.search);
+                params.set('metric', metric);
+                const response = await fetch(`/api/detailed-pnrs/?${params.toString()}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const detailedData = await response.json();
+
+                // Populate table
+                modalTableHead.innerHTML = `
+                    <th>PNR</th>
+                    <th class="sortable" data-column-index="1">Office ID</th>
+                    <th>Agent ID</th>
+                    <th>Contact Type</th>
+                    <th>Contact Detail</th>
+                `;
+
+                modalTableBody.innerHTML = ''; // Clear loading message
+                if (detailedData.pnrs && detailedData.pnrs.length > 0) {
+                    detailedData.pnrs.forEach(pnr => {
+                        const row = createElement('tr');
+                        row.innerHTML = `
+                            <td>${pnr.control_number || '-'}</td>
+                            <td>${pnr.office_id || '-'}</td>
+                            <td>${pnr.agent || '-'}</td>
+                            <td>${pnr.contact_type || '-'}</td>
+                            <td>${pnr.contact_detail || '-'}</td>
+                        `;
+                        modalTableBody.appendChild(row);
+                    });
+                } else {
+                    modalTableBody.innerHTML = '<tr><td colspan="5">No data available for this metric.</td></tr>';
+                }
+
+                // Add sorting to the new sortable header
+                modalTableHead.querySelector('.sortable').addEventListener('click', handleSort);
+
+            } catch (error) {
+                console.error('Error fetching detailed data:', error);
+                modalTableBody.innerHTML = `<tr><td colspan="5">Error loading data.</td></tr>`;
+            }
+        }
+
+        // Sorting handler for modal table
+        function handleSort(e) {
+            const headerCell = e.currentTarget;
+            const table = headerCell.closest('table');
+            const tbody = table.querySelector('tbody');
+            const headerIndex = parseInt(headerCell.dataset.columnIndex);
+            const isAscending = headerCell.classList.contains('sort-asc');
+
+            table.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+            headerCell.classList.toggle('sort-asc', !isAscending);
+            headerCell.classList.toggle('sort-desc', isAscending);
+
+            Array.from(tbody.querySelectorAll('tr'))
+                .sort((a, b) => {
+                    const aVal = a.querySelector(`td:nth-child(${headerIndex + 1})`).textContent.trim();
+                    const bVal = b.querySelector(`td:nth-child(${headerIndex + 1})`).textContent.trim();
+                    return (aVal > bVal ? 1 : -1) * (isAscending ? -1 : 1);
+                })
+                .forEach(tr => tbody.appendChild(tr));
+        }
+
+        // Add click listeners to the overview cards
+        getElements('.clickable-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const metric = card.dataset.metric;
+                const title = card.querySelector('.card-title').textContent;
+                if (metric) {
+                    openDataModal(metric, `Details for: ${title}`);
+                }
+            });
+        });
+
+        // Close modal logic
+        getElement('modal-close-btn')?.addEventListener('click', () => modal.style.display = 'none');
+        modal?.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Export button logic
+        modalExportBtn?.addEventListener('click', () => {
+            const params = new URLSearchParams(window.location.search);
+            const metric = modalTitle.textContent.includes('Total') ? 'all' : modalTitle.textContent.split(': ')[1].toLowerCase().replace(/ /g, '_');
+            params.set('type', metric);
+            window.location.href = `${data.export_url}?${params.toString()}`;
         });
     });
 }

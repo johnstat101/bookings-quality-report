@@ -485,3 +485,54 @@ def api_offices_by_delivery_systems(request):
     offices_from_pnr = pnrs.values('office_id').distinct().order_by('office_id')
     offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in offices_from_pnr if o['office_id']]
     return JsonResponse({'offices': offices})
+
+def api_detailed_pnrs(request):
+    """
+    API endpoint to fetch detailed PNR lists for modal views.
+    """
+    metric = request.GET.get('metric')
+    if not metric:
+        return JsonResponse({'error': 'Metric not specified'}, status=400)
+
+    pnrs = get_filtered_pnrs(request)
+
+    # Apply metric-specific filtering
+    if metric == 'total_pnrs':
+        # No additional filtering needed, but we might want to limit the initial list
+        pass
+    elif metric == 'reachable_pnrs':
+        pnrs = pnrs.filter(
+            Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') |
+            Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+        ).distinct()
+    elif metric == 'missing_contacts':
+        pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count=0)
+    elif metric == 'wrong_format_contacts':
+        pnrs = pnrs.filter(
+            Q(contacts__contact_detail__isnull=False) & 
+            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') & 
+            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+        ).distinct()
+    elif metric == 'wrongly_placed_contacts':
+        pnrs = pnrs.filter(
+            (Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES)) |
+            (Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES))
+        ).distinct()
+    else:
+        return JsonResponse({'error': 'Invalid metric'}, status=400)
+
+    # Limit results for performance and select related data
+    detailed_pnrs = pnrs.order_by('-creation_date').prefetch_related('contacts')[:200]
+
+    pnr_list = []
+    for pnr in detailed_pnrs:
+        contact = pnr.contacts.first()
+        pnr_list.append({
+            'control_number': pnr.control_number,
+            'office_id': pnr.office_id,
+            'agent': pnr.agent,
+            'contact_type': contact.contact_type if contact else 'N/A',
+            'contact_detail': contact.contact_detail if contact else 'N/A',
+        })
+
+    return JsonResponse({'pnrs': pnr_list})

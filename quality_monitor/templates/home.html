@@ -126,7 +126,7 @@
         <!-- Overview Section -->
         <div id="overview" class="content-section active">
             <div class="enhanced-stats-grid">
-                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Total PNRs Statistics">
+                <div class="enhanced-card card-overview clickable-card" data-metric="total_pnrs" tabindex="0" role="article" aria-label="Total PNRs Statistics">
                     <div class="card-header">
                         <div class="card-icon animated-icon info-gradient">📊</div>
                         <div class="card-badge">Primary</div>
@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Reachable PNRs Statistics">
+                <div class="enhanced-card card-overview clickable-card" data-metric="reachable_pnrs" tabindex="0" role="article" aria-label="Reachable PNRs Statistics">
                     <div class="card-header">
                         <div class="card-icon animated-icon success-gradient">📞</div>
                         <div class="card-badge">Contact</div>
@@ -180,7 +180,7 @@
                     </div>
                 </div>
 
-                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Missing Contacts Statistics">
+                <div class="enhanced-card card-overview clickable-card" data-metric="missing_contacts" tabindex="0" role="article" aria-label="Missing Contacts Statistics">
                     <div class="card-header">
                         <div class="card-icon animated-icon danger-gradient">❌</div>
                         <div class="card-badge">Alert</div>
@@ -197,7 +197,7 @@
                     </div>
                 </div>
 
-                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Misplaced Contacts Statistics">
+                <div class="enhanced-card card-overview clickable-card" data-metric="wrongly_placed_contacts" tabindex="0" role="article" aria-label="Misplaced Contacts Statistics">
                     <div class="card-header">
                         <div class="card-icon animated-icon warning-gradient">🔄</div>
                         <div class="card-badge">Data Issue</div>
@@ -214,7 +214,7 @@
                     </div>
                 </div>
 
-                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Wrong Format Contacts Statistics">
+                <div class="enhanced-card card-overview clickable-card" data-metric="wrong_format_contacts" tabindex="0" role="article" aria-label="Wrong Format Contacts Statistics">
                     <div class="card-header">
                         <div class="card-icon animated-icon danger-gradient">✍️</div>
                         <div class="card-badge">Format Error</div>
@@ -301,23 +301,23 @@
             </div>
             <div class="elements-grid" id="elements-grid">
                 <div class="element-chart">
-                    <canvas id="emailChart" width="220" height="220"></canvas>
+                    <canvas id="emailChart" width="250" height="250"></canvas>
                     <div class="element-label">📧 Email</div>
                 </div>
                 <div class="element-chart">
-                    <canvas id="phoneChart" width="220" height="220"></canvas>
+                    <canvas id="phoneChart" width="250" height="250"></canvas>
                     <div class="element-label">📞 Phone</div>
                 </div>
                 <div class="element-chart">
-                    <canvas id="ffChart" width="220" height="220"></canvas>
+                    <canvas id="ffChart" width="250" height="250"></canvas>
                     <div class="element-label">✈️ FF#</div>
                 </div>
                 <div class="element-chart">
-                    <canvas id="mealChart" width="220" height="220"></canvas>
+                    <canvas id="mealChart" width="250" height="250"></canvas>
                     <div class="element-label">🍽️ Meal</div>
                 </div>
                 <div class="element-chart">
-                    <canvas id="seatChart" width="220" height="220"></canvas>
+                    <canvas id="seatChart" width="250" height="250"></canvas>
                     <div class="element-label">💺 Seat</div>
                 </div>
             </div>
@@ -343,7 +343,7 @@
             </div>
             <div class="enhanced-card">
                 <div class="office-chart-container">
-                    <canvas id="officePerformanceChart" height="400"></canvas>
+                    <canvas id="officePerformanceChart" height="350"></canvas>
                 </div>
             </div>
             <div class="enhanced-card table-card">
@@ -534,6 +534,33 @@
                         <span class="metric-value">✅ Excellent</span>
                     </div>
                     <a href="#" class="export-link card-button" data-export-type="high_quality">Download High Quality</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Detailed Data -->
+    <div id="data-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Detailed Data</h3>
+                <button id="modal-close-btn" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-controls">
+                    <button id="modal-export-btn" class="filter-btn">📤 Export to Excel</button>
+                </div>
+                <div class="modal-table-container">
+                    <table class="data-table" id="modal-table">
+                        <thead>
+                            <tr>
+                                <!-- Headers will be populated by JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="modal-table-body">
+                            <!-- Rows will be populated by JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
