@@ -1,49 +1,83 @@
 # Bookings Quality Report
 
 ## Overview
-Bookings Quality Report is a project designed to monitor and improve the quality of airline bookings. The goal is to ensure that all Passenger Name Records (PNRs) contain the necessary booking elements for better customer service across all touchpoints.
+The Bookings Quality Report is a comprehensive web application designed to monitor, analyze, and improve the quality of airline bookings. By processing Passenger Name Record (PNR) data from SBR files, it provides an interactive dashboard with deep insights into data completeness and accuracy. The ultimate goal is to ensure all PNRs contain the necessary elements for enhanced customer service, automated communication, and operational efficiency.
 
 ## Data Source
-- Retrieves booking data from the SBR file in the airline data warehouse.
+- **SBR (Standard Booking Record) File**: The application ingests booking data from CSV or Excel files, typically extracted from the airline's data warehouse.
+- **Manual Upload**: Users can upload SBR files directly through the web interface for immediate analysis.
 
 ## Objectives
 - Ensure all bookings meet the desired quality standards.
 - Enable better servicing of customers by monitoring booking completeness and accuracy.
+- Identify and highlight agents, offices, and delivery systems with poor data collection practices.
+- Provide actionable data to support training initiatives and process improvements.
+- Reduce issues that hinder automated passenger communication (e.g., pre-flight notifications, disruption handling).
 
 ## Key Features
 
-### PNR Quality Monitoring
-Checks each PNR for the following essential elements:
-- Phone number
-- Email address
-- Frequent Flyer Number (FF#)
-- Meal selection
-- Seat assignment
+### Interactive Dashboard & Reporting
+- **Centralized Overview**: Key metrics at a glance, including total PNRs, average quality score, and the number of reachable vs. unreachable bookings.
+- **Tabbed Navigation**: Easy access to different analysis sections: Overview, Delivery Systems, Elements, Offices, Quality, and Export.
+- **Dynamic Filtering**:
+    - **Booking Date Range**: Filter PNRs by their creation date.
+    - **Delivery System**: Multi-select filter for booking systems (e.g., Amadeus, Galileo, KQ Website).
+    - **Office ID**: Multi-select filter for specific booking offices, with a search functionality.
+- **Theme Customization**: Multiple UI themes (including a dark mode) for personalized user experience.
 
-### Performance Analysis
-- By booking channel (own office, web, mobile app, travel agency, NDC)
-- By booking office ID
-- By Travel Agency IATA code (and agency name, if available)
-- By Staff ID (and staff name, if available)
+### Data Validation & Quality Scoring
+A sophisticated quality score (0-100%) is calculated for each PNR based on the presence and validity of key elements:
+- **Contact Details (40%)**: Validates the presence of a correctly formatted phone number or email address in the appropriate fields.
+- **Frequent Flyer Number (20%)**: Checks for the presence of an FF#.
+- **Meal Selection (20%)**: Checks for a meal code.
+- **Seat Assignment (20%)**: Checks for a seat assignment.
 
-### Quality Metrics
-- Percentage of PNRs missing required elements
-- Percentage of PNRs with incorrect formats
-- Booking quality score by PNR, office ID, channel, and staff ID
+The system also identifies specific data quality issues:
+- **Missing Contacts**: PNRs with no phone or email.
+- **Wrongly Placed Contacts**: Detects when an email address is placed in a phone-only field (like `APM` or `CTCM`) or a phone number is in an email-only field (like `APE` or `CTCE`). The `AP` field is treated as generic and accepts both.
+- **Incorrect Format**: Flags contacts that do not match standard email or phone number patterns.
+operator '//' is allowed for emails as alternative to using @
 
-### Dashboard & Reporting
-- Interactive dashboard in the portal to display statistics
-- Highlights agents, offices, and channels with poor data collection or incorrect details
-- Identifies issues that hinder automated communication with passengers
+### In-Depth Performance Analysis
+- **Delivery System Performance**: Compares the average quality score and booking volume across different delivery systems (e.g., GDS, Web).
+- **Office Performance**: A sortable heatmap table ranks booking offices by average quality score and volume, highlighting top performers and those needing improvement.
+- **Missing Elements Analysis**: Doughnut charts visualize the completion rate for each key data element (Email, Phone, FF#, Meal, Seat).
+- **Quality Score Distribution**: A histogram shows the distribution of PNRs across different quality score ranges (e.g., Critical, Poor, Good, Excellent).
+- **Quality Score Trend**: A line chart displays the evolution of the average quality score over time (last 7, 30, or 90 days), reflecting the impact of improvement efforts.
+
+### Data Management
+- **File Upload**: A user-friendly drag-and-drop interface for uploading SBR data in `.csv`, `.xlsx`, or `.xls` format. The system clears old data upon a new upload to ensure a fresh analysis.
+- **Data Export**: Allows users to export filtered data to Excel for offline analysis or reporting. Export options include:
+    - All Data
+    - PNRs with No Contacts
+    - Low-Quality PNRs
+    - High-Quality PNRs
+
+### Intelligent Data Parsing
+- **Flexible Date Formats**: Automatically parses booking creation dates from common SBR formats like `ddmmyy` and `dmmyy`.
+- **Contact Identification**: Employs regular expressions and pattern matching to heuristically identify contacts as either phone numbers or emails, even with non-standard prefixes/suffixes (e.g., `KQ/M+`, `/EN`).
+- **Robust Cleaning**: Sanitizes contact details by removing common GDS artifacts, prefixes, and suffixes before validation to improve accuracy.
+- **Efficient Processing**: Utilizes bulk database operations to quickly process large SBR files, ensuring the dashboard is updated promptly after an upload.
 
 ## Benefits
 - Improves booking data quality for enhanced customer communication.
 - Identifies training needs and process gaps for booking agents and offices.
 - Supports data-driven decision-making for operational improvements.
+- Provides a single source of truth for booking quality metrics across the organization.
+
+## User Stories
+
+*   **As a Revenue Management Analyst,** I want to see the overall booking quality score and how it trends over time, so I can report on our data-driven initiatives to senior management.
+*   **As a Contact Center Manager,** I want to filter PNRs by my office ID and identify agents who frequently create bookings with missing or incorrect contact details, so I can provide targeted training.
+*   **As a Digital Channels Manager,** I want to compare the data quality from our Website and Mobile App channels against GDS channels, so I can ensure our direct channels are performing optimally.
+*   **As a Data Analyst,** I want to export a list of all low-quality PNRs from a specific delivery system, so I can perform a root-cause analysis on the data entry errors.
+*   **As an Operations Manager,** I want to quickly upload the latest weekly SBR file and see an immediate breakdown of data quality, so I can monitor our network's performance without delay.
 
 ## Getting Started
-1. Connect to the airline data warehouse and retrieve the SBR file.
-2. Run the quality checks and generate performance metrics.
-3. View results and insights on the dashboard.
+1.  **Retrieve Data**: Obtain the SBR data file (CSV/Excel) from the airline data warehouse.
+2.  **Upload Data**: Navigate to the "Upload" section of the application and upload the file.
+3.  **Analyze**: Once processing is complete, navigate back to the dashboard.
+4.  **Filter & Explore**: Use the filters and tabs to drill down into the data and gain insights.
+5.  **Export**: Download specific data segments for further reporting or action.
 
 ---

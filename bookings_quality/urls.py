@@ -16,9 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('', include('quality_monitor.urls')),
+    path('', include('quality_monitor.urls', namespace='quality_monitor')),
 ]
+
+# Serve static files in development
+if settings.DEBUG:
+    from django.contrib.staticfiles.views import serve
+    from django.views.static import serve as static_serve
+    urlpatterns += [
+        path('static/<path:path>', serve),
+    ]

@@ -6,218 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KQ Bookings Quality Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary-color: #b71c1c;
-            --bg-gradient: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%);
-            --nav-gradient: linear-gradient(135deg, #4a5c96 0%, #5a3d7a 100%);
-            --nav-gradient-hover: linear-gradient(135deg, #5a3d7a 0%, #4a5c96 100%);
-            --stat-gradient: linear-gradient(135deg, #4a5c96 0%, #5a3d7a 100%);
-        }
-        
-        [data-theme="ocean"] {
-            --primary-color: #1565C0;
-            --bg-gradient: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%);
-            --nav-gradient: linear-gradient(135deg, #1565C0 0%, #0277BD 100%);
-            --nav-gradient-hover: linear-gradient(135deg, #0277BD 0%, #1565C0 100%);
-            --stat-gradient: linear-gradient(135deg, #1565C0 0%, #0277BD 100%);
-        }
-        
-        [data-theme="light-dark"] {
-            --primary-color: #546E7A;
-            --bg-gradient: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%);
-            --nav-gradient: linear-gradient(135deg, #546E7A 0%, #37474F 100%);
-            --nav-gradient-hover: linear-gradient(135deg, #37474F 0%, #546E7A 100%);
-            --stat-gradient: linear-gradient(135deg, #546E7A 0%, #37474F 100%);
-        }
-        
-        [data-theme="kenya"] {
-            --primary-color: #C8102E;
-            --bg-gradient: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%);
-            --nav-gradient: linear-gradient(135deg, #C8102E 0%, #003366 100%);
-            --nav-gradient-hover: linear-gradient(135deg, #003366 0%, #C8102E 100%);
-            --stat-gradient: linear-gradient(135deg, #C8102E 0%, #003366 100%);
-        }
-        
-        [data-theme="dark"] {
-            --primary-color: #9C27B0;
-            --bg-gradient: linear-gradient(135deg, #303030 0%, #1a1a1a 100%);
-            --nav-gradient: linear-gradient(135deg, #303030 0%, #1a1a1a 100%);
-            --nav-gradient-hover: linear-gradient(135deg, #1a1a1a 0%, #303030 100%);
-            --stat-gradient: linear-gradient(135deg, #303030 0%, #1a1a1a 100%);
-        }
-        
-        [data-theme="grey"] {
-            --primary-color: #455A64;
-            --bg-gradient: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%);
-            --nav-gradient: linear-gradient(135deg, #607D8B 0%, #455A64 100%);
-            --nav-gradient-hover: linear-gradient(135deg, #455A64 0%, #607D8B 100%);
-            --stat-gradient: linear-gradient(135deg, #607D8B 0%, #455A64 100%);
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); min-height: 100vh; transition: all 0.3s; }
-        
-        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
-        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
-        .logo { font-size: 28px; font-weight: bold; color: #d32f2f !important; }
-        
-        /* Theme Switcher */
-        .theme-switcher { display: flex; gap: 8px; }
-        .theme-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .theme-btn:hover { transform: scale(1.1); }
-        .theme-btn.active { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3); }
-        .theme-btn.default { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .theme-btn.ocean { background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%); }
-        .theme-btn.light-dark { background: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%); }
-        .theme-btn.kenya { background: linear-gradient(135deg, #C8102E 0%, #003366 100%); }
-        .theme-btn.dark { background: linear-gradient(135deg, #424242 0%, #212121 100%); }
-        .theme-btn.grey { background: linear-gradient(135deg, #90A4AE 0%, #607D8B 100%); }
-        
-        .filters { background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 1200px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 200px; }
-        .filter-group label { font-weight: 600; color: #333; font-size: 12px; }
-        .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .filter-btn { padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .filter-btn:hover { opacity: 0.9; }
-        
-        .channel-filter { position: relative; }
-        .channel-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .channel-group { border-bottom: 1px solid #eee; }
-        .channel-group-header { padding: 10px 15px; background: #f8f9fa; font-weight: 600; color: #333; }
-        .channel-option { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .channel-option:hover { background: #f5f5f5; }
-        .channel-tags { display: flex; gap: 5px; flex-wrap: nowrap; margin-top: 5px; overflow-x: auto; max-width: 200px; scrollbar-width: thin; }
-        .channel-tags::-webkit-scrollbar { height: 4px; }
-        .channel-tags::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 2px; }
-        .channel-tags::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 2px; }
-        .channel-tag { background: var(--primary-color); color: white; padding: 4px 8px; border-radius: 15px; font-size: 12px; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
-        .channel-tag .close { cursor: pointer; font-weight: bold; }
-        
-        .office-filter { position: relative; }
-        .office-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .office-option { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .office-option:hover { background: #f5f5f5; }
-        .office-option.disabled { color: #ccc; cursor: not-allowed; }
-        .office-tags { display: flex; gap: 5px; flex-wrap: nowrap; margin-top: 5px; overflow-x: auto; max-width: 200px; scrollbar-width: thin; }
-        .office-tags::-webkit-scrollbar { height: 4px; }
-        .office-tags::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 2px; }
-        .office-tags::-webkit-scrollbar-thumb { background: #667eea; border-radius: 2px; }
-        .office-tag { background: #667eea; color: white; padding: 4px 8px; border-radius: 15px; font-size: 12px; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
-        .office-tag .close { cursor: pointer; font-weight: bold; }
-        
-        .nav-tabs { display: flex; gap: 15px; margin: 20px auto; max-width: 1200px; padding: 0 20px; justify-content: center; flex-wrap: wrap; }
-        .nav-tab { padding: 15px 30px; background: var(--nav-gradient); border: none; border-radius: 30px; color: white; cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
-        .nav-tab.active, .nav-tab:hover { background: var(--nav-gradient-hover); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
-        
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .content-section { display: none; background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .content-section.active { display: block; animation: fadeIn 0.5s ease-in; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--stat-gradient); color: white; padding: 20px; border-radius: 15px; text-align: center; position: relative; overflow: hidden; cursor: pointer; transition: all 0.4s ease; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-        .stat-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 15px 40px rgba(0,0,0,0.25); }
-        .stat-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: rotate(45deg); transition: all 0.6s; opacity: 0; }
-        .stat-card:hover::before { animation: shimmer 0.8s ease-in-out; }
-        @keyframes shimmer { 0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; } }
-        .stat-icon { font-size: 36px; margin-bottom: 10px; display: block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .stat-number { font-size: 32px; font-weight: bold; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .stat-label { font-size: 14px; opacity: 0.95; font-weight: 500; letter-spacing: 0.5px; }
-        .stat-trend { font-size: 11px; margin-top: 5px; opacity: 0.8; }
-        
-        .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #ddd; }
-        .data-table th { background: #f8f9fa; padding: 12px 15px; text-align: left; font-weight: 600; color: #333; border-right: 1px solid #ddd; border-bottom: 2px solid #ddd; cursor: pointer; position: relative; }
-        .data-table th:hover { background: #e9ecef; }
-        .data-table th.sortable::after { content: '↕️'; margin-left: 5px; font-size: 10px; }
-        .data-table th.sort-asc::after { content: '↑'; }
-        .data-table th.sort-desc::after { content: '↓'; }
-        .data-table td { padding: 10px 15px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }
-        .data-table tr:hover { background: #f8f9fa; }
-        .data-table tr:nth-child(even) { background: #fafafa; }
-        
-        /* Channel Performance Cards */
-        .channel-performance-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px 15px; margin: 20px 0; }
-        .channel-card { min-width: 200px; max-width: 250px; flex: 0 1 auto; margin-bottom: 20px; position: relative; }
-        .channel-card::after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 120%; height: 1px; background: linear-gradient(90deg, transparent, #ddd 20%, #ddd 80%, transparent); }
-        .channel-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; position: relative; overflow: hidden; cursor: pointer; transition: all 0.4s ease; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-        .channel-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
-        .channel-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: rotate(45deg); transition: all 0.6s; opacity: 0; }
-        .channel-card:hover::before { animation: shimmer 0.8s ease-in-out; }
-        .channel-card.website { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .channel-card.mobile { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .channel-card.ato { background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%); }
-        .channel-card.cto { background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%); }
-        .channel-card.cec { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .channel-card.kq_gsa { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
-        .channel-card.travel_agents { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: #333; }
-        .channel-card.ndc { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
-        .channel-card.msafiri_connect { background: linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%); color: #333; }
-        .channel-icon { font-size: 40px; margin-bottom: 12px; animation: pulse 2s infinite; }
-        .channel-name { font-size: 16px; font-weight: 600; margin-bottom: 15px; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        .quality-score { font-size: 28px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .volume { font-size: 13px; opacity: 0.9; margin-top: 5px; font-weight: 500; }
-        .quality-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin-top: 10px; }
-        .quality-fill { height: 100%; background: rgba(255,255,255,0.8); border-radius: 2px; transition: width 0.3s; }
-        
-        /* Missing Elements Charts */
-        .elements-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin: 20px 0; }
-        .element-chart { text-align: center; }
-        .element-label { margin-top: 10px; font-size: 12px; font-weight: 600; color: #666; }
-        
-        /* Office Performance Heatmap */
-        .heatmap-table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
-        .heatmap-table th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; border-right: 1px solid #ddd; border-bottom: 2px solid #ddd; cursor: pointer; position: relative; }
-        .heatmap-table th:hover { background: #e9ecef; }
-        .heatmap-table th.sortable::after { content: '↕️'; margin-left: 5px; font-size: 10px; }
-        .heatmap-table th.sort-asc::after { content: '↑'; }
-        .heatmap-table th.sort-desc::after { content: '↓'; }
-        .heatmap-table td { padding: 12px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }
-        .heatmap-table tr:nth-child(even) { background: #fafafa; }
-        .performance-high { background: rgba(76, 175, 80, 0.1); }
-        .performance-medium { background: rgba(255, 193, 7, 0.1); }
-        .performance-low { background: rgba(244, 67, 54, 0.1); }
-        .score-cell { font-weight: bold; font-size: 16px; }
-        
-        /* Quality Score Histogram */
-        .quality-histogram { display: flex; align-items: end; justify-content: space-around; height: 200px; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-        .score-bar { width: 60px; background: #ddd; border-radius: 4px 4px 0 0; position: relative; display: flex; flex-direction: column; justify-content: end; align-items: center; cursor: pointer; transition: all 0.3s; }
-        .score-bar:hover { transform: translateY(-5px); }
-        .score-bar.critical { background: linear-gradient(to top, #f44336, #ff5722); }
-        .score-bar.poor { background: linear-gradient(to top, #ff9800, #ffc107); }
-        .score-bar.average { background: linear-gradient(to top, #ffc107, #ffeb3b); }
-        .score-bar.good { background: linear-gradient(to top, #8bc34a, #4caf50); }
-        .score-bar.excellent { background: linear-gradient(to top, #4caf50, #2e7d32); }
-        .bar-label { position: absolute; bottom: -25px; font-size: 11px; font-weight: 600; color: #666; }
-        .bar-count { color: white; font-weight: bold; font-size: 12px; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); line-height: 1.2; }
-        
-        .text-success { color: #4caf50; font-weight: bold; }
-        .text-warning { color: #ff9800; font-weight: bold; }
-        .text-danger { color: #f44336; font-weight: bold; }
-        
-        @media (max-width: 768px) {
-            .elements-grid { grid-template-columns: repeat(3, 1fr); }
-            .quality-histogram { flex-wrap: wrap; height: auto; }
-            .score-bar { margin: 5px; }
-        }
-    </style>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+
 </head>
 <body>
     <div class="header">
         <div class="header-content">
             <div class="logo">
-                <img src="{% static 'images/kq-logo.png' %}" alt="KQ Logo" style="height: 32px; margin-right: 10px; vertical-align: middle;">
+                <img src="{% static 'images/kq-logo.png' %}" alt="KQ Logo" class="logo-img">
                 KQ Bookings Quality Report
             </div>
             <div class="theme-switcher">
-                <div class="theme-btn default active" onclick="setTheme('default')" title="Default Theme"></div>
-                <div class="theme-btn ocean" onclick="setTheme('ocean')" title="Ocean Theme"></div>
-                <div class="theme-btn light-dark" onclick="setTheme('light-dark')" title="Light-Dark Theme"></div>
-                <div class="theme-btn kenya" onclick="setTheme('kenya')" title="Kenya Airways Theme"></div>
-                <div class="theme-btn grey" onclick="setTheme('grey')" title="Grey Theme"></div>
-                <div class="theme-btn dark" onclick="setTheme('dark')" title="Dark Theme"></div>
+                <div class="theme-btn default active" data-theme="default" title="Default Theme"></div>
+                <div class="theme-btn ocean" data-theme="ocean" title="Ocean Theme"></div>
+                <div class="theme-btn light-dark" data-theme="light-dark" title="Light-Dark Theme"></div>
+                <div class="theme-btn kenya" data-theme="kenya" title="Kenya Airways Theme"></div>
+                <div class="theme-btn grey" data-theme="grey" title="Grey Theme"></div>
+                <div class="theme-btn dark" data-theme="dark" title="Dark Theme"></div>
             </div>
         </div>
     </div>
@@ -225,42 +35,45 @@
     <div class="filters">
         <div class="filter-group">
             <label>Booking Date Range</label>
-            <div style="position: relative;">
-                <input type="text" id="booking_date_display" placeholder="start-date → end-date" readonly style="cursor: pointer; width: 180px;" onclick="showBookingDatePicker()">
-                <div id="booking_date_picker" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 300px;">
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-size: 11px; color: #666;">Start Date:</label>
-                        <input type="date" id="booking_start_date" value="{{ request.GET.start_date }}" onchange="updateBookingDateDisplay()" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+            <div class="date-picker-container">
+                <input type="text" id="booking_date_display" placeholder="start-date → end-date" readonly class="date-display">
+                <div id="booking_date_picker" class="date-picker">
+                    <div class="date-input-group">
+                        <label class="date-label">Start Date:</label>
+                        <input type="date" id="booking_start_date" value="{{ request.GET.start_date }}" onchange="updateBookingDateDisplay()" class="date-input">
                     </div>
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-size: 11px; color: #666;">End Date:</label>
-                        <input type="date" id="booking_end_date" value="{{ request.GET.end_date }}" onchange="updateBookingDateDisplay()" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="date-input-group">
+                        <label class="date-label">End Date:</label>
+                        <input type="date" id="booking_end_date" value="{{ request.GET.end_date }}" onchange="updateBookingDateDisplay()" class="date-input">
                     </div>
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                        <button type="button" onclick="clearBookingDates()" style="padding: 6px 12px; background: #666; color: white; border: none; border-radius: 4px; font-size: 11px;">Clear</button>
-                        <button type="button" onclick="closeBookingDatePicker()" style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; font-size: 11px;">Done</button>
+                    <div class="date-buttons">
+                        <button type="button" id="clear-booking-dates-btn" class="date-btn date-btn-clear">Clear</button>
+                        <button type="button" id="done-booking-dates-btn" class="date-btn date-btn-done">Done</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="filter-group channel-filter">
-            <label>Channel</label>
-            <div onclick="toggleChannelDropdown()">
-                <input type="text" placeholder="All" readonly style="cursor: pointer;">
-                <div class="channel-dropdown" id="channel-dropdown">
-                    <!-- Channel groups will be populated by JavaScript -->
+        <div class="filter-group delivery-system-filter">
+            <label>Delivery System</label>
+            <div id="delivery-system-filter-toggle">
+                <input type="text" placeholder="All" readonly class="filter-input">
+                <div class="delivery-system-dropdown" id="delivery-system-dropdown">
+                    <!-- Delivery systems will be populated by JavaScript -->
                 </div>
             </div>
-            <div class="channel-tags" id="channel-tags"></div>
+            <div class="delivery-system-tags" id="delivery-system-tags"></div>
         </div>
 
         <div class="filter-group office-filter">
             <label>Office</label>
-            <div onclick="toggleOfficeDropdown()">
-                <input type="text" placeholder="All" readonly style="cursor: pointer;" id="office-input">
+            <div id="office-filter-toggle">
+                <input type="text" placeholder="All" readonly class="filter-input" id="office-input">
                 <div class="office-dropdown" id="office-dropdown">
-                    <!-- Offices will be populated based on selected channels -->
+                    <input type="text" class="office-search-input" id="office-search-input" placeholder="Search offices..." autocomplete="off">
+                    <div class="office-dropdown-content" id="office-dropdown-content">
+                        <!-- Offices will be populated here -->
+                    </div>
                 </div>
             </div>
             <div class="office-tags" id="office-tags"></div>
@@ -268,43 +81,43 @@
         
         <div class="filter-group">
             <label>Flight Departure Date</label>
-            <div style="position: relative;">
-                <input type="text" id="flight_departure_display" placeholder="start-date → end-date" readonly style="cursor: pointer; width: 180px;" onclick="showFlightDatePicker()">
-                <div id="flight_date_picker" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 300px;">
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-size: 11px; color: #666;">Start Date:</label>
-                        <input type="date" id="flight_start_date" value="{{ request.GET.flight_start }}" onchange="updateFlightDateDisplay()" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+            <div class="date-picker-container disabled">
+                <input type="text" id="flight_departure_display" placeholder="Not Available" readonly class="date-display disabled">
+                <div id="flight_date_picker" class="date-picker">
+                    <div class="date-input-group">
+                        <label class="date-label">Start Date:</label>
+                        <input type="date" id="flight_start_date" value="{{ request.GET.flight_start }}" onchange="updateFlightDateDisplay()" class="date-input">
                     </div>
-                    <div style="margin-bottom: 10px;">
-                        <label style="font-size: 11px; color: #666;">End Date:</label>
-                        <input type="date" id="flight_end_date" value="{{ request.GET.flight_end }}" onchange="updateFlightDateDisplay()" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="date-input-group">
+                        <label class="date-label">End Date:</label>
+                        <input type="date" id="flight_end_date" value="{{ request.GET.flight_end }}" onchange="updateFlightDateDisplay()" class="date-input">
                     </div>
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                        <button type="button" onclick="clearFlightDates()" style="padding: 6px 12px; background: #666; color: white; border: none; border-radius: 4px; font-size: 11px;">Clear</button>
-                        <button type="button" onclick="closeFlightDatePicker()" style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; font-size: 11px;">Done</button>
+                    <div class="date-buttons">
+                        <button type="button" id="clear-flight-dates-btn" class="date-btn date-btn-clear">Clear</button>
+                        <button type="button" id="done-flight-dates-btn" class="date-btn date-btn-done">Done</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <button class="filter-btn" onclick="applyFilters()">🔍 Apply Filters</button>
-        <button class="filter-btn" onclick="clearFilters()" style="background: #666;">🔄 Clear</button>
+        <button class="filter-btn" id="apply-filters-btn">🔍 Apply Filters</button>
+        <button class="filter-btn filter-btn-clear" id="clear-filters-btn">🔄 Clear</button>
     </div>
 
     <div class="nav-tabs">
-        <button class="nav-tab active" onclick="showSection('overview')">📊 Overview</button>
-        <button class="nav-tab" onclick="showSection('channels')">🌐 Channels</button>
-        <button class="nav-tab" onclick="showSection('elements')">📋 Elements</button>
-        <button class="nav-tab" onclick="showSection('offices')">🏢 Offices</button>
-        <button class="nav-tab" onclick="showSection('quality')">📈 Quality</button>
-        <button class="nav-tab" onclick="showSection('export')">📤 Export</button>
-        <button class="nav-tab" onclick="window.location.href='{% url 'upload_excel' %}'">📁 Upload</button>
+        <button class="nav-tab active" data-section="overview">📊 Overview</button>
+        <button class="nav-tab" data-section="delivery-systems">🌐 Delivery Systems</button>
+        <button class="nav-tab" data-section="elements">📋 Elements</button>
+        <button class="nav-tab" data-section="offices">🏢 Offices</button>
+        <button class="nav-tab" data-section="quality">📈 Quality</button>
+        <button class="nav-tab" data-section="export">📤 Export</button>
+        <button class="nav-tab" id="upload-btn">📁 Upload</button>
     </div>
 
     <div class="container">
         {% if messages %}
             {% for message in messages %}
-                <div style="padding: 15px; margin: 10px 0; background: {% if message.tags == 'error' %}#ffebee{% else %}#e8f5e8{% endif %}; border-radius: 10px; border-left: 4px solid {% if message.tags == 'error' %}#f44336{% else %}#4caf50{% endif %};">
+                <div class="message {% if message.tags == 'error' %}message-error{% else %}message-success{% endif %}">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -312,50 +125,130 @@
 
         <!-- Overview Section -->
         <div id="overview" class="content-section active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-number">{{ total_pnrs }}</div>
-                    <div class="stat-label">Total PNRs</div>
-                    <div class="stat-trend">📈 All Bookings</div>
+            <div class="enhanced-stats-grid">
+                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Total PNRs Statistics">
+                    <div class="card-header">
+                        <div class="card-icon animated-icon info-gradient">📊</div>
+                        <div class="card-badge">Primary</div>
+                    </div>
+                    <div class="card-title">Total Bookings</div>
+                    <div class="card-value tooltip" data-tooltip="Total number of PNRs processed">{{ total_pnrs|default:0 }}</div>
+                    <div class="card-subtitle">All passenger name records in the system</div>
+                    <div class="progress-container">
+                        <div class="progress-bar progress-excellent" style="width: 100%;"></div>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Processing Status</span>
+                        <span class="metric-value">✅ Complete</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-number">{{ with_contacts }}</div>
-                    <div class="stat-label">With Contacts</div>
-                    <div class="stat-trend">📞 Reachable Passengers</div>
+
+                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Reachable PNRs Statistics">
+                    <div class="card-header">
+                        <div class="card-icon animated-icon success-gradient">📞</div>
+                        <div class="card-badge">Contact</div>
+                    </div>
+                    <div class="card-title">Reachable Passengers</div>
+                    <div class="card-value tooltip" data-tooltip="PNRs with valid contact information">{{ reachable_pnrs|default:0 }}</div>
+                    <div class="card-subtitle">Passengers we can communicate with</div>
+                    <div class="progress-container">
+                        <div class="progress-bar progress-excellent" style="width: {% widthratio reachable_pnrs total_pnrs 100 %}%;"></div>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Reachability Rate</span>
+                        <span class="metric-value">{% if total_pnrs %}{% widthratio reachable_pnrs total_pnrs 100 %}%{% else %}0%{% endif %}</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⭐</div>
-                    <div class="stat-number">{{ avg_quality }}%</div>
-                    <div class="stat-label">Avg Quality Score</div>
-                    <div class="stat-trend">🎯 Data Completeness</div>
+
+                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Quality Score Statistics">
+                    <div class="card-header">
+                        <div class="card-icon animated-icon warning-gradient">⭐</div>
+                        <div class="card-badge">Quality</div>
+                    </div>
+                    <div class="card-title">Average Quality Score</div>
+                    <div class="card-value tooltip" data-tooltip="Overall data completeness percentage">{{ avg_quality|default:0 }}%</div>
+                    <div class="card-subtitle">Data completeness and accuracy metric</div>
+                    <div class="progress-container">
+                        <div class="progress-bar {% if avg_quality >= 80 %}progress-excellent{% elif avg_quality >= 60 %}progress-good{% else %}progress-poor{% endif %}" style="width: {{ avg_quality|default:0 }}%;"></div>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Quality Status</span>
+                        <span class="metric-value">
+                            <span class="status-indicator {% if avg_quality >= 80 %}status-excellent{% elif avg_quality >= 60 %}status-good{% else %}status-poor{% endif %}"></span>
+                            {% if avg_quality >= 80 %}Excellent{% elif avg_quality >= 60 %}Good{% else %}Needs Improvement{% endif %}
+                        </span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⚠️</div>
-                    <div class="stat-number">{{ without_contacts }}</div>
-                    <div class="stat-label">Missing Contacts</div>
-                    <div class="stat-trend">📵 Need Attention</div>
+
+                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Missing Contacts Statistics">
+                    <div class="card-header">
+                        <div class="card-icon animated-icon danger-gradient">❌</div>
+                        <div class="card-badge">Alert</div>
+                    </div>
+                    <div class="card-title">Unreachable PNRs</div>
+                    <div class="card-value tooltip" data-tooltip="PNRs without any contact information">{{ missing_contacts|default:0 }}</div>
+                    <div class="card-subtitle">Passengers without contact details</div>
+                    <div class="progress-container">
+                        <div class="progress-bar progress-poor" style="width: {% if total_pnrs %}{% widthratio missing_contacts total_pnrs 100 %}%{% else %}0%{% endif %};"></div>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Impact Level</span>
+                        <span class="metric-value">{% if missing_contacts > 100 %}🔴 High{% elif missing_contacts > 50 %}🟡 Medium{% else %}🟢 Low{% endif %}</span>
+                    </div>
+                </div>
+
+                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Misplaced Contacts Statistics">
+                    <div class="card-header">
+                        <div class="card-icon animated-icon warning-gradient">🔄</div>
+                        <div class="card-badge">Data Issue</div>
+                    </div>
+                    <div class="card-title">Misplaced Contacts</div>
+                    <div class="card-value tooltip" data-tooltip="Contacts in wrong fields (email in phone field, etc.)">{{ wrongly_placed_contacts|default:0 }}</div>
+                    <div class="card-subtitle">Email in phone field, phone in email field</div>
+                    <div class="progress-container">
+                        <div class="progress-bar progress-good" style="width: {% if total_pnrs %}{% widthratio wrongly_placed_contacts total_pnrs 100 %}%{% else %}0%{% endif %};"></div>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Fix Priority</span>
+                        <span class="metric-value">📋 Medium</span>
+                    </div>
+                </div>
+
+                <div class="enhanced-card card-overview" tabindex="0" role="article" aria-label="Wrong Format Contacts Statistics">
+                    <div class="card-header">
+                        <div class="card-icon animated-icon danger-gradient">✍️</div>
+                        <div class="card-badge">Format Error</div>
+                    </div>
+                    <div class="card-title">Invalid Format Contacts</div>
+                    <div class="card-value tooltip" data-tooltip="Contacts with incorrect email or phone format">{{ wrong_format_contacts|default:0 }}</div>
+                    <div class="card-subtitle">Invalid email addresses and phone numbers</div>
+                    <div class="progress-container">
+                        <div class="progress-bar progress-poor" style="width: {% if total_pnrs %}{% widthratio wrong_format_contacts total_pnrs 100 %}%{% else %}0%{% endif %};"></div>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Validation Status</span>
+                        <span class="metric-value">🔍 Failed</span>
+                    </div>
                 </div>
             </div>
-            <div style="background: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
+            <div class="table-container">
                 <h3>Recent Bookings Sample</h3>
                 <table class="data-table" id="bookingsTable">
                     <thead>
                         <tr>
                             <th>PNR</th>
-                            <th>Channel</th>
+                            <th>Delivery System</th>
                             <th>Office ID</th>
-                            <th class="sortable" onclick="sortTable('bookingsTable', 3)">Quality Score</th>
+                            <th class="sortable" data-column-index="3">Quality Score</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for booking in bookings|slice:":10" %}
+                        {% for pnr in pnrs|slice:":10" %}
                         <tr>
-                            <td>{{ booking.pnr }}</td>
-                            <td>{{ booking.get_channel_display }}</td>
-                            <td>{{ booking.office_id|default:"-" }}</td>
-                            <td><span class="{% if booking.quality_score >= 80 %}text-success{% elif booking.quality_score >= 60 %}text-warning{% else %}text-danger{% endif %}">{{ booking.quality_score }}%</span></td>
+                            <td>{{ pnr.control_number }}</td>
+                            <td>{{ pnr.delivery_system_company|default:"-" }}</td>
+                            <td>{{ pnr.office_id|default:"-" }}</td>
+                            <td><span class="{% if pnr.quality_score >= 80 %}text-success{% elif pnr.quality_score >= 60 %}text-warning{% else %}text-danger{% endif %}">{{ pnr.quality_score }}%</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -363,75 +256,112 @@
             </div>
         </div>
 
-        <!-- Channel Performance Section -->
-        <div id="channels" class="content-section">
-            <div style="background: white; padding: 20px; border-radius: 15px;">
-                <h3>🌐 Channel Performance Analysis</h3>
-                <div class="channel-performance-grid">
-                    {% for stat in channel_stats %}
-                    <div class="channel-card {{ stat.channel }}">
-                        <div class="channel-icon">{% if stat.channel == 'website' %}🌐{% elif stat.channel == 'mobile' %}📱{% elif stat.channel == 'cec' %}📞{% elif stat.channel == 'travel_agents' %}🏢{% else %}✈️{% endif %}</div>
-                        <div class="channel-name">{{ stat.channel|capfirst }}</div>
-                        <div class="metrics">
-                            <div class="quality-score">{{ stat.avg_quality|floatformat:0 }}%</div>
-                            <div class="volume">{{ stat.total }} PNRs</div>
-                        </div>
-                        <div class="quality-bar">
-                            <div class="quality-fill" style="width: {{ stat.avg_quality }}%"></div>
-                        </div>
-                    </div>
-                    {% endfor %}
+        <!-- Delivery System Performance Section -->
+        <div id="delivery-systems" class="content-section">
+            <div class="enhanced-card card-delivery card-spacing">
+                <div class="card-header">
+                    <div class="card-icon success-gradient">🌐</div>
+                    <div class="card-badge">Performance</div>
                 </div>
+                <div class="card-title">Delivery Systems Performance</div>
+                <div class="card-subtitle">Top 10 systems ranked by booking volume with quality scores and market share analysis</div>
+                <div class="card-metric">
+                    <span class="metric-label">Analysis Type</span>
+                    <span class="metric-value">📊 Volume & Quality</span>
+                </div>
+                <div class="card-metric">
+                    <span class="metric-label">Ranking Criteria</span>
+                    <span class="metric-value">📈 Booking Volume</span>
+                </div>
+                <button class="card-button" onclick="document.getElementById('delivery-system-grid').scrollIntoView({behavior: 'smooth'})">View Analysis</button>
+            </div>
+            <div class="delivery-system-performance-grid" id="delivery-system-grid">
+                <!-- Cards will be dynamically generated by JavaScript -->
             </div>
         </div>
 
         <!-- Missing Elements Section -->
         <div id="elements" class="content-section">
-            <div style="background: white; padding: 20px; border-radius: 15px;">
-                <h3>📋 Missing Elements Analysis</h3>
-                <div class="elements-grid">
-                    <div class="element-chart">
-                        <canvas id="phoneChart" width="120" height="120"></canvas>
-                        <div class="element-label">📞 Phone</div>
-                    </div>
-                    <div class="element-chart">
-                        <canvas id="emailChart" width="120" height="120"></canvas>
-                        <div class="element-label">📧 Email</div>
-                    </div>
-                    <div class="element-chart">
-                        <canvas id="ffChart" width="120" height="120"></canvas>
-                        <div class="element-label">✈️ FF Number</div>
-                    </div>
-                    <div class="element-chart">
-                        <canvas id="mealChart" width="120" height="120"></canvas>
-                        <div class="element-label">🍽️ Meal</div>
-                    </div>
-                    <div class="element-chart">
-                        <canvas id="seatChart" width="120" height="120"></canvas>
-                        <div class="element-label">💺 Seat</div>
-                    </div>
+            <div class="enhanced-card card-elements card-spacing">
+                <div class="card-header">
+                    <div class="card-icon warning-gradient">📋</div>
+                    <div class="card-badge">Analysis</div>
+                </div>
+                <div class="card-title">Data Elements Completeness</div>
+                <div class="card-subtitle">Analysis of missing critical booking elements across all PNRs</div>
+                <div class="card-metric">
+                    <span class="metric-label">Elements Tracked</span>
+                    <span class="metric-value">5 Critical Fields</span>
+                </div>
+                <div class="card-metric">
+                    <span class="metric-label">Completion Target</span>
+                    <span class="metric-value">🎯 80%+</span>
+                </div>
+                <button class="card-button" onclick="document.getElementById('elements-grid').scrollIntoView({behavior: 'smooth'})">View Details</button>
+            </div>
+            <div class="elements-grid" id="elements-grid">
+                <div class="element-chart">
+                    <canvas id="emailChart" width="220" height="220"></canvas>
+                    <div class="element-label">📧 Email</div>
+                </div>
+                <div class="element-chart">
+                    <canvas id="phoneChart" width="220" height="220"></canvas>
+                    <div class="element-label">📞 Phone</div>
+                </div>
+                <div class="element-chart">
+                    <canvas id="ffChart" width="220" height="220"></canvas>
+                    <div class="element-label">✈️ FF#</div>
+                </div>
+                <div class="element-chart">
+                    <canvas id="mealChart" width="220" height="220"></canvas>
+                    <div class="element-label">🍽️ Meal</div>
+                </div>
+                <div class="element-chart">
+                    <canvas id="seatChart" width="220" height="220"></canvas>
+                    <div class="element-label">💺 Seat</div>
                 </div>
             </div>
         </div>
 
         <!-- Office Performance Section -->
         <div id="offices" class="content-section">
-            <div style="background: white; padding: 20px; border-radius: 15px;">
-                <h3>🏢 Office Performance Analysis</h3>
+            <div class="enhanced-card card-offices card-spacing">
+                <div class="card-header">
+                    <div class="card-icon info-gradient">🏢</div>
+                    <div class="card-badge">Performance</div>
+                </div>
+                <div class="card-title">Top 15 Office Performance Comparison</div>
+                <div class="card-subtitle">Horizontal bar chart showing quality scores and booking volumes</div>
+                <div class="card-metric">
+                    <span class="metric-label">Offices Analyzed</span>
+                    <span class="metric-value">{{ office_stats|length }} Locations</span>
+                </div>
+                <div class="card-metric">
+                    <span class="metric-label">Visualization</span>
+                    <span class="metric-value">📊 Bar Chart</span>
+                </div>
+            </div>
+            <div class="enhanced-card">
+                <div class="office-chart-container">
+                    <canvas id="officePerformanceChart" height="400"></canvas>
+                </div>
+            </div>
+            <div class="enhanced-card table-card">
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">📋 Detailed Office Rankings</h4>
                 <table class="heatmap-table" id="officeTable">
                     <thead>
                         <tr>
                             <th>Office</th>
-                            <th class="sortable" onclick="sortTable('officeTable', 1)">Quality Score</th>
-                            <th class="sortable" onclick="sortTable('officeTable', 2)">Volume</th>
+                            <th class="sortable" data-column-index="1">Quality Score</th>
+                            <th class="sortable" data-column-index="2">Volume</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for stat in office_stats|slice:":10" %}
+                        {% for stat in office_stats|slice:":15" %}
                         <tr class="{% if stat.avg_quality >= 80 %}performance-high{% elif stat.avg_quality >= 60 %}performance-medium{% else %}performance-low{% endif %}">
-                            <td><strong>{{ stat.kq_office__name }}</strong><br><small>{{ stat.kq_office__office_id }}</small></td>
-                            <td class="score-cell">{{ stat.avg_quality|floatformat:0 }}%</td>
+                            <td><strong>{{ stat.office_name }}</strong><br><small>{{ stat.office_id }}</small></td>
+                            <td class="score-cell">{{ stat.avg_quality|floatformat:1 }}%</td>
                             <td>{{ stat.total }}</td>
                             <td>{% if stat.avg_quality >= 80 %}🟢{% elif stat.avg_quality >= 60 %}🟡{% else %}🔴{% endif %}</td>
                         </tr>
@@ -443,801 +373,178 @@
 
         <!-- Quality Distribution Section -->
         <div id="quality" class="content-section">
-            <div style="background: white; padding: 20px; border-radius: 15px;">
-                <h3>📈 Quality Score Distribution</h3>
-                <div class="quality-histogram" id="qualityHistogram">
-                    <!-- Bars will be dynamically sized by JavaScript -->
+            <div class="enhanced-card card-quality card-spacing">
+                <div class="card-header">
+                    <div class="card-icon purple-gradient">📈</div>
+                    <div class="card-badge">Distribution</div>
                 </div>
-                <script>
-                    // Calculate proportional bar heights
-                    const qualityData = [{{ quality_ranges.0 }}, {{ quality_ranges.1 }}, {{ quality_ranges.2 }}, {{ quality_ranges.3 }}, {{ quality_ranges.4 }}];
-                    const maxCount = Math.max(...qualityData);
-                    const labels = ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'];
-                    const classes = ['critical', 'poor', 'average', 'good', 'excellent'];
-                    const titles = ['0-20% Quality', '21-40% Quality', '41-60% Quality', '61-80% Quality', '81-100% Quality'];
-                    
-                    const histogram = document.getElementById('qualityHistogram');
-                    qualityData.forEach((count, index) => {
-                        const height = maxCount > 0 ? Math.max((count / maxCount) * 100, 15) : 15; // Min 15% height for visibility
-                        const bar = document.createElement('div');
-                        bar.className = `score-bar ${classes[index]}`;
-                        bar.style.height = height + '%';
-                        bar.title = titles[index];
-                        bar.innerHTML = `
-                            <span class="bar-label">${labels[index]}</span>
-                            <span class="bar-count">${count}<br><small>PNRs</small></span>
-                        `;
-                        histogram.appendChild(bar);
-                    });
-                </script>
+                <div class="card-title">Quality Score Distribution</div>
+                <div class="card-subtitle">Breakdown of PNRs across different quality score ranges</div>
+                <div class="card-metric">
+                    <span class="metric-label">Score Ranges</span>
+                    <span class="metric-value">5 Categories</span>
+                </div>
+                <div class="card-metric">
+                    <span class="metric-label">Target Range</span>
+                    <span class="metric-value">🎯 81-100%</span>
+                </div>
+                <button class="card-button" onclick="document.getElementById('qualityHistogram').scrollIntoView({behavior: 'smooth'})">View Distribution</button>
+            </div>
+            <div class="enhanced-card card-spacing">
+                <div class="histogram-header">
+                    <h3 class="histogram-title">📊 Quality Score Distribution Spectrum</h3>
+                    <p class="histogram-subtitle">Journey from Critical to Excellence - Where does your data stand?</p>
+                </div>
+                <div class="quality-histogram" id="qualityHistogram">
+                    <div class="histogram-bar critical" data-count="{{ critical_count|default:0 }}">
+                        <div class="bar-fill"></div>
+                        <div class="bar-text">{{ critical_count|default:0 }} PNRs</div>
+                        <div class="x-axis-label">
+                            <div class="axis-category">Critical</div>
+                            <div class="axis-range">0-20%</div>
+                        </div>
+                    </div>
+                    <div class="histogram-bar poor" data-count="{{ poor_count|default:0 }}">
+                        <div class="bar-fill"></div>
+                        <div class="bar-text">{{ poor_count|default:0 }} PNRs</div>
+                        <div class="x-axis-label">
+                            <div class="axis-category">Poor</div>
+                            <div class="axis-range">21-40%</div>
+                        </div>
+                    </div>
+                    <div class="histogram-bar fair" data-count="{{ fair_count|default:0 }}">
+                        <div class="bar-fill"></div>
+                        <div class="bar-text">{{ fair_count|default:0 }} PNRs</div>
+                        <div class="x-axis-label">
+                            <div class="axis-category">Fair</div>
+                            <div class="axis-range">41-60%</div>
+                        </div>
+                    </div>
+                    <div class="histogram-bar good" data-count="{{ good_count|default:0 }}">
+                        <div class="bar-fill"></div>
+                        <div class="bar-text">{{ good_count|default:0 }} PNRs</div>
+                        <div class="x-axis-label">
+                            <div class="axis-category">Good</div>
+                            <div class="axis-range">61-80%</div>
+                        </div>
+                    </div>
+                    <div class="histogram-bar excellent" data-count="{{ excellent_count|default:0 }}">
+                        <div class="bar-fill"></div>
+                        <div class="bar-text">{{ excellent_count|default:0 }} PNRs</div>
+                        <div class="x-axis-label">
+                            <div class="axis-category">Excellent</div>
+                            <div class="axis-range">81-100%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="enhanced-card card-quality">
+                <div class="card-header">
+                    <div class="card-icon purple-gradient">📅</div>
+                    <div class="card-badge">Trend</div>
+                </div>
+                <div class="card-title">Quality Score Trend Analysis</div>
+                <div class="card-subtitle">Average daily quality score based on booking creation date</div>
+                <div class="card-metric">
+                    <span class="metric-label">Time Period</span>
+                    <span class="metric-value">
+                        <select id="trend-days-selector" onchange="initializeQualityTrendChart()" class="trend-selector">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90" selected>Last 90 Days</option>
+                        </select>
+                    </span>
+                </div>
+                <div class="chart-container trend-chart">
+                    <canvas id="qualityTrendChart" height="200"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- Export Section -->
         <div id="export" class="content-section">
-            <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px;">
-                <h2>📤 Export Data</h2>
-                <p>Download filtered booking data in Excel format with Office ID and Staff ID</p>
-                <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
-                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('all')">📊 All Data</a>
-                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('no_contacts')">📞 No Contacts</a>
-                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('low_quality')">⚠️ Low Quality</a>
-                    <a href="#" style="padding: 10px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; text-decoration: none;" onclick="exportData('high_quality')">⭐ High Quality</a>
+            <div class="enhanced-stats-grid">
+                <div class="enhanced-card card-export" tabindex="0" role="article" aria-label="Export All Data">
+                    <div class="card-header">
+                        <div class="card-icon info-gradient">📊</div>
+                        <div class="card-badge">Complete</div>
+                    </div>
+                    <div class="card-title">All Booking Data</div>
+                    <div class="card-subtitle">Complete dataset with all PNRs, quality scores, and contact information</div>
+                    <div class="card-metric">
+                        <span class="metric-label">Records</span>
+                        <span class="metric-value">{{ total_pnrs|default:0 }} PNRs</span>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Format</span>
+                        <span class="metric-value">📋 Excel (.xlsx)</span>
+                    </div>
+                    <a href="#" class="export-link card-button" data-export-type="all">Download All Data</a>
+                </div>
+
+                <div class="enhanced-card card-export" tabindex="0" role="article" aria-label="Export No Contacts Data">
+                    <div class="card-header">
+                        <div class="card-icon danger-gradient">📞</div>
+                        <div class="card-badge">Missing</div>
+                    </div>
+                    <div class="card-title">No Contact Information</div>
+                    <div class="card-subtitle">PNRs without any phone or email contact details</div>
+                    <div class="card-metric">
+                        <span class="metric-label">Records</span>
+                        <span class="metric-value">{{ missing_contacts|default:0 }} PNRs</span>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Priority</span>
+                        <span class="metric-value">🔴 High</span>
+                    </div>
+                    <a href="#" class="export-link card-button" data-export-type="no_contacts">Download Missing Contacts</a>
+                </div>
+
+                <div class="enhanced-card card-export" tabindex="0" role="article" aria-label="Export Low Quality Data">
+                    <div class="card-header">
+                        <div class="card-icon warning-gradient">⚠️</div>
+                        <div class="card-badge">Low Quality</div>
+                    </div>
+                    <div class="card-title">Low Quality Bookings</div>
+                    <div class="card-subtitle">PNRs with quality scores below 60% requiring attention</div>
+                    <div class="card-metric">
+                        <span class="metric-label">Threshold</span>
+                        <span class="metric-value">< 60% Quality</span>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Action</span>
+                        <span class="metric-value">🔧 Review Required</span>
+                    </div>
+                    <a href="#" class="export-link card-button" data-export-type="low_quality">Download Low Quality</a>
+                </div>
+
+                <div class="enhanced-card card-export" tabindex="0" role="article" aria-label="Export High Quality Data">
+                    <div class="card-header">
+                        <div class="card-icon success-gradient">⭐</div>
+                        <div class="card-badge">Excellent</div>
+                    </div>
+                    <div class="card-title">High Quality Bookings</div>
+                    <div class="card-subtitle">PNRs with quality scores above 80% - best practices examples</div>
+                    <div class="card-metric">
+                        <span class="metric-label">Threshold</span>
+                        <span class="metric-value">> 80% Quality</span>
+                    </div>
+                    <div class="card-metric">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value">✅ Excellent</span>
+                    </div>
+                    <a href="#" class="export-link card-button" data-export-type="high_quality">Download High Quality</a>
                 </div>
             </div>
         </div>
     </div>
 
+    <script id="dashboard-data" type="application/json">
+        {{ dashboard_data_json|safe }}
+    </script>
     <script>
-        // Global variables
-        let selectedChannels = [];
-        let selectedOffices = [];
-        let channelGroupings = [];
-        let availableOffices = [];
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadChannelGroupings().then(() => {
-                initializeFilters();
-            });
-        });
-        
-        // Initialize filters from URL parameters
-        function initializeFilters() {
-            // Initialize selected channels from Django context
-            const currentChannels = {{ current_channels|safe }};
-            const currentOffices = {{ current_offices|safe }};
-            
-            selectedChannels = currentChannels || [];
-            selectedOffices = currentOffices || [];
-            
-            // Restore channel selections in UI
-            selectedChannels.forEach(channelId => {
-                const checkbox = document.getElementById(`channel-${channelId}`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                    // Find channel label
-                    let channelLabel = '';
-                    channelGroupings.forEach(group => {
-                        const channel = group.channels.find(ch => ch.id === channelId);
-                        if (channel) channelLabel = channel.label;
-                    });
-                    if (channelLabel && selectedChannels.length < getTotalChannelCount()) {
-                        addChannelTag(channelId, channelLabel);
-                    }
-                }
-            });
-            
-            // Update displays
-            updateChannelDisplay();
-            updateAvailableOffices(false).then(() => {
-                // Restore office selections after offices are loaded
-                selectedOffices.forEach(officeId => {
-                    const checkbox = document.getElementById(`office-${officeId}`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                        const office = availableOffices.find(o => o.office_id === officeId);
-                        if (office && selectedOffices.length < availableOffices.length) {
-                            addOfficeTag(officeId, office.name);
-                        }
-                    }
-                });
-                updateOfficeDisplay();
-            });
-        }
-        
-        // Get total channel count
-        function getTotalChannelCount() {
-            return channelGroupings.reduce((sum, group) => sum + group.channels.length, 0);
-        }
-
-        // Load channel groupings from API
-        async function loadChannelGroupings() {
-            try {
-                const response = await fetch('/api/channel-groupings/');
-                const data = await response.json();
-                channelGroupings = data.groupings;
-                populateChannelDropdown();
-                return Promise.resolve();
-            } catch (error) {
-                console.error('Error loading channel groupings:', error);
-                // Fallback to hardcoded data if API fails
-                channelGroupings = [
-                    {
-                        id: 'direct',
-                        label: 'Direct Channels',
-                        channels: [
-                            {id: 'website', label: 'Website'},
-                            {id: 'call_center', label: 'Call Center'},
-                            {id: 'airport_counter', label: 'Airport Counter'},
-                            {id: 'mobile_app', label: 'Mobile App'},
-                            {id: 'kiosk', label: 'Kiosk'}
-                        ]
-                    },
-                    {
-                        id: 'indirect',
-                        label: 'Indirect Channels',
-                        channels: [
-                            {id: 'travel_agents', label: 'Travel Agents'},
-                            {id: 'corporate_sales', label: 'Corporate Sales'},
-                            {id: 'group_sales', label: 'Group Sales'}
-                        ]
-                    }
-                ];
-                populateChannelDropdown();
-                return Promise.resolve();
-            }
-        }
-
-        // Populate channel dropdown
-        function populateChannelDropdown() {
-            const dropdown = document.getElementById('channel-dropdown');
-            dropdown.innerHTML = '';
-            
-            // Add 'All' option
-            const allGroup = document.createElement('div');
-            allGroup.className = 'channel-group';
-            const allOption = document.createElement('div');
-            allOption.className = 'channel-option';
-            allOption.onclick = () => selectAllChannels();
-            allOption.innerHTML = '<input type="checkbox" id="channel-all"><label for="channel-all">All</label>';
-            allGroup.appendChild(allOption);
-            dropdown.appendChild(allGroup);
-            
-            channelGroupings.forEach(group => {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'channel-group';
-                
-                const header = document.createElement('div');
-                header.className = 'channel-group-header';
-                header.textContent = group.label;
-                groupDiv.appendChild(header);
-                
-                group.channels.forEach(channel => {
-                    const option = document.createElement('div');
-                    option.className = 'channel-option';
-                    option.onclick = () => toggleChannel(channel.id, channel.label);
-                    
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = `channel-${channel.id}`;
-                    
-                    const label = document.createElement('label');
-                    label.textContent = channel.label;
-                    label.setAttribute('for', `channel-${channel.id}`);
-                    
-                    option.appendChild(checkbox);
-                    option.appendChild(label);
-                    groupDiv.appendChild(option);
-                });
-                
-                dropdown.appendChild(groupDiv);
-            });
-        }
-
-        // Toggle channel selection
-        function toggleChannel(channelId, channelLabel) {
-            const checkbox = document.getElementById(`channel-${channelId}`);
-            checkbox.checked = !checkbox.checked;
-            
-            if (checkbox.checked) {
-                if (!selectedChannels.includes(channelId)) {
-                    selectedChannels.push(channelId);
-                    addChannelTag(channelId, channelLabel);
-                }
-            } else {
-                selectedChannels = selectedChannels.filter(id => id !== channelId);
-                removeChannelTag(channelId);
-            }
-            
-            updateChannelDisplay();
-            updateAvailableOffices();
-        }
-
-        // Add channel tag
-        function addChannelTag(channelId, channelLabel) {
-            const tagsContainer = document.getElementById('channel-tags');
-            const tag = document.createElement('div');
-            tag.className = 'channel-tag';
-            tag.id = `channel-tag-${channelId}`;
-            tag.innerHTML = `${channelLabel} <span class="close" onclick="removeChannelTag('${channelId}')">&times;</span>`;
-            tagsContainer.appendChild(tag);
-        }
-
-        // Remove channel tag
-        function removeChannelTag(channelId) {
-            const tag = document.getElementById(`channel-tag-${channelId}`);
-            if (tag) tag.remove();
-            
-            const checkbox = document.getElementById(`channel-${channelId}`);
-            if (checkbox) checkbox.checked = false;
-            
-            selectedChannels = selectedChannels.filter(id => id !== channelId);
-            updateAvailableOffices();
-        }
-        
-        // Select all channels
-        function selectAllChannels() {
-            const allCheckbox = document.getElementById('channel-all');
-            allCheckbox.checked = !allCheckbox.checked;
-            
-            if (allCheckbox.checked) {
-                // Select all channels but don't show tags
-                selectedChannels = [];
-                channelGroupings.forEach(group => {
-                    group.channels.forEach(channel => {
-                        selectedChannels.push(channel.id);
-                        const checkbox = document.getElementById(`channel-${channel.id}`);
-                        if (checkbox) checkbox.checked = true;
-                    });
-                });
-                document.getElementById('channel-tags').innerHTML = '';
-                updateChannelInputDisplay('All');
-            } else {
-                // Deselect all channels
-                selectedChannels = [];
-                document.getElementById('channel-tags').innerHTML = '';
-                document.querySelectorAll('[id^="channel-"]').forEach(cb => {
-                    if (cb.id !== 'channel-all') cb.checked = false;
-                });
-                updateChannelInputDisplay('All');
-            }
-            
-            updateAvailableOffices(true);
-        }
-
-        // Update available offices based on selected channels
-        async function updateAvailableOffices(clearSelections = true) {
-            document.getElementById('office-input').disabled = false;
-            document.getElementById('office-input').placeholder = 'All';
-            
-            // Clear current office selections when channels change (unless preserving from URL)
-            if (clearSelections) {
-                selectedOffices = [];
-                document.getElementById('office-tags').innerHTML = '';
-            }
-            
-            // Check if all channels are selected
-            const totalChannels = getTotalChannelCount();
-            const isAllChannelsSelected = selectedChannels.length === totalChannels;
-            
-            // If no channels selected or all channels selected, show all offices
-            if (selectedChannels.length === 0 || isAllChannelsSelected) {
-                availableOffices = getAllOffices();
-                populateOfficeDropdown();
-                updateOfficeDisplay();
-                return Promise.resolve();
-            }
-            
-            // Use fallback logic directly for now
-            availableOffices = getOfficesByChannelType(selectedChannels);
-            populateOfficeDropdown();
-            updateOfficeDisplay();
-            return Promise.resolve();
-            
-            // TODO: Fix API endpoint later
-            /*
-            try {
-                const params = new URLSearchParams();
-                selectedChannels.forEach(channel => params.append('channels', channel));
-                
-                const response = await fetch(`/api/offices-by-channels/?${params}`);
-                const data = await response.json();
-                availableOffices = data.offices;
-                populateOfficeDropdown();
-                return Promise.resolve();
-            } catch (error) {
-                console.error('Error loading offices:', error);
-                // Fallback logic based on channel types
-                availableOffices = getOfficesByChannelType(selectedChannels);
-                populateOfficeDropdown();
-                return Promise.resolve();
-            }
-            */
-        }
-        
-        // Fallback function to determine offices by channel type
-        function getOfficesByChannelType(channels) {
-            console.log('getOfficesByChannelType called with channels:', channels);
-            let offices = [];
-            
-            for (let channel of channels) {
-                console.log('Processing channel:', channel);
-                if (channel === 'website') {
-                    offices.push({office_id: 'WEB001', name: 'Website Office'});
-                    console.log('Added Website Office');
-                } else if (channel === 'mobile') {
-                    offices.push({office_id: 'MOB001', name: 'Mobile App Office'});
-                    console.log('Added Mobile App Office');
-                } else if (channel === 'cec') {
-                    offices.push({office_id: 'CC001', name: 'Call Center'});
-                    console.log('Added Call Center');
-                } else if (channel === 'ato' || channel === 'cto' || channel === 'kq_gsa') {
-                    // Physical offices only (exclude digital offices)
-                    const physicalOffices = getAllOffices().filter(o => 
-                        !['WEB001', 'MOB001', 'CC001'].includes(o.office_id)
-                    );
-                    offices = offices.concat(physicalOffices);
-                    console.log('Added physical offices for', channel, ':', physicalOffices.map(o => o.office_id));
-                } else if (channel === 'travel_agents' || channel === 'ndc' || channel === 'msafiri_connect') {
-                    // These use staff/agencies, show physical offices only
-                    const physicalOffices = getAllOffices().filter(o => 
-                        !['WEB001', 'MOB001', 'CC001'].includes(o.office_id)
-                    );
-                    offices = offices.concat(physicalOffices);
-                    console.log('Added physical offices for staff channels:', physicalOffices.length);
-                }
-            }
-            
-            // Remove duplicates
-            const uniqueOffices = offices.filter((office, index, self) => 
-                index === self.findIndex(o => o.office_id === office.office_id)
-            );
-            
-            console.log('Final offices:', uniqueOffices);
-            return uniqueOffices;
-        }
-        
-        // Get all offices from template context
-        function getAllOffices() {
-            return [
-                {% for office in offices %}
-                {office_id: '{{ office.office_id }}', name: '{{ office.name }}'}{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ];
-        }
-
-        // Populate office dropdown
-        function populateOfficeDropdown() {
-            const dropdown = document.getElementById('office-dropdown');
-            dropdown.innerHTML = '';
-            
-            // Add 'All' option
-            const allOption = document.createElement('div');
-            allOption.className = 'office-option';
-            allOption.onclick = () => selectAllOffices();
-            allOption.innerHTML = '<input type="checkbox" id="office-all"><label for="office-all">All</label>';
-            dropdown.appendChild(allOption);
-            
-            if (availableOffices.length === 0) {
-                const option = document.createElement('div');
-                option.className = 'office-option disabled';
-                option.textContent = 'No offices available for selected channels';
-                dropdown.appendChild(option);
-                return;
-            }
-            
-            availableOffices.forEach(office => {
-                const option = document.createElement('div');
-                option.className = 'office-option';
-                option.onclick = () => toggleOffice(office.office_id, office.name);
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `office-${office.office_id}`;
-                
-                const label = document.createElement('label');
-                label.textContent = `${office.name} (${office.office_id})`;
-                label.setAttribute('for', `office-${office.office_id}`);
-                
-                option.appendChild(checkbox);
-                option.appendChild(label);
-                dropdown.appendChild(option);
-            });
-        }
-
-        // Toggle office selection
-        function toggleOffice(officeId, officeName) {
-            const checkbox = document.getElementById(`office-${officeId}`);
-            checkbox.checked = !checkbox.checked;
-            
-            if (checkbox.checked) {
-                if (!selectedOffices.includes(officeId)) {
-                    selectedOffices.push(officeId);
-                    addOfficeTag(officeId, officeName);
-                }
-            } else {
-                selectedOffices = selectedOffices.filter(id => id !== officeId);
-                removeOfficeTag(officeId);
-            }
-            
-            updateOfficeDisplay();
-        }
-
-        // Add office tag
-        function addOfficeTag(officeId, officeName) {
-            const tagsContainer = document.getElementById('office-tags');
-            const tag = document.createElement('div');
-            tag.className = 'office-tag';
-            tag.id = `office-tag-${officeId}`;
-            tag.innerHTML = `${officeName} (${officeId}) <span class="close" onclick="removeOfficeTag('${officeId}')">&times;</span>`;
-            tagsContainer.appendChild(tag);
-        }
-
-        // Remove office tag
-        function removeOfficeTag(officeId) {
-            const tag = document.getElementById(`office-tag-${officeId}`);
-            if (tag) tag.remove();
-            
-            const checkbox = document.getElementById(`office-${officeId}`);
-            if (checkbox) checkbox.checked = false;
-            
-            selectedOffices = selectedOffices.filter(id => id !== officeId);
-        }
-        
-        // Select all offices
-        function selectAllOffices() {
-            const allCheckbox = document.getElementById('office-all');
-            allCheckbox.checked = !allCheckbox.checked;
-            
-            if (allCheckbox.checked) {
-                // Select all available offices but don't show tags
-                selectedOffices = [];
-                availableOffices.forEach(office => {
-                    selectedOffices.push(office.office_id);
-                    const checkbox = document.getElementById(`office-${office.office_id}`);
-                    if (checkbox) checkbox.checked = true;
-                });
-                document.getElementById('office-tags').innerHTML = '';
-                updateOfficeInputDisplay('All');
-            } else {
-                // Deselect all offices
-                selectedOffices = [];
-                document.getElementById('office-tags').innerHTML = '';
-                document.querySelectorAll('[id^="office-"]').forEach(cb => {
-                    if (cb.id !== 'office-all') cb.checked = false;
-                });
-                updateOfficeInputDisplay('All');
-            }
-        }
-
-        // Toggle dropdowns
-        function toggleChannelDropdown() {
-            const dropdown = document.getElementById('channel-dropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function toggleOfficeDropdown() {
-            const dropdown = document.getElementById('office-dropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-
-
-
-        // Navigation
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
-            event.target.classList.add('active');
-        }
-
-        // Apply filters
-        function applyFilters() {
-            const params = new URLSearchParams();
-            const startDate = document.getElementById('booking_start_date').value;
-            const endDate = document.getElementById('booking_end_date').value;
-            
-            if (startDate) params.append('start_date', startDate);
-            if (endDate) params.append('end_date', endDate);
-            
-            selectedChannels.forEach(channel => params.append('channels', channel));
-            selectedOffices.forEach(office => params.append('offices', office));
-            
-            const flightStart = document.getElementById('flight_start_date').value;
-            const flightEnd = document.getElementById('flight_end_date').value;
-            if (flightStart) params.append('flight_start', flightStart);
-            if (flightEnd) params.append('flight_end', flightEnd);
-            
-            window.location.href = '?' + params.toString();
-        }
-
-        // Clear filters
-        function clearFilters() {
-            selectedChannels = [];
-            selectedOffices = [];
-            clearBookingDates();
-            clearFlightDates();
-            document.getElementById('channel-tags').innerHTML = '';
-            document.getElementById('office-tags').innerHTML = '';
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            window.location.href = '/';
-        }
-
-        // Export data
-        function exportData(type) {
-            const params = new URLSearchParams(window.location.search);
-            params.set('type', type);
-            window.location.href = '{% url "export_pnrs_to_excel" %}?' + params.toString();
-        }
-
-        // Update channel input display
-        function updateChannelDisplay() {
-            const input = document.querySelector('.channel-filter input');
-            if (selectedChannels.length === 0) {
-                input.value = 'All';
-            } else {
-                const totalChannels = channelGroupings.reduce((sum, group) => sum + group.channels.length, 0);
-                if (selectedChannels.length === totalChannels) {
-                    input.value = 'All';
-                } else {
-                    input.value = `${selectedChannels.length} selected`;
-                }
-            }
-        }
-        
-        // Update office input display
-        function updateOfficeDisplay() {
-            const input = document.getElementById('office-input');
-            if (selectedOffices.length === 0) {
-                input.value = 'All';
-            } else if (availableOffices.length > 0 && selectedOffices.length === availableOffices.length) {
-                input.value = 'All';
-            } else {
-                input.value = `${selectedOffices.length} selected`;
-            }
-        }
-        
-        // Update input display functions
-        function updateChannelInputDisplay(text) {
-            document.querySelector('.channel-filter input').value = text;
-        }
-        
-        function updateOfficeInputDisplay(text) {
-            document.getElementById('office-input').value = text;
-        }
-        
-        // Flight date picker functions
-        function showFlightDatePicker() {
-            document.getElementById('flight_date_picker').style.display = 'block';
-        }
-        
-        function closeFlightDatePicker() {
-            document.getElementById('flight_date_picker').style.display = 'none';
-        }
-        
-        function showBookingDatePicker() {
-            document.getElementById('booking_date_picker').style.display = 'block';
-        }
-        
-        function closeBookingDatePicker() {
-            document.getElementById('booking_date_picker').style.display = 'none';
-        }
-        
-        function updateBookingDateDisplay() {
-            const startDate = document.getElementById('booking_start_date').value;
-            const endDate = document.getElementById('booking_end_date').value;
-            const display = document.getElementById('booking_date_display');
-            
-            if (startDate && endDate && startDate > endDate) {
-                alert('Start date must be less than or equal to end date');
-                document.getElementById('booking_end_date').value = startDate;
-                return;
-            }
-            
-            // Validate booking date vs flight date
-            const flightStart = document.getElementById('flight_start_date').value;
-            if (startDate && flightStart && startDate > flightStart) {
-                alert('Booking date cannot be greater than flight departure date');
-                document.getElementById('booking_start_date').value = flightStart;
-                return;
-            }
-            
-            if (startDate || endDate) {
-                const start = startDate ? new Date(startDate).toLocaleDateString() : 'Open';
-                const end = endDate ? new Date(endDate).toLocaleDateString() : 'Open';
-                display.value = `${start} → ${end}`;
-            } else {
-                display.value = '';
-            }
-        }
-        
-        function clearBookingDates() {
-            document.getElementById('booking_start_date').value = '';
-            document.getElementById('booking_end_date').value = '';
-            document.getElementById('booking_date_display').value = '';
-        }
-        
-        function updateFlightDateDisplay() {
-            const startDate = document.getElementById('flight_start_date').value;
-            const endDate = document.getElementById('flight_end_date').value;
-            const display = document.getElementById('flight_departure_display');
-            
-            if (startDate && endDate && startDate > endDate) {
-                alert('Start date must be less than or equal to end date');
-                document.getElementById('flight_end_date').value = startDate;
-                return;
-            }
-            
-            // Validate against booking date
-            const bookingStart = document.getElementById('booking_start_date').value;
-            if (bookingStart && startDate && bookingStart > startDate) {
-                alert('Booking date cannot be greater than flight departure date. Adjusting booking date.');
-                document.getElementById('booking_start_date').value = startDate;
-                updateBookingDateDisplay();
-            }
-            
-            if (startDate || endDate) {
-                const start = startDate ? new Date(startDate).toLocaleDateString() : 'Open';
-                const end = endDate ? new Date(endDate).toLocaleDateString() : 'Open';
-                display.value = `${start} → ${end}`;
-            } else {
-                display.value = '';
-            }
-        }
-        
-        function clearFlightDates() {
-            document.getElementById('flight_start_date').value = '';
-            document.getElementById('flight_end_date').value = '';
-            document.getElementById('flight_departure_display').value = '';
-        }
-        
-        // Initialize date displays on load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateBookingDateDisplay();
-            updateFlightDateDisplay();
-        });
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.channel-filter')) {
-                document.getElementById('channel-dropdown').style.display = 'none';
-            }
-            if (!event.target.closest('.office-filter')) {
-                document.getElementById('office-dropdown').style.display = 'none';
-            }
-            if (!event.target.closest('#booking_date_display') && !event.target.closest('#booking_date_picker')) {
-                closeBookingDatePicker();
-            }
-            if (!event.target.closest('#flight_departure_display') && !event.target.closest('#flight_date_picker')) {
-                closeFlightDatePicker();
-            }
-        });
-        
-        // Initialize element donut charts
-        function initializeElementCharts() {
-            const elements = [
-                {id: 'phoneChart', label: 'Phone', missing: {{ total_pnrs }} - {{ phone_count|default:0 }}},
-                {id: 'emailChart', label: 'Email', missing: {{ total_pnrs }} - {{ email_count|default:0 }}},
-                {id: 'ffChart', label: 'FF Number', missing: {{ total_pnrs }} - {{ ff_count|default:0 }}},
-                {id: 'mealChart', label: 'Meal', missing: {{ total_pnrs }} - {{ meal_count|default:0 }}},
-                {id: 'seatChart', label: 'Seat', missing: {{ total_pnrs }} - {{ seat_count|default:0 }}}
-            ];
-            
-            elements.forEach(element => {
-                const ctx = document.getElementById(element.id);
-                if (ctx) {
-                    const total = {{ total_pnrs }};
-                    const present = total - element.missing;
-                    const missingPercent = total > 0 ? Math.round((element.missing / total) * 100) : 0;
-                    
-                    new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            datasets: [{
-                                data: [present, element.missing],
-                                backgroundColor: ['#4caf50', '#f44336'],
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: false,
-                            maintainAspectRatio: false,
-                            cutout: '70%',
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: false }
-                            }
-                        },
-                        plugins: [{
-                            beforeDraw: function(chart) {
-                                const ctx = chart.ctx;
-                                ctx.save();
-                                const centerX = chart.width / 2;
-                                const centerY = chart.height / 2;
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.font = 'bold 16px Arial';
-                                ctx.fillStyle = missingPercent > 50 ? '#f44336' : '#4caf50';
-                                ctx.fillText(missingPercent + '%', centerX, centerY - 5);
-                                ctx.font = '10px Arial';
-                                ctx.fillStyle = '#666';
-                                ctx.fillText('missing', centerX, centerY + 8);
-                                ctx.restore();
-                            }
-                        }]
-                    });
-                }
-            });
-        }
-        
-        // Initialize charts when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(initializeElementCharts, 500);
-            loadTheme();
-        });
-        
-        // Theme Management
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            
-            // Update active theme button
-            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.theme-btn.${theme}`).classList.add('active');
-        }
-        
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'default';
-            setTheme(savedTheme);
-        }
-        
-        // Table Sorting Function
-        function sortTable(tableId, columnIndex) {
-            const table = document.getElementById(tableId);
-            const tbody = table.querySelector('tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            const header = table.querySelectorAll('th')[columnIndex];
-            
-            // Determine sort direction (toggle between asc/desc)
-            let isAsc = true;
-            if (header.classList.contains('sort-asc')) {
-                isAsc = false;
-            } else if (header.classList.contains('sort-desc')) {
-                isAsc = true;
-            }
-            
-            // Remove sort classes from all headers
-            table.querySelectorAll('th').forEach(th => {
-                th.classList.remove('sort-asc', 'sort-desc');
-            });
-            
-            // Sort rows
-            rows.sort((a, b) => {
-                const aText = a.cells[columnIndex].textContent.trim().replace('%', '');
-                const bText = b.cells[columnIndex].textContent.trim().replace('%', '');
-                
-                // Try to parse as numbers
-                const aNum = parseFloat(aText);
-                const bNum = parseFloat(bText);
-                
-                if (!isNaN(aNum) && !isNaN(bNum)) {
-                    return isAsc ? aNum - bNum : bNum - aNum;
-                } else {
-                    return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-                }
-            });
-            
-            // Update header class
-            header.classList.add(isAsc ? 'sort-asc' : 'sort-desc');
-            
-            // Reorder rows in DOM
-            rows.forEach(row => tbody.appendChild(row));
-        }
+        const data = JSON.parse(document.getElementById('dashboard-data').textContent);
+        initDashboard(data);
     </script>
 </body>
 </html>

@@ -1,75 +1,82 @@
 from django.http import JsonResponse
-from django.db.models import Count, Avg, Case, When, IntegerField, Q
-from .models import Booking, KQOffice, KQStaff
+from django.db.models import Count, Avg, Q
+from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.throttling import UserRateThrottle
+from rest_framework.response import Response
+from .models import PNR, Contact, Passenger
+from .utils import get_quality_score_annotation
 
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 def get_channel_groupings(request):
-    """Get channel groupings for filtering"""
-    return JsonResponse({
+    """Get channel groupings based on delivery systems"""
+    delivery_systems = PNR.objects.values_list('delivery_system_company', flat=True).distinct().order_by('delivery_system_company')
+    
+    # Map delivery systems to channel groupings using list comprehension
+    direct_channels = [{'id': ds, 'label': ds} for ds in delivery_systems if ds and ds in ['KQ', 'WEB', 'MOB']]
+    indirect_channels = [{'id': ds, 'label': ds} for ds in delivery_systems if ds and ds not in ['KQ', 'WEB', 'MOB']]
+    
+    return Response({
         'groupings': [
             {
                 'id': 'direct',
                 'label': 'Direct Channels',
-                'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.DIRECT_CHANNELS]
+                'channels': direct_channels
             },
             {
-                'id': 'indirect', 
+                'id': 'indirect',
                 'label': 'Indirect Channels',
-                'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.INDIRECT_CHANNELS]
+                'channels': indirect_channels
             }
         ]
     })
 
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 def get_offices_by_channels(request):
     """Get offices available for selected channels"""
     channels = request.GET.getlist('channels')
     
-    if not channels:
-        return JsonResponse({'offices': []})
+    pnrs = PNR.objects.all()
+    if channels:
+        # Sanitize channel inputs
+        clean_channels = [ch.strip() for ch in channels if ch.strip()]
+        if clean_channels:
+            pnrs = pnrs.filter(delivery_system_company__in=clean_channels)
     
-    office_ids = set()
+    offices_from_pnr = pnrs.filter(office_id__isnull=False).values('office_id').distinct().order_by('office_id')
+    offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in offices_from_pnr]
     
-    for channel in channels:
-        if channel in Booking.OFFICE_CHANNELS:
-            # Website/Mobile: all offices
-            office_ids.update(KQOffice.objects.values_list('office_id', flat=True))
-        elif channel in Booking.STAFF_CHANNELS:
-            # Staff channels: offices with staff
-            office_ids.update(
-                KQOffice.objects.filter(staff__isnull=False)
-                .distinct().values_list('office_id', flat=True)
-            )
-    
-    offices = list(KQOffice.objects.filter(
-        office_id__in=office_ids
-    ).values('office_id', 'name').order_by('name'))
-    
-    return JsonResponse({'offices': offices})
+    return Response({'offices': offices})
 
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 def get_channel_office_stats(request):
-    """Get booking statistics by channel and office"""
+    """Get booking statistics for selected channels and offices"""
     channels = request.GET.getlist('channels')
     office_ids = request.GET.getlist('offices')
     
-    bookings = Booking.objects.all()
+    pnrs = PNR.objects.all()
+    
+    # Sanitize and validate inputs
+    if office_ids:
+        clean_offices = [office.strip() for office in office_ids if office.strip()]
+        if clean_offices:
+            pnrs = pnrs.filter(office_id__in=clean_offices)
     
     if channels:
-        bookings = bookings.filter(channel__in=channels)
+        clean_channels = [ch.strip() for ch in channels if ch.strip()]
+        if clean_channels:
+            pnrs = pnrs.filter(delivery_system_company__in=clean_channels)
     
-    if office_ids:
-        bookings = bookings.filter(kq_office__office_id__in=office_ids)
+    # Calculate quality scores using the utility function
+    quality_score_annotation = get_quality_score_annotation()
+    pnrs_with_score = pnrs.annotate(calculated_quality_score=quality_score_annotation)
     
-    quality_calc = (
-        Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
-    )
-    
-    stats = bookings.aggregate(
+    stats = pnrs_with_score.aggregate(
         total_bookings=Count('id'),
-        avg_quality=Avg(quality_calc),
-        with_contacts=Count('id', filter=Q(phone__gt='') | Q(email__gt=''))
+        avg_quality=Avg('calculated_quality_score'),
+        with_contacts=Count('id', filter=Q(contact__isnull=False))
     )
     
-    return JsonResponse(stats)
+    return Response(stats)

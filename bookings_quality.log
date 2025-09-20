@@ -1,0 +1,537 @@
+INFO 2025-09-19 22:15:12,401 autoreload 4668 22072 Watching for file changes with StatReloader
+INFO 2025-09-19 22:15:49,456 autoreload 4668 22072 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 22:15:54,507 autoreload 9124 16140 Watching for file changes with StatReloader
+INFO 2025-09-19 22:16:32,297 autoreload 9124 16140 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 22:16:40,027 autoreload 16328 20692 Watching for file changes with StatReloader
+INFO 2025-09-19 22:23:21,350 autoreload 14360 13852 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:25:10,175 log 14360 17196 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:25:14,241 log 14360 17196 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:25:15,878 log 14360 21796 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:25:17,252 log 14360 21796 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:25:30,098 log 14360 21796 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:30:19,432 log 14360 21116 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:30:22,765 log 14360 21116 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:30:22,802 log 14360 21116 Not Found: /static/js/dashboard.js
+INFO 2025-09-19 22:33:16,751 autoreload 14360 13852 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\settings.py changed, reloading.
+INFO 2025-09-19 22:33:23,854 autoreload 2752 10364 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:33:58,782 log 2752 5708 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:33:58,823 log 2752 5708 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-19 22:34:54,946 autoreload 2752 10364 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\urls.py changed, reloading.
+INFO 2025-09-19 22:35:02,512 autoreload 2856 17884 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:35:38,944 log 2856 21304 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:35:38,946 log 2856 11048 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-19 22:37:29,813 autoreload 2856 17884 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\urls.py changed, reloading.
+INFO 2025-09-19 22:37:38,649 autoreload 3244 10208 Watching for file changes with StatReloader
+INFO 2025-09-19 22:38:10,542 autoreload 3244 10208 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\settings.py changed, reloading.
+INFO 2025-09-19 22:38:24,611 autoreload 18452 2620 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:40:17,026 log 18452 10916 Not Found: /static/js/dashboard.js
+WARNING 2025-09-19 22:40:17,049 log 18452 13728 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:40:22,438 log 18452 13728 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:40:22,458 log 18452 10916 Not Found: /static/js/dashboard.js
+INFO 2025-09-19 22:43:29,254 autoreload 18452 2620 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\urls.py changed, reloading.
+INFO 2025-09-19 22:43:34,766 autoreload 11324 10888 Watching for file changes with StatReloader
+INFO 2025-09-19 22:44:10,743 autoreload 11324 10888 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\urls.py changed, reloading.
+INFO 2025-09-19 22:44:15,979 autoreload 21012 3616 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:44:56,331 log 21012 21876 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:44:56,489 log 21012 21876 Not Found: /static/js/dashboard.js
+INFO 2025-09-19 22:46:14,529 autoreload 21012 3616 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\settings.py changed, reloading.
+INFO 2025-09-19 22:46:21,358 autoreload 13932 2620 Watching for file changes with StatReloader
+INFO 2025-09-19 22:47:27,172 autoreload 18088 14244 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:47:45,758 log 18088 20452 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:47:55,085 log 18088 3176 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:48:07,227 log 18088 22016 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+ERROR 2025-09-19 22:48:16,109 log 18088 22016 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 313, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 22:48:16,356 log 18088 22016 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:48:27,818 log 18088 22016 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-19 22:54:50,647 autoreload 18088 14244 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\urls.py changed, reloading.
+INFO 2025-09-19 22:55:02,553 autoreload 18188 22920 Watching for file changes with StatReloader
+INFO 2025-09-19 22:55:18,562 autoreload 18188 22920 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\bookings_quality\urls.py changed, reloading.
+INFO 2025-09-19 22:55:25,041 autoreload 13264 22320 Watching for file changes with StatReloader
+INFO 2025-09-19 22:56:07,118 autoreload 12556 20948 Watching for file changes with StatReloader
+WARNING 2025-09-19 22:56:17,362 log 13264 3672 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 22:56:23,608 log 13264 3672 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-19 23:05:26,152 autoreload 13264 22320 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 23:05:26,763 autoreload 12556 20948 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 23:05:41,079 autoreload 13576 22968 Watching for file changes with StatReloader
+INFO 2025-09-19 23:05:42,515 autoreload 22524 17292 Watching for file changes with StatReloader
+INFO 2025-09-19 23:06:23,091 autoreload 22524 17292 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-19 23:06:23,149 autoreload 13576 22968 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-19 23:06:29,459 autoreload 3620 3544 Watching for file changes with StatReloader
+INFO 2025-09-19 23:06:34,864 autoreload 22628 13696 Watching for file changes with StatReloader
+INFO 2025-09-19 23:06:53,749 autoreload 3620 3544 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\utils.py changed, reloading.
+INFO 2025-09-19 23:06:54,099 autoreload 22628 13696 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\utils.py changed, reloading.
+INFO 2025-09-19 23:07:01,461 autoreload 21216 22920 Watching for file changes with StatReloader
+INFO 2025-09-19 23:07:04,278 autoreload 21140 13812 Watching for file changes with StatReloader
+INFO 2025-09-19 23:09:20,501 autoreload 21140 13812 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\admin.py changed, reloading.
+INFO 2025-09-19 23:09:20,792 autoreload 21216 22920 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\admin.py changed, reloading.
+INFO 2025-09-19 23:09:34,998 autoreload 16212 20152 Watching for file changes with StatReloader
+INFO 2025-09-19 23:09:35,877 autoreload 6048 11600 Watching for file changes with StatReloader
+INFO 2025-09-19 23:10:28,537 autoreload 16212 20152 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\utils.py changed, reloading.
+INFO 2025-09-19 23:10:34,503 autoreload 21840 19172 Watching for file changes with StatReloader
+INFO 2025-09-19 23:10:41,438 autoreload 21840 19172 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 23:10:47,971 autoreload 1608 4932 Watching for file changes with StatReloader
+INFO 2025-09-19 23:10:56,236 autoreload 1608 4932 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-19 23:11:04,169 autoreload 21292 17460 Watching for file changes with StatReloader
+INFO 2025-09-19 23:11:32,213 autoreload 11832 14832 Watching for file changes with StatReloader
+WARNING 2025-09-19 23:13:33,475 log 21292 3348 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+ERROR 2025-09-19 23:14:09,265 log 21292 22840 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 368, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 23:14:09,469 log 21292 22840 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:14:20,182 log 21292 7000 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:14:20,311 log 21292 7000 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:14:21,784 log 21292 7000 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-19 23:14:52,660 autoreload 21292 17460 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 23:14:53,373 autoreload 11832 14832 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-19 23:15:01,532 autoreload 23424 18412 Watching for file changes with StatReloader
+INFO 2025-09-19 23:15:03,787 autoreload 8228 18768 Watching for file changes with StatReloader
+ERROR 2025-09-19 23:16:46,137 log 23424 16356 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 368, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 23:16:46,280 log 23424 16356 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+ERROR 2025-09-19 23:16:52,455 log 23424 19172 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 368, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 23:16:52,537 log 23424 19172 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:17:01,764 log 23424 20368 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+ERROR 2025-09-19 23:17:04,226 log 23424 8820 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 368, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 23:17:04,932 log 23424 8820 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+ERROR 2025-09-19 23:17:48,024 log 23424 22196 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 368, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 23:17:48,127 log 23424 22196 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+ERROR 2025-09-19 23:17:52,287 log 23424 16128 Internal Server Error: /upload/
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "c:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 368, in upload_excel
+    return render(request, 'upload.html')
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'home' not found. 'home' is not a valid view function or pattern name.
+WARNING 2025-09-19 23:17:52,534 log 23424 16128 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:19:29,402 log 23424 14784 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:19:33,262 log 23424 14784 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:19:39,115 log 23424 13252 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:20:27,083 log 23424 17184 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:28:21,209 log 23424 11948 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:28:29,212 log 23424 11812 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:30:22,503 log 23424 23428 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:30:34,232 log 23424 6052 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:30:46,331 log 23424 23000 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:31:06,440 log 23424 19344 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:32:13,737 log 23424 17644 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:32:40,103 log 23424 11488 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:32:55,939 log 23424 23208 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:33:47,080 log 23424 21536 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:38:29,274 log 23424 2924 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:43:31,081 log 23424 6052 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:44:36,017 log 23424 23220 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:44:47,340 log 23424 16016 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-19 23:58:08,547 log 23424 24112 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 00:01:23,079 autoreload 23424 18412 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 00:01:25,865 autoreload 8228 18768 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 00:01:36,861 autoreload 14680 22660 Watching for file changes with StatReloader
+INFO 2025-09-20 00:01:40,330 autoreload 24364 24208 Watching for file changes with StatReloader
+WARNING 2025-09-20 00:02:56,957 log 14680 7132 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 00:03:09,779 views 14680 12212 Database date range: 2025-03-18 to 2025-09-30
+INFO 2025-09-20 00:03:09,784 views 14680 12212 Filtered PNRs count: 2985
+WARNING 2025-09-20 00:03:13,706 log 14680 12212 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 00:03:14,363 views 14680 11648 Database date range: 2025-03-18 to 2025-09-30
+INFO 2025-09-20 00:03:14,475 views 14680 11648 Filtered PNRs count: 2985
+INFO 2025-09-20 00:03:26,930 views 14680 19960 Database date range: 2025-03-18 to 2025-09-30
+INFO 2025-09-20 00:03:26,931 views 14680 19960 Filtering PNRs from 2025-09-20
+INFO 2025-09-20 00:03:26,944 views 14680 19960 Filtered PNRs count: 478
+WARNING 2025-09-20 00:03:28,690 log 14680 19960 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 00:03:28,941 views 14680 19960 Database date range: 2025-03-18 to 2025-09-30
+INFO 2025-09-20 00:03:28,944 views 14680 19960 Filtering PNRs from 2025-09-20
+INFO 2025-09-20 00:03:28,962 views 14680 19960 Filtered PNRs count: 478
+INFO 2025-09-20 00:04:12,201 views 14680 22776 Database date range: 2025-03-18 to 2025-09-30
+INFO 2025-09-20 00:04:12,202 views 14680 22776 Filtering PNRs from 2025-09-20
+INFO 2025-09-20 00:04:12,203 views 14680 22776 Filtering PNRs to 2025-09-20
+INFO 2025-09-20 00:04:12,207 views 14680 22776 Filtered PNRs count: 273
+WARNING 2025-09-20 00:04:12,920 log 14680 22776 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 00:04:13,021 views 14680 22776 Database date range: 2025-03-18 to 2025-09-30
+INFO 2025-09-20 00:04:13,022 views 14680 22776 Filtering PNRs from 2025-09-20
+INFO 2025-09-20 00:04:13,023 views 14680 22776 Filtering PNRs to 2025-09-20
+INFO 2025-09-20 00:04:13,032 views 14680 22776 Filtered PNRs count: 273
+INFO 2025-09-20 00:04:44,924 autoreload 14680 22660 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 00:04:45,509 autoreload 24364 24208 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 00:04:51,964 autoreload 24520 7448 Watching for file changes with StatReloader
+INFO 2025-09-20 00:04:55,939 autoreload 11476 21564 Watching for file changes with StatReloader
+WARNING 2025-09-20 00:05:42,907 log 24520 8104 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:05:50,524 log 24520 8648 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:12:32,770 log 24520 21324 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:12:54,398 log 24520 16176 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:13:03,502 log 24520 16176 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:13:13,706 log 24520 5708 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:13:26,218 log 24520 11584 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:13:36,032 log 24520 6280 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:13:42,419 log 24520 23900 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:13:50,235 log 24520 23900 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:14:34,455 log 24520 21220 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:14:39,505 log 24520 21220 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:17:30,902 log 24520 20224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:17:36,406 log 24520 960 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:17:41,028 log 24520 960 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:17:47,107 log 24520 17984 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:17:56,736 log 24520 22304 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:18:02,779 log 24520 12828 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:18:13,579 log 24520 19624 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:18:20,437 log 24520 21328 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:18:27,445 log 24520 21328 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:18:44,622 log 24520 892 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:22:38,911 log 24520 24572 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:22:49,625 log 24520 20632 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:23:00,780 log 24520 23048 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:23:11,806 log 24520 10120 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:23:18,289 log 24520 10120 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:23:47,668 log 24520 12708 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:23:58,170 log 24520 18780 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:24:03,084 log 24520 10124 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:24:07,548 log 24520 10124 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:24:16,835 log 24520 20184 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:26:11,217 log 24520 12148 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:26:17,617 log 24520 12148 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:26:23,391 log 24520 23504 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:26:32,959 log 24520 17984 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:26:43,811 log 24520 12756 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:31:44,264 log 24520 19228 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:31:51,266 log 24520 16668 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:31:54,521 log 24520 16668 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:32:21,726 log 24520 10340 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:32:39,040 log 24520 16852 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:33:32,090 log 24520 2052 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:33:40,559 log 24520 23832 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:33:45,032 log 24520 23832 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:33:53,477 log 24520 14908 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:33:59,531 log 24520 17256 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:39:14,165 log 24520 11492 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:41:55,859 log 24520 10608 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:42:38,569 log 24520 16140 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:43:23,845 log 24520 24032 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:45:10,215 log 24520 23892 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:45:44,978 log 24520 23200 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:52:14,040 log 24520 5152 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:52:27,020 log 24520 1720 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:52:37,113 log 24520 10396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:52:46,652 log 24520 10396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:53:04,305 log 24520 10396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:53:13,043 log 24520 16108 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:56:01,286 log 24520 11352 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:56:21,538 log 24520 11352 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:56:27,682 log 24520 11352 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:56:32,680 log 24520 11352 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:56:38,249 log 24520 11352 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 00:56:46,780 log 24520 11352 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:03:35,357 log 24520 14740 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:03:43,308 log 24520 24364 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:05:07,975 log 24520 11856 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 01:06:11,816 autoreload 11476 21564 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 01:06:13,774 autoreload 24520 7448 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 01:06:22,128 autoreload 13712 21864 Watching for file changes with StatReloader
+INFO 2025-09-20 01:06:32,107 autoreload 17712 17288 Watching for file changes with StatReloader
+WARNING 2025-09-20 01:06:37,566 log 13712 5700 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:15:27,310 log 13712 22996 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:15:42,904 log 13712 21244 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:18:10,756 log 13712 20788 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:21:10,643 log 13712 13812 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:22:55,317 log 13712 13812 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:54:14,975 log 13712 22128 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 01:58:32,824 log 13712 24356 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 02:08:44,552 log 13712 12588 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 02:08:55,276 log 13712 18252 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 02:11:11,665 log 13712 20560 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 10:33:15,689 autoreload 956 12056 Watching for file changes with StatReloader
+WARNING 2025-09-20 10:35:31,334 log 956 10120 Not Found: /favicon.ico
+WARNING 2025-09-20 10:55:07,446 log 956 12300 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 10:55:23,655 log 956 12264 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 10:55:39,553 log 956 4480 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 10:55:55,132 log 956 4480 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 10:56:01,356 log 956 15196 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 10:56:47,107 log 956 15508 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 10:57:06,131 log 956 15508 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:06:35,093 log 956 15272 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:06:42,677 log 956 10340 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:09:01,570 log 956 18108 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:09:05,391 log 956 18108 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:09:13,230 log 956 19788 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 11:11:02,137 autoreload 17632 17168 Watching for file changes with StatReloader
+WARNING 2025-09-20 11:11:04,400 log 17632 16548 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:11:14,630 log 17632 19324 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:11:16,337 log 17632 19324 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:11:22,065 log 17632 23448 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:11:31,840 log 17632 23448 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:11:46,356 log 17632 4576 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:12:08,118 log 17632 4576 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:12:20,793 log 17632 4576 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:12:24,245 log 17632 4576 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:12:43,219 log 17632 4576 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:12:52,457 log 17632 16408 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:13:01,903 log 17632 23984 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:18:49,253 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:18:55,291 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:19:01,900 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:19:11,390 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:19:42,262 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:19:47,829 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:19:52,532 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:20:02,425 log 17632 24224 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:25:13,756 log 17632 12852 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:25:15,533 log 17632 12852 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:25:17,194 log 17632 22396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:25:29,270 log 17632 22396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:25:40,965 log 17632 22396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:25:50,790 log 17632 22396 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:26:42,744 log 17632 13888 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:27:06,808 log 17632 12428 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 11:27:11,669 log 17632 12428 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 11:47:11,525 autoreload 17632 17168 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\admin.py changed, reloading.
+INFO 2025-09-20 11:47:18,673 autoreload 19004 20704 Watching for file changes with StatReloader
+INFO 2025-09-20 12:58:53,676 autoreload 19004 20704 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\admin.py changed, reloading.
+INFO 2025-09-20 12:59:02,034 autoreload 3356 21456 Watching for file changes with StatReloader
+INFO 2025-09-20 13:01:22,302 autoreload 3356 21456 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\admin.py changed, reloading.
+INFO 2025-09-20 13:01:28,811 autoreload 20468 7124 Watching for file changes with StatReloader
+INFO 2025-09-20 14:50:24,525 autoreload 20468 7124 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\admin.py changed, reloading.
+INFO 2025-09-20 14:50:31,167 autoreload 6816 13924 Watching for file changes with StatReloader
+INFO 2025-09-20 15:04:27,081 autoreload 23812 14272 Watching for file changes with StatReloader
+INFO 2025-09-20 15:41:00,097 autoreload 2320 23464 Watching for file changes with StatReloader
+INFO 2025-09-20 15:56:38,016 autoreload 23812 8612 Watching for file changes with StatReloader
+INFO 2025-09-20 15:57:25,483 autoreload 5948 20824 Watching for file changes with StatReloader
+WARNING 2025-09-20 15:58:59,594 log 5948 15512 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 15:59:09,370 log 5948 13372 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 16:02:48,532 log 5948 11704 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 16:04:08,035 log 5948 14700 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 16:04:14,523 log 5948 14700 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 16:05:24,732 autoreload 5948 20824 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 16:05:31,007 autoreload 4412 21980 Watching for file changes with StatReloader
+WARNING 2025-09-20 16:06:02,959 log 4412 14872 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 16:09:01,855 log 4412 15372 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 16:09:18,389 log 4412 14364 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-20 16:11:29,208 log 4412 7892 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-20 18:49:11,918 autoreload 21088 18120 Watching for file changes with StatReloader
+WARNING 2025-09-20 18:54:15,899 log 21088 13716 Not Found: /favicon.ico
+INFO 2025-09-20 22:14:49,034 autoreload 21088 18120 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-20 22:14:56,465 autoreload 17336 22624 Watching for file changes with StatReloader

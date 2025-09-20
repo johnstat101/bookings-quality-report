@@ -52,7 +52,7 @@
     <div class="upload-container">
         <div class="header">
             <h1>📁 Upload Booking Data</h1>
-            <p>Import your SBR Excel file to analyze booking quality and generate comprehensive reports</p>
+            <p>Import your SBR CSV/Excel file to analyze booking quality with enhanced contact validation</p>
         </div>
 
         {% if messages %}
@@ -68,9 +68,9 @@
             
             <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon">📄</div>
-                <div class="upload-text">Click to select Excel file or drag and drop</div>
+                <div class="upload-text">Click to select CSV/Excel file or drag and drop</div>
                 <div class="file-info" id="fileInfo"></div>
-                <input type="file" name="excel_file" id="fileInput" class="file-input" accept=".xlsx,.xls" required>
+                <input type="file" name="excel_file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv" required>
             </div>
 
             <div class="progress-bar" id="progressBar">
@@ -78,19 +78,20 @@
             </div>
 
             <div class="requirements">
-                <h3>📋 Required Excel Columns</h3>
+                <h3>📋 Required CSV/Excel Columns</h3>
                 <ul>
-                    <li><strong>pnr</strong> - Passenger Name Record (unique identifier)</li>
-                    <li><strong>phone</strong> - Contact phone number</li>
-                    <li><strong>email</strong> - Contact email address</li>
-                    <li><strong>ff_number</strong> - Frequent Flyer Number</li>
-                    <li><strong>meal_selection</strong> - Meal preference</li>
-                    <li><strong>seat</strong> - Seat assignment</li>
-                    <li><strong>channel</strong> - Channel (website, mobile, ato, cto, cec, kq_gsa, travel_agents, ndc, msafiri_connect)</li>
-                    <li><strong>office_id</strong> - Booking office identifier</li>
-                    <li><strong>agency_iata</strong> - Travel agency IATA code</li>
-                    <li><strong>staff_id</strong> - Staff member identifier</li>
-                    <li><strong>departure_date</strong> - Flight departure date (YYYY-MM-DD)</li>
+                    <li><strong>ControlNumber</strong> - PNR identifier</li>
+                    <li><strong>OfficeID</strong> - Booking office ID</li>
+                    <li><strong>Agent</strong> - Agent identifier</li>
+                    <li><strong>creationDate</strong> - Booking creation date</li>
+                    <li><strong>Surname</strong> - Passenger surname</li>
+                    <li><strong>FirstName</strong> - Passenger first name</li>
+                    <li><strong>FF_NUMBER</strong> - Frequent Flyer Number</li>
+                    <li><strong>seatRowNumber</strong> - Seat row</li>
+                    <li><strong>seatColumn</strong> - Seat column</li>
+                    <li><strong>MEAL</strong> - Meal selection</li>
+                    <li><strong>ContactType</strong> - AP, APE, APM, CTCE, CTCEM, CTCM</li>
+                    <li><strong>ContactDetail</strong> - Email or phone contact</li>
                 </ul>
             </div>
 
@@ -98,7 +99,7 @@
                 <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
                     🚀 Upload & Process Data
                 </button>
-                <a href="{% url 'home' %}" class="btn btn-secondary">
+                <a href="{% url 'quality_monitor:home' %}" class="btn btn-secondary">
                     ← Back to Dashboard
                 </a>
             </div>
@@ -179,11 +180,11 @@
         fileInput.addEventListener('change', () => {
             const file = fileInput.files[0];
             if (file) {
-                const validTypes = ['.xlsx', '.xls'];
+                const validTypes = ['.xlsx', '.xls', '.csv'];
                 const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
                 
                 if (!validTypes.includes(fileExtension)) {
-                    alert('Please select a valid Excel file (.xlsx or .xls)');
+                    alert('Please select a valid file (.xlsx, .xls, or .csv)');
                     fileInput.value = '';
                     fileInfo.innerHTML = '';
                     uploadArea.classList.remove('has-file');

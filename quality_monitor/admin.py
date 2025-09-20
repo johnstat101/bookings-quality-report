@@ -1,53 +1,29 @@
 from django.contrib import admin
-from .models import Booking, TravelAgency, KQOffice, KQStaff
+from .models import PNR, Passenger, Contact
 
-@admin.register(TravelAgency)
-class TravelAgencyAdmin(admin.ModelAdmin):
-    list_display = ['iata_code', 'name', 'contact_email', 'contact_phone']
-    search_fields = ['iata_code', 'name']
-    list_filter = ['created_at']
+class ContactInline(admin.TabularInline):
+    model = Contact
+    extra = 1
 
-@admin.register(KQOffice)
-class KQOfficeAdmin(admin.ModelAdmin):
-    list_display = ['office_id', 'name', 'location', 'manager']
-    search_fields = ['office_id', 'name', 'location']
-    list_filter = ['location', 'created_at']
+class PassengerInline(admin.TabularInline):
+    model = Passenger
+    extra = 1
 
-@admin.register(KQStaff)
-class KQStaffAdmin(admin.ModelAdmin):
-    list_display = ['staff_id', 'name', 'office', 'email']
-    search_fields = ['staff_id', 'name', 'email']
-    list_filter = ['office', 'created_at']
+@admin.register(PNR)
+class PNRAdmin(admin.ModelAdmin):
+    list_display = ['control_number', 'office_id', 'agent', 'has_valid_contacts', 'quality_score', 'created_at']
+    list_filter = ['office_id', 'delivery_system_company', 'created_at']
+    search_fields = ['control_number', 'office_id', 'agent']
+    readonly_fields = ['has_valid_contacts', 'quality_score']
+    inlines = [ContactInline, PassengerInline]
 
-@admin.register(Booking)
-class BookingAdmin(admin.ModelAdmin):
-    list_display = ['pnr', 'channel', 'channel_type', 'departure_date', 'quality_score', 'has_contacts', 'created_at']
-    list_filter = ['channel', 'departure_date', 'created_at', 'kq_office', 'travel_agency']
-    search_fields = ['pnr', 'phone', 'email', 'ff_number']
-    readonly_fields = ['quality_score', 'has_contacts']
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ['pnr', 'contact_type', 'contact_detail', 'is_valid_email', 'is_valid_phone', 'is_wrongly_placed']
+    list_filter = ['contact_type']
+    search_fields = ['contact_detail', 'pnr__control_number']
+    readonly_fields = ['is_email', 'is_phone', 'is_valid_email', 'is_valid_phone', 'is_wrongly_placed']
     
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('pnr', 'departure_date', 'channel')
-        }),
-        ('Contact Information', {
-            'fields': ('phone', 'email', 'ff_number')
-        }),
-        ('Service Preferences', {
-            'fields': ('meal_selection', 'seat')
-        }),
-        ('Booking Agent', {
-            'fields': ('kq_office', 'kq_staff', 'travel_agency'),
-            'description': 'Select appropriate agent based on booking channel'
-        }),
-        ('Quality Metrics', {
-            'fields': ('quality_score', 'has_contacts'),
-            'classes': ('collapse',)
-        })
-    )
-    
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        # Add JavaScript for dynamic field showing/hiding based on channel
-        form.Media.js = ('admin/js/booking_admin.js',)
-        return form
+    def get_readonly_fields(self, request, obj=None):
+        # Only show readonly fields that are actually displayed
+        return ['is_valid_email', 'is_valid_phone', 'is_wrongly_placed']

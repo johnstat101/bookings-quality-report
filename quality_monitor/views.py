@@ -1,267 +1,433 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Count, Q, Case, When, IntegerField, Avg
+from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
+from django.utils.dateparse import parse_date as django_parse_date
 from datetime import datetime, timedelta
-from .models import Booking, TravelAgency, KQOffice, KQStaff
+from .models import PNR, Passenger, Contact
+from .utils import get_quality_score_annotation
 import pandas as pd
 import json
+import re
+import logging
 
-def get_filtered_bookings(request):
-    bookings = Booking.objects.select_related('kq_office', 'kq_staff', 'travel_agency').all()
+logger = logging.getLogger('quality_monitor')
+
+def parse_date(date_str):
+    """Parse a date string in ddmmyy or dmmyy format with validation."""
+    if not date_str or not isinstance(date_str, str):
+        return None
+    try:
+        # Sanitize input - only allow digits
+        clean_date = re.sub(r'\D', '', str(date_str))
+        if len(clean_date) == 5:
+            clean_date = '0' + clean_date
+        elif len(clean_date) != 6:
+            return None
+        return datetime.strptime(clean_date, '%d%m%y').date()
+    except (ValueError, TypeError):
+        return None
+
+def get_filtered_pnrs(request):
+    """Get filtered PNRs with proper validation and optimization."""
+    pnrs = PNR.objects.prefetch_related('contacts', 'passengers').all()
     
-    # Date filters
+    # Date filters with validation
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    departure_start = request.GET.get('departure_start')
-    departure_end = request.GET.get('departure_end')
     
-    # Channel and office filters
-    channels = request.GET.getlist('channels')
-    offices = request.GET.getlist('offices')
-    
-    # Apply filters only if values are provided
+    # Validate and parse dates
     if start_date and start_date.strip():
-        bookings = bookings.filter(created_at__date__gte=start_date)
-    if end_date and end_date.strip():
-        bookings = bookings.filter(created_at__date__lte=end_date)
-    if departure_start and departure_start.strip():
-        bookings = bookings.filter(departure_date__gte=departure_start)
-    if departure_end and departure_end.strip():
-        bookings = bookings.filter(departure_date__lte=departure_end)
-    if channels and len(channels) > 0:
-        bookings = bookings.filter(channel__in=channels)
-    if offices and len(offices) > 0:
-        # Filter by office for both direct office bookings and staff office associations
-        bookings = bookings.filter(
-            Q(kq_office__office_id__in=offices) | 
-            Q(kq_staff__office__office_id__in=offices)
-        )
+        parsed_start = django_parse_date(start_date.strip())
+        if parsed_start:
+            pnrs = pnrs.filter(creation_date__gte=parsed_start)
     
-    return bookings
+    if end_date and end_date.strip():
+        parsed_end = django_parse_date(end_date.strip())
+        if parsed_end:
+            pnrs = pnrs.filter(creation_date__lte=parsed_end)
+    
+    # Office filters with validation
+    offices = request.GET.getlist('offices')
+    if offices:
+        # Sanitize office IDs
+        clean_offices = [office.strip() for office in offices if office.strip()]
+        if clean_offices:
+            pnrs = pnrs.filter(office_id__in=clean_offices)
+    
+    # Delivery system filters with validation
+    delivery_systems = request.GET.getlist('delivery_systems')
+    if delivery_systems:
+        clean_systems = [ds.strip() for ds in delivery_systems if ds.strip()]
+        if clean_systems:
+            pnrs = pnrs.filter(delivery_system_company__in=clean_systems)
+    
+    return pnrs
 
-def get_quality_score_calc():
-    """Reusable quality score calculation"""
+def calculate_pnr_statistics(pnrs_with_score):
+    """
+    Calculate comprehensive PNR statistics for dashboard display.
+    
+    Args:
+        pnrs_with_score: QuerySet of PNRs annotated with quality scores
+        
+    Returns:
+        Dict containing aggregated statistics including counts, percentages,
+        and quality metrics for contacts, passengers, and overall quality.
+    """
+    return pnrs_with_score.aggregate(
+        total_pnrs=Count('id', distinct=True),
+        overall_quality=Avg('calculated_quality_score'),
+        reachable_pnrs=Count('pk', filter=Q(
+            contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, 
+            contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        ) | Q(
+            contacts__contact_type__in=Contact.PHONE_VALID_TYPES, 
+            contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$'
+        ), distinct=True),
+        missing_contacts=Count('pk', filter=Q(contacts__isnull=True), distinct=True),
+        wrong_format_contacts=Count('pk', filter=Q(contacts__contact_detail__isnull=False) & 
+            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') & 
+            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+        , distinct=True),
+        wrongly_placed_contacts=Count('pk', filter=
+            (Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES)) |
+            (Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES))
+        , distinct=True),
+        ff_count=Count('passengers', filter=Q(passengers__ff_number__isnull=False) & ~Q(passengers__ff_number='')),
+        meal_count=Count('passengers', filter=Q(passengers__meal__isnull=False) & ~Q(passengers__meal='')),
+        seat_count=Count('passengers', filter=Q(passengers__seat_row_number__isnull=False) & ~Q(passengers__seat_row_number='') & Q(passengers__seat_column__isnull=False) & ~Q(passengers__seat_column='')),
+        email_total=Count('contacts', filter=Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')),
+        phone_total=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}')),
+        email_wrong_format_count=Count('contacts', filter=(Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')) & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')),
+        phone_wrong_format_count=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')),
+        valid_phone_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')),
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')),
+    )
+
+def get_office_statistics(pnrs):
+    """
+    Calculate performance statistics grouped by office.
+    
+    Args:
+        pnrs: QuerySet of PNR objects
+        
+    Returns:
+        QuerySet with office_id, pnr_count, and avg_quality for each office
+    """
+    quality_score_annotation = get_quality_score_annotation()
     return (
-        Case(When(phone__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(email__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(ff_number__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(meal_selection__gt='', then=20), default=0, output_field=IntegerField()) +
-        Case(When(seat__gt='', then=20), default=0, output_field=IntegerField())
+        pnrs.values('office_id')
+        .annotate(pnr_count=Count('id'), avg_quality=Avg(quality_score_annotation))
+        .order_by('-pnr_count')
+    )
+
+def get_delivery_system_statistics(pnrs):
+    """
+    Calculate performance statistics grouped by delivery system.
+    
+    Args:
+        pnrs: QuerySet of PNR objects
+        
+    Returns:
+        QuerySet with delivery_system_company, pnr_count, and avg_quality
+    """
+    quality_score_annotation = get_quality_score_annotation()
+    return (
+        pnrs.values('delivery_system_company')
+        .annotate(pnr_count=Count('id'), avg_quality=Avg(quality_score_annotation))
+        .order_by('-pnr_count')
     )
 
 def home_view(request):
-    bookings = get_filtered_bookings(request)
-    quality_score_calc = get_quality_score_calc()
+    pnrs = get_filtered_pnrs(request)
+    quality_score_annotation = get_quality_score_annotation()
+    pnrs_with_score = pnrs.annotate(calculated_quality_score=quality_score_annotation)
     
-    total_pnrs = bookings.count()
-    with_contacts = bookings.filter(Q(phone__isnull=False, phone__gt='') | Q(email__isnull=False, email__gt='')).count()
+    # Calculate statistics using helper functions
+    stats = calculate_pnr_statistics(pnrs_with_score)
+
+    total_pnrs = stats.get('total_pnrs', 0)
+    reachable_pnrs = stats.get('reachable_pnrs', 0)
+    missing_contacts = stats.get('missing_contacts', 0)
+    wrong_format_contacts = stats.get('wrong_format_contacts', 0)
+    wrongly_placed_contacts = stats.get('wrongly_placed_contacts', 0)
+    overall_quality = stats.get('overall_quality', 0) or 0
+
+    ff_count = stats.get('ff_count', 0)
+    meal_count = stats.get('meal_count', 0)
+    seat_count = stats.get('seat_count', 0)
+    phone_count = stats.get('valid_phone_count', 0)
+    email_count = stats.get('valid_email_count', 0)
+
+    # Calculate percentages safely
+    email_total = stats.get('email_total', 0)
+    phone_total = stats.get('phone_total', 0)
+    email_wrong_format_percent = (stats.get('email_wrong_format_count', 0) / email_total * 100) if email_total > 0 else 0
+    phone_wrong_format_percent = (stats.get('phone_wrong_format_count', 0) / phone_total * 100) if phone_total > 0 else 0
     
-    avg_quality = bookings.aggregate(avg_score=Avg(quality_score_calc))['avg_score'] or 0
+    # Office and delivery system statistics - cache quality annotation
+    office_stats_raw = get_office_statistics(pnrs)
+    delivery_system_stats_raw = get_delivery_system_statistics(pnrs)
     
-    # Get filter options - channel groupings
-    channel_groupings = [
-        {
-            'id': 'direct',
-            'label': 'Direct Channels', 
-            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.DIRECT_CHANNELS]
-        },
-        {
-            'id': 'indirect',
-            'label': 'Indirect Channels',
-            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.INDIRECT_CHANNELS]
+    office_stats = []
+    for stat in office_stats_raw:
+        office_data = {
+            'office_id': stat['office_id'],
+            'office_name': stat['office_id'], # Use office_id as name since KQOffice is removed
+            'total': stat['pnr_count'],
+            'avg_quality': stat['avg_quality'] or 0
         }
-    ]
-    offices = list(KQOffice.objects.all().order_by('name'))
-    agencies = list(TravelAgency.objects.all())
-    staff_members = list(KQStaff.objects.select_related('office').all().order_by('name'))
+        office_stats.append(office_data)
     
-    # Contact failure analysis
-    contact_failures = bookings.filter(phone='', email='').values('channel').annotate(
-        failure_count=Count('id')
-    ).order_by('-failure_count')
-    
-    office_contact_failures = bookings.filter(
-        phone='', email='', kq_office__isnull=False
-    ).values('kq_office__name', 'kq_office__office_id').annotate(
-        failure_count=Count('id')
-    ).order_by('-failure_count')[:10]
-    
-    # Dashboard data using reusable calculation
-    
-    channel_stats = bookings.values('channel').annotate(
-        total=Count('id'),
-        avg_quality=Avg(quality_score_calc)
-    ).order_by('-total')
-    
-    office_stats = bookings.filter(kq_office__isnull=False).values(
-        'kq_office__name', 'kq_office__office_id'
-    ).annotate(
-        total=Count('id'),
-        avg_quality=Avg(quality_score_calc)
-    ).order_by('-total')[:10]
-    
-    print(f"Debug - Channels: {[c[0] for c in Booking.CHANNEL_CHOICES]}")
-    print(f"Debug - Offices: {[o.name for o in offices]}")
-    print(f"Debug - Channel Stats: {list(channel_stats)}")
-    print(f"Debug - Office Stats: {list(office_stats)}")
-    
-    # Contact analysis
-    without_contacts = total_pnrs - with_contacts
-    pnrs_no_contacts = bookings.filter(phone='', email='')
-    
-    # Quality trends (last 7 days)
-    trends = []
-    for i in range(7):
-        date = timezone.now().date() - timedelta(days=i)
-        day_bookings = bookings.filter(created_at__date=date)
-        day_quality = day_bookings.aggregate(
-            avg_score=Avg(quality_score_calc)
-        )['avg_score'] or 0
-        trends.append({
-            'date': date.strftime('%m/%d'),
-            'quality': round(day_quality, 1)
+
+
+    delivery_system_stats = []
+    for stat in delivery_system_stats_raw:
+        delivery_system_stats.append({
+            'delivery_system_company': stat['delivery_system_company'],
+            'total': stat['pnr_count'],
+            'avg_quality': stat['avg_quality'] or 0
         })
-    
-    # Element counts for donut charts
-    phone_count = bookings.filter(phone__gt='').count()
-    email_count = bookings.filter(email__gt='').count()
-    ff_count = bookings.filter(ff_number__gt='').count()
-    meal_count = bookings.filter(meal_selection__gt='').count()
-    seat_count = bookings.filter(seat__gt='').count()
-    
+
     # Quality score distribution
-    quality_ranges = [0, 0, 0, 0, 0]  # 0-20, 21-40, 41-60, 61-80, 81-100
-    for booking in bookings:
-        score = booking.quality_score
-        if score <= 20:
-            quality_ranges[0] += 1
-        elif score <= 40:
-            quality_ranges[1] += 1
-        elif score <= 60:
-            quality_ranges[2] += 1
-        elif score <= 80:
-            quality_ranges[3] += 1
-        else:
-            quality_ranges[4] += 1
+    quality_distribution = pnrs_with_score.aggregate(
+        range1=Count('pk', filter=Q(calculated_quality_score__lte=20)),
+        range2=Count('pk', filter=Q(calculated_quality_score__gt=20, calculated_quality_score__lte=40)),
+        range3=Count('pk', filter=Q(calculated_quality_score__gt=40, calculated_quality_score__lte=60)),
+        range4=Count('pk', filter=Q(calculated_quality_score__gt=60, calculated_quality_score__lte=80)),
+        range5=Count('pk', filter=Q(calculated_quality_score__gt=80)),
+    )
+    quality_ranges = [quality_distribution[f'range{i}'] for i in range(1, 6)]
     
     # Get current filter values
-    current_channels = request.GET.getlist('channels')
     current_offices = request.GET.getlist('offices')
+    current_delivery_systems = request.GET.getlist('delivery_systems')
     
+    # Get distinct offices from PNR data
+    offices_from_pnr = PNR.objects.values('office_id').distinct().order_by('office_id')
+    offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in offices_from_pnr if o['office_id']]
+    
+    # Prepare data for JavaScript
+    dashboard_data_json = json.dumps({
+        'total_pnrs': total_pnrs,
+        'valid_phone_count': phone_count,
+        'valid_email_count': email_count,
+        'ff_count': ff_count,
+        'meal_count': meal_count,
+        'seat_count': seat_count,
+        'email_wrong_format_pct': round(email_wrong_format_percent, 1),
+        'phone_wrong_format_pct': round(phone_wrong_format_percent, 1),
+        'quality_ranges': quality_ranges,
+        'current_delivery_systems': current_delivery_systems,
+        'current_offices': current_offices,
+        'offices': offices,
+        'office_stats': office_stats,
+        'delivery_system_stats': delivery_system_stats,
+        'export_url': reverse('quality_monitor:export_pnrs_to_excel'), # This remains correct due to the app_name
+    })
+
+
     context = {
         'total_pnrs': total_pnrs,
-        'with_contacts': with_contacts,
-        'without_contacts': without_contacts,
-        'avg_quality': round(avg_quality, 1),
-        'channel_types': ['direct', 'indirect'],
-        'channels': [c[0] for c in Booking.CHANNEL_CHOICES],
-        'channel_groupings': channel_groupings,
+        'reachable_pnrs': reachable_pnrs,
+        'missing_contacts': missing_contacts,
+        'wrong_format_contacts': wrong_format_contacts,
+        'wrongly_placed_contacts': wrongly_placed_contacts,
+        'avg_quality': round(overall_quality, 1),
         'offices': offices,
-        'agencies': agencies,
-        'staff_members': staff_members,
-        'channel_stats': channel_stats,
         'office_stats': office_stats,
-        'contact_failures': contact_failures,
-        'office_contact_failures': office_contact_failures,
-        'pnrs_no_contacts': pnrs_no_contacts,
-        'bookings': bookings,
-        'trends': json.dumps(trends[::-1]),
-        'office_channels': json.dumps(list(Booking.OFFICE_CHANNELS)),
-        'staff_channels': json.dumps(list(Booking.STAFF_CHANNELS)),
-        'direct_channels': json.dumps(list(Booking.DIRECT_CHANNELS)),
-        'indirect_channels': json.dumps(list(Booking.INDIRECT_CHANNELS)),
-        'current_channels': current_channels,
+        'delivery_system_stats': delivery_system_stats,
+        'current_delivery_systems': current_delivery_systems,
         'current_offices': current_offices,
-        'phone_count': phone_count,
-        'email_count': email_count,
+        'valid_phone_count': phone_count,
+        'valid_email_count': email_count,
         'ff_count': ff_count,
         'meal_count': meal_count,
         'seat_count': seat_count,
         'quality_ranges': quality_ranges,
+        'critical_count': quality_distribution['range1'],
+        'poor_count': quality_distribution['range2'],
+        'fair_count': quality_distribution['range3'],
+        'good_count': quality_distribution['range4'],
+        'excellent_count': quality_distribution['range5'],
+        'email_wrong_format_pct': round(email_wrong_format_percent, 1),
+        'phone_wrong_format_pct': round(phone_wrong_format_percent, 1),
+        'pnrs': pnrs,
+        'dashboard_data_json': dashboard_data_json,
     }
     return render(request, "home.html", context)
 
 def upload_excel(request):
+    """
+    Handle SBR file upload and processing.
+    
+    Supports CSV, XLS, and XLSX formats. Clears existing data before import
+    and uses bulk operations for efficient database insertion.
+    
+    Args:
+        request: HTTP request with uploaded file
+        
+    Returns:
+        Redirect to home page with success/error messages
+    """
     if request.method == 'POST' and request.FILES.get('excel_file'):
         try:
-            df = pd.read_excel(request.FILES['excel_file'])
-            for _, row in df.iterrows():
-                # Get related objects
-                office = None
-                staff = None
-                agency = None
-                
-                if row.get('office_id'):
-                    office = KQOffice.objects.filter(office_id=row.get('office_id')).first()
-                if row.get('staff_id'):
-                    staff = KQStaff.objects.filter(staff_id=row.get('staff_id')).first()
-                if row.get('agency_iata'):
-                    agency = TravelAgency.objects.filter(iata_code=row.get('agency_iata')).first()
-                
-                Booking.objects.update_or_create(
-                    pnr=row.get('pnr', ''),
-                    defaults={
-                        'phone': row.get('phone', ''),
-                        'email': row.get('email', ''),
-                        'ff_number': row.get('ff_number', ''),
-                        'meal_selection': row.get('meal_selection', ''),
-                        'seat': row.get('seat', ''),
-                        'channel': row.get('channel', 'website'),
-                        'kq_office': office,
-                        'kq_staff': staff,
-                        'travel_agency': agency,
-                        'departure_date': row.get('departure_date'),
-                    }
+            logger.info("Starting file upload process")
+            # Clear existing data
+            Contact.objects.all().delete()
+            Passenger.objects.all().delete()
+            PNR.objects.all().delete()
+            messages.info(request, "Cleared all existing PNR data before import.")
+            
+            # Read file
+            file_extension = request.FILES['excel_file'].name.split('.')[-1].lower()
+            if file_extension == 'csv':
+                df = pd.read_csv(request.FILES['excel_file'], dtype=str).fillna('')
+            else:
+                df = pd.read_excel(request.FILES['excel_file'], dtype=str).fillna('')
+            
+            # Prepare bulk data
+            pnrs_to_create = []
+            passengers_to_create = []
+            contacts_to_create = []
+            pnr_map = {}
+            
+            # First pass: collect unique PNRs
+            unique_pnrs = df['ControlNumber'].str.strip().replace('', pd.NA).dropna().unique()
+            logger.info(f"Processing {len(unique_pnrs)} unique PNRs")
+            
+            for control_number in unique_pnrs:
+                pnr_data = df[df['ControlNumber'].str.strip() == control_number].iloc[0]
+                pnr = PNR(
+                    control_number=control_number,
+                    office_id=str(pnr_data.get('OfficeID', '')).strip(),
+                    agent=str(pnr_data.get('Agent', '')).strip(),
+                    creation_date=parse_date(str(pnr_data.get('creationDate', '')).strip()),
+                    delivery_system_company=str(pnr_data.get('DeliverySystemCompany', '')).strip(),
+                    delivery_system_location=str(pnr_data.get('DeliverySystemLocation', '')).strip(),
                 )
-            messages.success(request, f'Successfully imported {len(df)} records')
+                pnrs_to_create.append(pnr)
+            
+            # Bulk create PNRs
+            created_pnrs = PNR.objects.bulk_create(pnrs_to_create, ignore_conflicts=True)
+            
+            # Create mapping for foreign key relationships
+            for pnr in created_pnrs:
+                pnr_map[pnr.control_number] = pnr
+            
+            # Second pass: create passengers and contacts with optimized DataFrame lookup
+            control_number_to_rows = df.groupby('ControlNumber')
+            
+            for control_number, group_df in control_number_to_rows:
+                control_number = str(control_number).strip()
+                if not control_number or control_number not in pnr_map:
+                    continue
+                
+                pnr = pnr_map[control_number]
+                
+                # Process all rows for this PNR
+                for _, row in group_df.iterrows():
+                    # Prepare passenger data
+                    surname = str(row.get('Surname', '')).strip()
+                    first_name = str(row.get('FirstName', '')).strip()
+                    if surname or first_name:
+                        passengers_to_create.append(Passenger(
+                            pnr=pnr,
+                            surname=surname,
+                            first_name=first_name,
+                            ff_number=str(row.get('FF_NUMBER', '')).strip(),
+                            ff_tier=str(row.get('FF_TIER', '')).strip(),
+                            board_point=str(row.get('boardPoint', '')).strip(),
+                            off_point=str(row.get('offPoint', '')).strip(),
+                            seat_row_number=str(row.get('seatRowNumber', '')).strip(),
+                            seat_column=str(row.get('seatColumn', '')).strip(),
+                            meal=str(row.get('MEAL', '')).strip(),
+                        ))
+                    
+                    # Prepare contact data
+                    contact_type = str(row.get('ContactType', '')).strip()
+                    contact_detail = str(row.get('ContactDetail', '')).strip()
+                    if contact_type and contact_detail:
+                        contacts_to_create.append(Contact(
+                            pnr=pnr,
+                            contact_type=contact_type,
+                            contact_detail=contact_detail
+                        ))
+            
+            # Bulk create passengers and contacts
+            if passengers_to_create:
+                Passenger.objects.bulk_create(passengers_to_create, ignore_conflicts=True)
+            if contacts_to_create:
+                Contact.objects.bulk_create(contacts_to_create, ignore_conflicts=True)
+            
+            logger.info(f"Successfully processed {len(unique_pnrs)} PNRs")
+            messages.success(request, f'Successfully processed {len(unique_pnrs)} unique PNRs from the file.')
+            
         except Exception as e:
+            logger.error(f"Error importing file: {str(e)}")
             messages.error(request, f'Error importing file: {str(e)}')
-        return redirect('home')
+        
+        return redirect('quality_monitor:home')
+    
     return render(request, 'upload.html')
-
-# Removed redundant views - functionality moved to home_view tabs
 
 def export_pnrs_to_excel(request):
     try:
-        bookings = get_filtered_bookings(request)
+        pnrs = get_filtered_pnrs(request)
         export_type = request.GET.get('type', 'all')
         
         if export_type == 'no_contacts':
-            bookings = bookings.filter(phone='', email='')
+            pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count=0)
         elif export_type == 'low_quality':
-            low_quality_ids = []
-            for booking in bookings:
-                if booking.quality_score < 60:
-                    low_quality_ids.append(booking.id)
-            bookings = bookings.filter(id__in=low_quality_ids)
+            # This is an approximation. A more accurate filter would use the quality score.
+            pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count__lt=2)
         elif export_type == 'high_quality':
-            high_quality_ids = []
-            for booking in bookings:
-                if booking.quality_score >= 80:
-                    high_quality_ids.append(booking.id)
-            bookings = bookings.filter(id__in=high_quality_ids)
+            pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count__gte=2)
         
-        qs = bookings.values(
-            'pnr', 'phone', 'email', 'ff_number', 'meal_selection', 'seat',
-            'channel', 'kq_office__office_id', 'kq_office__name', 
-            'kq_staff__staff_id', 'kq_staff__name', 'kq_staff__office__office_id',
-            'travel_agency__iata_code', 'travel_agency__name', 'created_at', 'departure_date'
-        )
-        df = pd.DataFrame(list(qs))
+        # Build export data with prefetched relationships
+        pnrs = pnrs.prefetch_related('contacts', 'passengers')
+        export_data = []
+        for pnr in pnrs:
+            # Get contacts and passengers (already prefetched)
+            contacts = list(pnr.contacts.all())
+            passengers = list(pnr.passengers.all())
+            
+            base_data = {
+                'PNR': pnr.control_number,
+                'Office_ID': pnr.office_id,
+                'Agent': pnr.agent,
+                'Creation_Date': pnr.creation_date,
+                'Quality_Score': pnr.quality_score,
+                'Is_Reachable': pnr.is_reachable,
+                'Has_Wrong_Format': pnr.has_wrong_format_contacts,
+                'Has_Wrongly_Placed': pnr.has_wrongly_placed_contacts,
+                'Created_At': pnr.created_at.strftime('%Y-%m-%d %H:%M') if pnr.created_at else ''
+            }
+            
+            # Add contact details
+            for i, contact in enumerate(contacts[:3]):  # Limit to first 3 contacts
+                base_data[f'Contact_{i+1}_Type'] = contact.contact_type
+                base_data[f'Contact_{i+1}_Detail'] = contact.contact_detail
+                base_data[f'Contact_{i+1}_Valid_Email'] = contact.is_valid_email
+                base_data[f'Contact_{i+1}_Valid_Phone'] = contact.is_valid_phone
+                base_data[f'Contact_{i+1}_Wrongly_Placed'] = contact.is_wrongly_placed
+            
+            # Add passenger details
+            for i, passenger in enumerate(passengers[:2]):  # Limit to first 2 passengers
+                base_data[f'Passenger_{i+1}_Name'] = f"{passenger.surname}, {passenger.first_name}"
+                base_data[f'Passenger_{i+1}_FF_Number'] = passenger.ff_number
+                seat = f"{passenger.seat_row_number}{passenger.seat_column}" if passenger.seat_row_number and passenger.seat_column else ''
+                base_data[f'Passenger_{i+1}_Seat'] = seat
+                base_data[f'Passenger_{i+1}_Meal'] = passenger.meal
+            
+            export_data.append(base_data)
         
-        if not df.empty:
-            df['quality_score'] = (
-                (df['phone'].fillna('') != '').astype(int) * 20 +
-                (df['email'].fillna('') != '').astype(int) * 20 +
-                (df['ff_number'].fillna('') != '').astype(int) * 20 +
-                (df['meal_selection'].fillna('') != '').astype(int) * 20 +
-                (df['seat'].fillna('') != '').astype(int) * 20
-            )
-            df['created_at'] = pd.to_datetime(df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+        df = pd.DataFrame(export_data)
         
-        filename = f'kq_bookings_{export_type}_{timezone.now().strftime("%Y%m%d")}.xlsx'
+        filename = f'kq_pnrs_{export_type}_{timezone.now().strftime("%Y%m%d")}.xlsx'
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         df.to_excel(response, index=False)
@@ -270,86 +436,52 @@ def export_pnrs_to_excel(request):
         return HttpResponse(f'Error generating report: {str(e)}', status=500)
 
 def api_quality_trends(request):
-    bookings = get_filtered_bookings(request)
+    pnrs = get_filtered_pnrs(request)
     days = int(request.GET.get('days', 30))
-    quality_calc = get_quality_score_calc()
+    end_date = timezone.now().date()
+    start_date = end_date - timedelta(days=days - 1)
     
-    trends = []
-    for i in range(days):
-        date = timezone.now().date() - timedelta(days=i)
-        day_bookings = bookings.filter(created_at__date=date)
-        day_quality = day_bookings.aggregate(avg_score=Avg(quality_calc))['avg_score'] or 0
-        day_count = day_bookings.count()
-        trends.append({
-            'date': date.strftime('%Y-%m-%d'),
-            'quality': round(day_quality, 1),
-            'count': day_count
-        })
-    
-    return JsonResponse({'trends': trends[::-1]})
+    quality_score_annotation = get_quality_score_annotation()
 
-def api_channel_groupings(request):
-    """API endpoint for channel groupings"""
-    groupings = [
-        {
-            'id': 'direct',
-            'label': 'Direct Channels', 
-            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.DIRECT_CHANNELS]
-        },
-        {
-            'id': 'indirect',
-            'label': 'Indirect Channels',
-            'channels': [{'id': ch, 'label': dict(Booking.CHANNEL_CHOICES)[ch]} for ch in Booking.INDIRECT_CHANNELS]
-        }
-    ]
-    return JsonResponse({'groupings': groupings})
+    # Perform a single query to get stats for all days in the range
+    daily_stats = (
+        pnrs.filter(creation_date__range=[start_date, end_date])
+        .values('creation_date')
+        .annotate(
+            avg_quality=Avg(quality_score_annotation),
+            pnr_count=Count('id', distinct=True)
+        )
+    )
 
-def api_offices_by_channels(request):
-    """API endpoint to get offices/agencies available for selected channels"""
-    selected_channels = request.GET.getlist('channels')
+    trends = [{
+        'date': stat['creation_date'].strftime('%Y-%m-%d'), 
+        'quality': round(stat['avg_quality'] or 0, 1), 
+        'count': stat['pnr_count']
+    } for stat in daily_stats if stat['creation_date']]
+    trends.sort(key=lambda x: x['date']) # Ensure the data is sorted by date
     
-    if not selected_channels:
-        # Return all offices when no channels selected
-        offices = list(KQOffice.objects.all().values('office_id', 'name').order_by('name'))
-        return JsonResponse({'offices': offices, 'agencies': [], 'staff': []})
+    return JsonResponse({'trends': trends})
+
+def api_delivery_systems(request):
+    """API endpoint for delivery systems"""
+    # Get distinct delivery systems from PNRs with proper ordering
+    delivery_systems = PNR.objects.values_list('delivery_system_company', flat=True).distinct().order_by('delivery_system_company')
     
-    relevant_offices = set()
-    relevant_agencies = set()
-    relevant_staff = set()
+    # Return a flat list of delivery systems
+    delivery_system_list = [{'id': c, 'label': c} for c in delivery_systems if c]
+    return JsonResponse({'delivery_systems': delivery_system_list, 'disabled': not delivery_system_list})
+
+def api_offices_by_delivery_systems(request):
+    """API endpoint to get offices, optionally filtered by delivery system."""
+    delivery_systems = request.GET.getlist('delivery_systems')
     
-    for channel in selected_channels:
-        if channel == 'website':
-            relevant_offices.add('WEB001')
-        elif channel == 'mobile_app':
-            relevant_offices.add('MOB001')
-        elif channel == 'call_center':
-            relevant_offices.add('CC001')
-        elif channel in ['airport_counter', 'kiosk']:
-            physical_office_ids = KQOffice.objects.exclude(
-                office_id__in=['WEB001', 'MOB001', 'CC001']
-            ).values_list('office_id', flat=True)
-            relevant_offices.update(physical_office_ids)
-        elif channel == 'travel_agents':
-            agency_ids = TravelAgency.objects.values_list('iata_code', flat=True)
-            relevant_agencies.update(agency_ids)
-        elif channel in ['corporate_sales', 'group_sales']:
-            staff_ids = KQStaff.objects.values_list('staff_id', flat=True)
-            relevant_staff.update(staff_ids)
-    
-    offices = list(KQOffice.objects.filter(
-        office_id__in=relevant_offices
-    ).values('office_id', 'name').order_by('name'))
-    
-    agencies = list(TravelAgency.objects.filter(
-        iata_code__in=relevant_agencies
-    ).values('iata_code', 'name').order_by('name'))
-    
-    staff = list(KQStaff.objects.filter(
-        staff_id__in=relevant_staff
-    ).values('staff_id', 'name', 'office__name').order_by('name'))
-    
-    return JsonResponse({
-        'offices': offices,
-        'agencies': agencies, 
-        'staff': staff
-    })
+    pnrs = PNR.objects.all()
+    if delivery_systems:
+        # Sanitize delivery system inputs
+        clean_systems = [ds.strip() for ds in delivery_systems if ds.strip()]
+        if clean_systems:
+            pnrs = pnrs.filter(delivery_system_company__in=clean_systems)
+        
+    offices_from_pnr = pnrs.values('office_id').distinct().order_by('office_id')
+    offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in offices_from_pnr if o['office_id']]
+    return JsonResponse({'offices': offices})

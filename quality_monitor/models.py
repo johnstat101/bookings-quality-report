@@ -1,158 +1,222 @@
 from django.db import models
-from django.utils.html import escape
+from django.db.models import Q
+import re
 
-class TravelAgency(models.Model):
-    iata_code = models.CharField(max_length=10, unique=True)
-    name = models.CharField(max_length=100)
-    contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(max_length=20, blank=True)
+class PNR(models.Model):
+    """
+    Passenger Name Record (PNR) - Main booking record.
+    
+    Represents a single booking with associated passengers and contacts.
+    Quality score is calculated based on completeness of contact details,
+    frequent flyer numbers, meal selections, and seat assignments.
+    """
+    control_number = models.CharField(max_length=20, unique=True, db_index=True)
+    office_id = models.CharField(max_length=20, blank=True, db_index=True)
+    agent = models.CharField(max_length=20, blank=True)
+    creation_date = models.DateField(null=True, blank=True, db_index=True)
+    creator_iata_code = models.CharField(max_length=20, blank=True)
+    delivery_system_company = models.CharField(max_length=10, blank=True, db_index=True)
+    delivery_system_location = models.CharField(max_length=10, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.name} ({self.iata_code})"
+        return f"PNR: {self.control_number}"
     
     class Meta:
-        verbose_name_plural = "Travel Agencies"
+        indexes = [
+            models.Index(fields=['creation_date', 'office_id']),
+            models.Index(fields=['delivery_system_company', 'creation_date']),
+        ]
+    
 
-class KQOffice(models.Model):
-    office_id = models.CharField(max_length=10, unique=True)
-    name = models.CharField(max_length=100)
-    location = models.CharField(max_length=100)
-    manager = models.CharField(max_length=100, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f"{self.name} ({self.office_id})"
-
-class KQStaff(models.Model):
-    staff_id = models.CharField(max_length=10, unique=True)
-    name = models.CharField(max_length=100)
-    office = models.ForeignKey(KQOffice, on_delete=models.CASCADE, related_name='staff')
-    email = models.EmailField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    @property
+    def has_valid_contacts(self):
+        """Check if PNR has at least one valid contact"""
+        for contact in self.contacts.all():
+            if contact.is_valid_email or contact.is_valid_phone:
+                return True
+        return False
     
-    def __str__(self):
-        return f"{self.name} ({self.staff_id})"
-
-class Booking(models.Model):
-    CHANNEL_CHOICES = [
-        # Direct channels
-        ('website', 'Website'),
-        ('mobile', 'Mobile'),
-        ('ato', 'ATO'),
-        ('cto', 'CTO'),
-        ('cec', 'Contact Center (CEC)'),
-        ('kq_gsa', 'KQ GSA'),
-        # Indirect channels
-        ('travel_agents', 'Travel Agents'),
-        ('ndc', 'NDC'),
-        ('msafiri_connect', 'Msafiri Connect'),
-    ]
+    @property
+    def has_missing_contacts(self):
+        return not self.contacts.exists()
     
-    DIRECT_CHANNELS = ['website', 'mobile', 'ato', 'cto', 'cec', 'kq_gsa']
-    INDIRECT_CHANNELS = ['travel_agents', 'ndc', 'msafiri_connect']
+    @property
+    def has_wrong_format_contacts(self):
+        """Check if PNR has contacts with wrong format - supports // operator for emails"""
+        return self.contacts.filter(
+            contact_detail__isnull=False
+        ).exclude(
+            Q(contact_type__in=Contact.EMAIL_VALID_TYPES, 
+              contact_detail__regex=r'^[a-zA-Z0-9._%+-]+(@|//)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') |
+            Q(contact_type__in=Contact.PHONE_VALID_TYPES, 
+              contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+        ).exists()
     
-    # Channel groupings for filtering
-    CHANNEL_GROUPINGS = {
-        'direct': {
-            'label': 'Direct Channels',
-            'channels': DIRECT_CHANNELS
-        },
-        'indirect': {
-            'label': 'Indirect Channels', 
-            'channels': INDIRECT_CHANNELS
-        }
-    }
+    @property
+    def has_wrongly_placed_contacts(self):
+        """Check if PNR has contacts in wrong contact types - optimized"""
+        return self.contacts.filter(
+            Q(contact_detail__contains='@') & ~Q(contact_type__in=Contact.EMAIL_VALID_TYPES) |
+            Q(contact_detail__regex=r'\d{7,}') & ~Q(contact_type__in=Contact.PHONE_VALID_TYPES)
+        ).exists()
     
-    # Office requirements by channel
-    OFFICE_CHANNELS = ['website', 'mobile']  # Channels that require office_id
-    STAFF_CHANNELS = ['ato', 'cto', 'cec', 'kq_gsa', 'travel_agents', 'ndc', 'msafiri_connect']  # Channels that require staff_id
-    
-    pnr = models.CharField(max_length=20, unique=True)
-    phone = models.CharField(max_length=20, blank=True)
-    email = models.EmailField(blank=True)
-    ff_number = models.CharField("Frequent Flyer Number", max_length=20, blank=True)
-    meal_selection = models.CharField(max_length=50, blank=True)
-    seat = models.CharField(max_length=10, blank=True)
-    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='website')
-    departure_date = models.DateField(null=True, blank=True)
-    
-    # Channel-specific relationships
-    kq_office = models.ForeignKey(KQOffice, on_delete=models.SET_NULL, null=True, blank=True)
-    kq_staff = models.ForeignKey(KQStaff, on_delete=models.SET_NULL, null=True, blank=True)
-    travel_agency = models.ForeignKey(TravelAgency, on_delete=models.SET_NULL, null=True, blank=True)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return escape(f"PNR: {self.pnr}")
-    
-    class Meta:
-        ordering = ['-created_at']
+    # Removed redundant is_reachable property - use has_valid_contacts directly
     
     @property
     def quality_score(self):
+        """Calculate quality score - use annotation for better performance"""
+        from .utils import get_quality_score_annotation
+        # For individual instances, calculate directly
         score = 0
-        if self.phone: score += 20
-        if self.email: score += 20
-        if self.ff_number: score += 20
-        if self.meal_selection: score += 20
-        if self.seat: score += 20
+        if self.has_valid_contacts:
+            score += 40
+        if self.passengers.filter(ff_number__gt='').exists():
+            score += 20
+        if self.passengers.filter(meal__gt='').exists():
+            score += 20
+        if self.passengers.filter(seat_row_number__gt='', seat_column__gt='').exists():
+            score += 20
         return score
+
+class Passenger(models.Model):
+    """
+    Passenger information associated with a PNR.
+    
+    Contains personal details, frequent flyer information,
+    travel preferences (meal, seat), and journey details.
+    """
+    pnr = models.ForeignKey(PNR, on_delete=models.CASCADE, related_name='passengers')
+    surname = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    ff_number = models.CharField(max_length=20, blank=True)
+    ff_tier = models.CharField(max_length=20, blank=True)
+    board_point = models.CharField(max_length=10, blank=True)
+    off_point = models.CharField(max_length=10, blank=True)
+    seat_row_number = models.CharField(max_length=10, blank=True)
+    seat_column = models.CharField(max_length=10, blank=True)
+    meal = models.CharField(max_length=20, blank=True)
     
     @property
-    def has_contacts(self):
-        return bool(self.phone or self.email)
+    def seat(self):
+        """Combine seat row and column"""
+        if self.seat_row_number and self.seat_column:
+            return f"{self.seat_row_number}{self.seat_column}"
+        return ''
+    
+    def __str__(self):
+        return f"{self.surname}, {self.first_name}"
+
+class Contact(models.Model):
+    """
+    Contact information for PNR communication.
+    
+    Supports various contact types (AP, APE, APM, CTCE, CTCM) with
+    validation for proper email and phone number formats.
+    Handles both @ and // operators for email addresses.
+    """
+    CONTACT_TYPE_CHOICES = [
+        ('AP', 'AP'),
+        ('APE', 'APE'), # Email
+        ('APM', 'APM'), # Phone
+        ('CTCE', 'CTCE'),
+        ('CTCEM', 'CTCEM'),
+        ('CTCM', 'CTCM'),
+    ]
+    
+    # Valid contact types for each contact method
+    EMAIL_VALID_TYPES = ['AP', 'APE', 'CTCE']  # AP=generic, APE=email, CTCE=email
+    PHONE_VALID_TYPES = ['AP', 'APM', 'CTCM']  # AP=generic, APM=phone, CTCM=phone
+    
+    # Pre-compiled regex patterns for performance optimization
+    PREFIX_PATTERN = re.compile(r'^[A-Z]+/[A-Z]\+')  # Matches "KQ/M+", "KQ/E+" prefixes
+    SUFFIX_PATTERN = re.compile(r'/[A-Z]+$')         # Matches "/EN", "/FR" suffixes
+    EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$')
+
+    pnr = models.ForeignKey(PNR, on_delete=models.CASCADE, related_name='contacts')
+    contact_type = models.CharField(max_length=10, choices=CONTACT_TYPE_CHOICES, db_index=True)
+    contact_detail = models.CharField(max_length=200, db_index=True)
     
     @property
-    def channel_type(self):
-        """Return channel type (direct/indirect)"""
-        return 'direct' if self.channel in self.DIRECT_CHANNELS else 'indirect'
+    def is_email(self):
+        """Check if contact appears to be an email with better validation"""
+        detail = self.contact_detail.lower()
+        # More robust email detection
+        return ('@' in detail and '.' in detail) or ('//' in detail and '.' in detail)
     
     @property
-    def office_id(self):
-        """Return office ID based on channel"""
-        if self.kq_office:
-            return self.kq_office.office_id
-        return None
-    
-    @property
-    def staff_id(self):
-        """Return staff ID"""
-        if self.kq_staff:
-            return self.kq_staff.staff_id
-        return None
-    
-    @property
-    def booking_agent(self):
-        """Return the booking agent based on channel"""
-        if self.kq_staff:
-            return self.kq_staff.name
-        elif self.travel_agency:
-            return self.travel_agency.name
-        elif self.kq_office:
-            return self.kq_office.name
-        return dict(self.CHANNEL_CHOICES).get(self.channel, 'Unknown')
-    
-    @classmethod
-    def get_offices_for_channel(cls, channel):
-        """Get available offices for a specific channel"""
-        if channel in cls.OFFICE_CHANNELS:
-            return KQOffice.objects.all()
-        elif channel in cls.STAFF_CHANNELS:
-            return KQOffice.objects.filter(staff__isnull=False).distinct()
-        return KQOffice.objects.none()
-    
-    def clean(self):
-        """Validate channel-specific data"""
-        from django.core.exceptions import ValidationError
+    def is_phone(self):
+        """Check if contact appears to be a phone number"""
+        # Check for phone indicators or if it contains mostly digits
+        detail = self.contact_detail.lower()
         
-        if self.channel in self.OFFICE_CHANNELS:
-            if not self.kq_office:
-                raise ValidationError(f"{self.get_channel_display()} bookings must have an office")
-        elif self.channel in self.STAFF_CHANNELS:
-            if not self.kq_staff:
-                raise ValidationError(f"{self.get_channel_display()} bookings must have a staff member")
-            if self.channel == 'travel_agents' and not self.travel_agency:
-                raise ValidationError("Travel agent bookings must have an associated agency")
+        # Check for phone prefixes or suffixes
+        if any(indicator in detail for indicator in ['-m', '-s', 'tel', 'phone', 'mobile']):
+            return True
+            
+        # Remove common phone separators and check if mostly digits
+        cleaned = re.sub(r'[\s\-\+\(\)\.\,]', '', self.contact_detail)
+        # Remove prefixes like "KQ/M+" or "KQ/E+"
+        cleaned = Contact.PREFIX_PATTERN.sub('', cleaned)
+        # Remove suffixes like "/EN"
+        cleaned = Contact.SUFFIX_PATTERN.sub('', cleaned)
+        
+        # Count digits
+        digit_count = sum(c.isdigit() for c in cleaned)
+        return len(cleaned) > 0 and digit_count / len(cleaned) > 0.7 and digit_count >= 7
+    
+    @property
+    def is_valid_email(self):
+        """Check if email is valid and in correct contact type"""
+        if not self.is_email:
+            return False
+        
+        # Check if contact type is valid for email
+        if self.contact_type not in self.EMAIL_VALID_TYPES:
+            return False
+        
+        # Basic email format validation with // support
+        email = self.contact_detail.replace('//', '@')
+        # Remove any prefixes like "KQ/E+" or "KQ/M+"
+        email = Contact.PREFIX_PATTERN.sub('', email)
+        # Remove any suffixes like "/EN"
+        email = Contact.SUFFIX_PATTERN.sub('', email)
+        
+        return bool(re.match(Contact.EMAIL_PATTERN, email))
+    
+    @property
+    def is_valid_phone(self):
+        """Check if phone is valid and in correct contact type"""
+        if not self.is_phone:
+            return False
+        
+        # Check if contact type is valid for phone
+        if self.contact_type not in self.PHONE_VALID_TYPES:
+            return False
+        
+        # Clean phone number - remove prefixes and suffixes
+        phone = self.contact_detail
+        phone = Contact.PREFIX_PATTERN.sub('', phone)  # Remove "KQ/M+" etc
+        phone = Contact.SUFFIX_PATTERN.sub('', phone)  # Remove "/EN" etc
+        phone = re.sub(r'-[A-Z]$', '', phone)  # Remove "-M", "-S" etc
+        
+        # Use consistent phone validation pattern
+        return bool(re.match(r'^\+?[0-9\s-]{7,20}$', phone.strip()))
+    
+    @property
+    def is_wrongly_placed(self):
+        """Check if contact is in wrong contact type"""
+        if self.is_email and self.contact_type not in self.EMAIL_VALID_TYPES:
+            return True
+        if self.is_phone and self.contact_type not in self.PHONE_VALID_TYPES:
+            return True
+        return False
+    
+    def __str__(self):
+        return f"{self.contact_type}: {self.contact_detail}"
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['contact_type', 'contact_detail']),
+        ]
