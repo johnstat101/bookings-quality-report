@@ -1,17 +1,35 @@
 function initDashboard(data) {
     let selectedDeliverySystems = [], selectedOffices = [], allDeliverySystems = [], allOffices = [];
     const charts = {};
-
+    
     document.addEventListener('DOMContentLoaded', () => {
         // --- UTILITY FUNCTIONS ---
         const getElement = id => document.getElementById(id);
         const getElements = selector => document.querySelectorAll(selector);
-        const createElement = (tag, className, content) => {
-            const el = document.createElement(tag);
-            if (className) el.className = className;
-            if (content) el.innerHTML = content;
-            return el;
+
+        // --- CACHED DOM ELEMENTS ---
+        const elements = { // This should be inside DOMContentLoaded
+            qualityTrendChart: getElement('qualityTrendChart'),
+            trendDaysSelector: getElement('trend-days-selector'),
+            officePerformanceChart: getElement('officePerformanceChart'),
+            qualityHistogram: getElement('qualityHistogram'),
+            deliverySystemDropdown: getElement('delivery-system-dropdown'),
+            officeDropdownContent: getElement('office-dropdown-content'),
+            deliverySystemTags: getElement('delivery-system-tags'),
+            officeTags: getElement('office-tags'),
+            deliverySystemFilterToggle: getElement('delivery-system-filter-toggle'),
+            officeFilterToggle: getElement('office-filter-toggle'),
+            officeInput: getElement('office-input'),
+            bookingDateDisplay: getElement('booking_date_display'),
+            bookingDatePicker: getElement('booking_date_picker'),
+            bookingStartDate: getElement('booking_start_date'),
+            bookingEndDate: getElement('booking_end_date'),
+            modal: getElement('data-modal'),
+            modalTitle: getElement('modal-title'),
+            deliverySystemChart: getElement('deliverySystemChart'),
+            modalTableBody: getElement('modal-table-body'),
         };
+
         const getQualityClass = quality => quality >= 80 ? 'quality-excellent' : quality >= 60 ? 'quality-good' : 'quality-poor';
         const getQualityColors = percentage => ({
             present: percentage >= 80 ? '#4CAF50' : percentage >= 60 ? '#FF9800' : '#F44336',
@@ -119,10 +137,11 @@ function initDashboard(data) {
 
         // --- QUALITY HISTOGRAM ---
         function initializeQualityHistogram() {
-            const histogram = getElement('qualityHistogram');
-            if (!histogram) return;
+            if (!elements.qualityHistogram) return;
             
-            const bars = histogram.querySelectorAll('.histogram-bar');
+            const bars = elements.qualityHistogram.querySelectorAll('.histogram-bar');
+            const fragment = document.createDocumentFragment();
+
             const counts = Array.from(bars).map(bar => parseInt(bar.dataset.count) || 0);
             const maxCount = Math.max(...counts, 1);
             const totalCount = counts.reduce((a, b) => a + b, 0);
@@ -141,8 +160,11 @@ function initDashboard(data) {
                 if (barText) barText.innerHTML = `${count} PNRs`;
                 
                 // Add tooltip only
-                const tooltip = createElement('div', 'histogram-tooltip', `${categories[index]}: ${count} PNRs (${totalPercentage}% of total)`);
-                bar.appendChild(tooltip);
+                const tooltip = document.createElement('div');
+                tooltip.className = 'histogram-tooltip';
+                tooltip.textContent = `${categories[index]}: ${count} PNRs (${totalPercentage}% of total)`;
+                
+                fragment.appendChild(tooltip);
                 
                 // Animate bar height
                 setTimeout(() => {
@@ -150,17 +172,18 @@ function initDashboard(data) {
                     bar.style.minHeight = height + 'px';
                 }, index * 150);
             });
+            bars.forEach(bar => bar.appendChild(fragment.cloneNode(true)));
         }
         
         initializeQualityHistogram();
 
         // --- QUALITY TREND CHART ---
         window.initializeQualityTrendChart = async () => {
-            const days = getElement('trend-days-selector').value;
+            const days = elements.trendDaysSelector.value;
             const url = new URL(window.location.origin + '/api/trends/');
             url.searchParams.set('days', days);
             
-            const currentParams = new URLSearchParams(window.location.search);
+            const currentParams = new URLSearchParams(window.location.search); // Re-read params
             currentParams.forEach((value, key) => {
                 if (key !== 'days') url.searchParams.append(key, value);
             });
@@ -171,7 +194,7 @@ function initDashboard(data) {
 
                 if (charts.qualityTrendChart) charts.qualityTrendChart.destroy();
 
-                charts.qualityTrendChart = new Chart(getElement('qualityTrendChart'), {
+                charts.qualityTrendChart = new Chart(elements.qualityTrendChart, {
                     type: 'line',
                     data: {
                         labels: trendData.trends.map(d => d.date),
@@ -203,16 +226,13 @@ function initDashboard(data) {
         
         // --- OFFICE PERFORMANCE CHART ---
         function initializeOfficeChart() {
-            const ctx = getElement('officePerformanceChart');
-            if (!ctx) {
-                console.log('Office chart canvas not found');
+            if (!elements.officePerformanceChart) {
                 return;
             }
             
             if (!data.office_stats || data.office_stats.length === 0) {
-                console.log('No office stats data available');
                 // Show a message or placeholder
-                const container = ctx.parentElement;
+                const container = elements.officePerformanceChart.parentElement;
                 container.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">No office performance data available</div>';
                 return;
             }
@@ -221,14 +241,12 @@ function initDashboard(data) {
             const labels = topOffices.map(office => office.office_name || office.office_id);
             const qualityScores = topOffices.map(office => parseFloat(office.avg_quality) || 0);
             const volumes = topOffices.map(office => parseInt(office.total) || 0);
-            
-            console.log('Initializing office chart with', topOffices.length, 'offices');
-            
+                        
             if (charts.officeChart) {
                 charts.officeChart.destroy();
             }
             
-            charts.officeChart = new Chart(ctx, {
+            charts.officeChart = new Chart(elements.officePerformanceChart, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -321,15 +339,81 @@ function initDashboard(data) {
             });
         }
         
-        if (getElement('qualityTrendChart')) initializeQualityTrendChart();
+        if (elements.qualityTrendChart) initializeQualityTrendChart();
         
         // Initialize office chart after a short delay to ensure DOM is ready
         setTimeout(() => {
-            if (getElement('officePerformanceChart')) {
-                console.log('Initializing office performance chart...');
+            if (elements.officePerformanceChart) {
                 initializeOfficeChart();
             }
         }, 100);
+
+        // --- DELIVERY SYSTEM CHART ---
+        function initializeDeliverySystemChart() {
+            const ctx = elements.deliverySystemChart;
+            if (!ctx || !data.delivery_system_stats) return;
+
+            const sortedSystems = data.delivery_system_stats.sort((a, b) => b.total - a.total);
+            const labels = sortedSystems.map(s => s.delivery_system_company);
+            const volumes = sortedSystems.map(s => s.total);
+            const qualityScores = sortedSystems.map(s => s.avg_quality);
+
+            const backgroundColors = qualityScores.map(q => {
+                if (q >= 80) return 'rgba(76, 175, 80, 0.7)';  // Excellent
+                if (q >= 60) return 'rgba(255, 152, 0, 0.7)'; // Good
+                return 'rgba(244, 67, 54, 0.7)';             // Poor
+            });
+
+            const borderColors = qualityScores.map(q => {
+                if (q >= 80) return 'rgba(76, 175, 80, 1)';
+                if (q >= 60) return 'rgba(255, 152, 0, 1)';
+                return 'rgba(244, 67, 54, 1)';
+            });
+
+            if (charts.deliverySystemChart) {
+                charts.deliverySystemChart.destroy();
+            }
+
+            charts.deliverySystemChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Booking Volume',
+                        data: volumes,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Booking Volume & Quality by Delivery System',
+                            align: 'start',
+                            font: { size: 18, weight: 'bold' },
+                            padding: { bottom: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `Volume: ${context.parsed.y.toLocaleString()}`,
+                                afterLabel: (context) => `Quality: ${qualityScores[context.dataIndex].toFixed(1)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'PNR Volume' } },
+                        x: { title: { display: true, text: 'Delivery System' } }
+                    }
+                }
+            });
+        }
 
         // --- TAB NAVIGATION & THEME SWITCHER ---
         getElements('.nav-tab').forEach(tab => {
@@ -405,7 +489,7 @@ function initDashboard(data) {
         async function updateAvailableOffices(clearSelections = true) {
             if (clearSelections) {
                 selectedOffices = [];
-                document.getElementById('office-tags').innerHTML = '';
+                if (elements.officeTags) elements.officeTags.innerHTML = '';
             }
             
             if (selectedDeliverySystems.length === 0 || selectedDeliverySystems.length === allDeliverySystems.length) {
@@ -435,14 +519,16 @@ function initDashboard(data) {
         }
 
         function populateDeliverySystemDropdown() {
-            const dropdown = document.getElementById('delivery-system-dropdown');
-            dropdown.innerHTML = '';
+            if (!elements.deliverySystemDropdown) return;
+            
+            const fragment = document.createDocumentFragment();
+            elements.deliverySystemDropdown.innerHTML = '';
             
             const allOption = document.createElement('div');
             allOption.className = 'delivery-system-option';
             allOption.onclick = () => selectAllDeliverySystems();
             allOption.innerHTML = '<input type="checkbox" id="ds-all"><label for="ds-all">All</label>';
-            dropdown.appendChild(allOption);
+            fragment.appendChild(allOption);
             
             allDeliverySystems.forEach(ds => {
                 const option = document.createElement('div');
@@ -459,13 +545,16 @@ function initDashboard(data) {
                 
                 option.appendChild(checkbox);
                 option.appendChild(label);
-                dropdown.appendChild(option);
+                fragment.appendChild(option);
             });
+            elements.deliverySystemDropdown.appendChild(fragment);
         }
 
         function populateOfficeDropdown() {
-            const dropdown = document.getElementById('office-dropdown-content');
-            dropdown.innerHTML = '';
+            const dropdown = elements.officeDropdownContent;
+            if (!dropdown) return;
+            const fragment = document.createDocumentFragment();
+            dropdown.innerHTML = ''; // Clear existing
             
             if (allOffices.length === 0) {
                 const option = document.createElement('div');
@@ -490,8 +579,9 @@ function initDashboard(data) {
                 
                 option.appendChild(checkbox);
                 option.appendChild(label);
-                dropdown.appendChild(option);
+                fragment.appendChild(option);
             });
+            dropdown.appendChild(fragment);
         }
 
         function toggleDeliverySystem(dsId, dsLabel) {
@@ -531,36 +621,38 @@ function initDashboard(data) {
 
         // Consolidated tag management
         const addTag = (containerId, tagClass, id, label, removeFunction) => {
-            const container = getElement(containerId);
+            const container = elements[containerId];
             if (!container) return;
             
-            const tag = createElement('div', tagClass);
+            const tag = document.createElement('div');
+            tag.className = tagClass;
             tag.id = `${tagClass.split('-')[0]}-tag-${id}`;
-            tag.innerHTML = `${label} <span class="close" onclick="${removeFunction}('${id}')">&times;</span>`;
+            tag.dataset.id = id;
+            tag.innerHTML = `${label} <span class="close" data-action="remove-tag">&times;</span>`;
             container.appendChild(tag);
         };
         
-        const removeTag = (id, type, selectedArray, updateFunction, extraAction = null) => {
-            const tag = getElement(`${type}-tag-${id}`);
+        const removeTag = (id, type) => {
+            const tagId = type === 'ds' ? 'delivery-system-tag' : 'office-tag';
+            const tag = getElement(`${tagId}-${id}`);
             if (tag) tag.remove();
             
-            const checkbox = getElement(`${type === 'ds' ? 'ds' : 'office'}-${id}`);
+            const checkboxId = type === 'ds' ? `ds-${id}` : `office-${id}`;
+            const checkbox = getElement(checkboxId);
             if (checkbox) checkbox.checked = false;
             
             if (type === 'ds') {
                 selectedDeliverySystems = selectedDeliverySystems.filter(item => item !== id);
                 updateDeliverySystemDisplay();
-                updateAvailableOffices(false);
+                updateAvailableOffices(true); // Re-fetch offices when a system is removed
             } else {
                 selectedOffices = selectedOffices.filter(item => item !== id);
                 updateOfficeDisplay();
             }
         };
         
-        const addDeliverySystemTag = (dsId, dsLabel) => addTag('delivery-system-tags', 'delivery-system-tag', dsId, dsLabel, 'removeDeliverySystemTag');
-        const addOfficeTag = (officeId, officeName) => addTag('office-tags', 'office-tag', officeId, officeName, 'removeOfficeTag');
-        const removeDeliverySystemTag = dsId => removeTag(dsId, 'ds');
-        const removeOfficeTag = officeId => removeTag(officeId, 'office');
+        const addDeliverySystemTag = (dsId, dsLabel) => addTag('deliverySystemTags', 'delivery-system-tag', dsId, dsLabel);
+        const addOfficeTag = (officeId, officeName) => addTag('officeTags', 'office-tag', officeId, officeName);
 
         function selectAllDeliverySystems() {
             const allCheckbox = document.getElementById('ds-all');
@@ -573,11 +665,11 @@ function initDashboard(data) {
                     const checkbox = document.getElementById(`ds-${ds.id}`);
                     if (checkbox) checkbox.checked = true;
                 });
-                document.getElementById('delivery-system-tags').innerHTML = '';
+                if (elements.deliverySystemTags) elements.deliverySystemTags.innerHTML = '';
                 updateDeliverySystemInputDisplay('All');
             } else {
                 selectedDeliverySystems = [];
-                document.getElementById('delivery-system-tags').innerHTML = '';
+                if (elements.deliverySystemTags) elements.deliverySystemTags.innerHTML = '';
                 document.querySelectorAll('[id^="ds-"]').forEach(cb => {
                     if (cb.id !== 'ds-all') cb.checked = false;
                 });
@@ -588,53 +680,58 @@ function initDashboard(data) {
         }
 
         // Consolidated display update functions
-        const updateDisplay = (inputSelector, selectedItems, allItems, isOffice = false) => {
-            const input = document.querySelector(inputSelector);
+        const updateDisplay = (input, selectedItems, allItems) => {
             if (!input) return;
-            
             if (selectedItems.length === 0 || (allItems.length > 0 && selectedItems.length === allItems.length)) {
                 input.placeholder = 'All';
             } else {
                 input.placeholder = `${selectedItems.length} selected`;
             }
         };
-        
-        const updateDeliverySystemDisplay = () => updateDisplay('#delivery-system-filter-toggle input', selectedDeliverySystems, allDeliverySystems);
-        const updateOfficeDisplay = () => updateDisplay('#office-input', selectedOffices, allOffices, true);
+
+        const updateDeliverySystemDisplay = () => updateDisplay(elements.deliverySystemFilterToggle?.querySelector('input'), selectedDeliverySystems, allDeliverySystems);
+        const updateOfficeDisplay = () => updateDisplay(elements.officeInput, selectedOffices, allOffices);
         const updateDeliverySystemInputDisplay = text => {
-            const input = document.querySelector('#delivery-system-filter-toggle input');
+            const input = elements.deliverySystemFilterToggle?.querySelector('input');
             if (input) input.placeholder = text;
         };
 
-        window.removeDeliverySystemTag = removeDeliverySystemTag;
-        window.removeOfficeTag = removeOfficeTag;
+        // Event delegation for removing tags
+        elements.deliverySystemTags?.addEventListener('click', e => {
+            if (e.target.dataset.action === 'remove-tag') {
+                removeTag(e.target.parentElement.dataset.id, 'ds');
+            }
+        });
+
+        elements.officeTags?.addEventListener('click', e => {
+            if (e.target.dataset.action === 'remove-tag') {
+                removeTag(e.target.parentElement.dataset.id, 'office');
+            }
+        });
 
         // --- DATE PICKER ---
-        const [bookingDateDisplay, bookingDatePicker, bookingStartDate, bookingEndDate] = 
-            ['booking_date_display', 'booking_date_picker', 'booking_start_date', 'booking_end_date'].map(getElement);
-
         window.updateBookingDateDisplay = () => {
-            const start = bookingStartDate?.value;
-            const end = bookingEndDate?.value;
-            if (bookingDateDisplay) {
-                bookingDateDisplay.value = start && end ? `${start} → ${end}` : 
+            const start = elements.bookingStartDate?.value;
+            const end = elements.bookingEndDate?.value;
+            if (elements.bookingDateDisplay) {
+                elements.bookingDateDisplay.value = start && end ? `${start} → ${end}` : 
                                          start ? `${start} → ...` : 
                                          end ? `... → ${end}` : 'start-date → end-date';
             }
         };
         updateBookingDateDisplay();
 
-        bookingDateDisplay?.addEventListener('click', () => {
-            if (bookingDatePicker) bookingDatePicker.style.display = 'block';
+        elements.bookingDateDisplay?.addEventListener('click', () => {
+            if (elements.bookingDatePicker) elements.bookingDatePicker.style.display = 'block';
         });
 
         getElement('done-booking-dates-btn')?.addEventListener('click', () => {
-            if (bookingDatePicker) bookingDatePicker.style.display = 'none';
+            if (elements.bookingDatePicker) elements.bookingDatePicker.style.display = 'none';
         });
 
         getElement('clear-booking-dates-btn')?.addEventListener('click', () => {
-            if (bookingStartDate) bookingStartDate.value = '';
-            if (bookingEndDate) bookingEndDate.value = '';
+            if (elements.bookingStartDate) elements.bookingStartDate.value = '';
+            if (elements.bookingEndDate) elements.bookingEndDate.value = '';
             updateBookingDateDisplay();
         });
 
@@ -642,8 +739,8 @@ function initDashboard(data) {
         getElement('apply-filters-btn')?.addEventListener('click', () => {
             sessionStorage.setItem('filterNavigation', 'true');
             const params = new URLSearchParams();
-            const startDate = getElement('booking_start_date')?.value;
-            const endDate = getElement('booking_end_date')?.value;
+            const startDate = elements.bookingStartDate?.value;
+            const endDate = elements.bookingEndDate?.value;
 
             if (startDate) params.set('start_date', startDate);
             if (endDate) params.set('end_date', endDate);
@@ -657,8 +754,8 @@ function initDashboard(data) {
         getElement('clear-filters-btn')?.addEventListener('click', () => {
             selectedDeliverySystems = [];
             selectedOffices = [];
-            if (bookingStartDate) bookingStartDate.value = '';
-            if (bookingEndDate) bookingEndDate.value = '';
+            if (elements.bookingStartDate) elements.bookingStartDate.value = '';
+            if (elements.bookingEndDate) elements.bookingEndDate.value = '';
             updateBookingDateDisplay();
             ['delivery-system-tags', 'office-tags'].forEach(id => {
                 const el = getElement(id);
@@ -676,8 +773,8 @@ function initDashboard(data) {
                 if (dropdown) dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
             });
         };
-        
-        toggleDropdown('delivery-system-filter-toggle', 'delivery-system-dropdown');
+
+        if (elements.deliverySystemFilterToggle) toggleDropdown('delivery-system-filter-toggle', 'delivery-system-dropdown');
         toggleDropdown('office-filter-toggle', 'office-dropdown');
 
         document.addEventListener('click', e => {
@@ -716,56 +813,7 @@ function initDashboard(data) {
             });
         });
 
-        // --- DELIVERY SYSTEM PERFORMANCE CARDS ---
-        function renderDeliverySystemCards() {
-            const grid = getElement('delivery-system-grid');
-            if (!grid || !data.delivery_system_stats) return;
-
-            const sortedSystems = data.delivery_system_stats.sort((a, b) => b.total - a.total).slice(0, 10);
-            const totalVolume = data.delivery_system_stats.reduce((sum, sys) => sum + sys.total, 0);
-            const icons = { '1A': '🌐', '1G': '🌍', 'KQ': '✈️', 'WEB': '💻', 'MOB': '📱', 'ATO': '🤖', 'CTO': '📞', 'CEC': '🏢', 'NDC': '🔗', 'GSA': '🤝' };
-            const rankEmojis = ['🥇', '🥈', '🥉'];
-
-            grid.innerHTML = '';
-            sortedSystems.forEach((system, index) => {
-                const marketShare = totalVolume > 0 ? (system.total / totalVolume * 100).toFixed(1) : 0;
-                const qualityClass = getQualityClass(system.avg_quality);
-                const icon = icons[system.delivery_system_company?.toUpperCase()] || '🌐';
-                const cardClass = system.delivery_system_company?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'default';
-                
-                const card = createElement('div', `delivery-system-card ${cardClass}`);
-                card.style.cssText = `animation: slideInUp 0.6s ease-out ${index * 0.1}s both; transform-origin: bottom;`;
-                
-                ['mouseenter', 'mouseleave'].forEach((event, i) => {
-                    card.addEventListener(event, () => {
-                        card.style.transform = i ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(1.05)';
-                        card.style.zIndex = i ? '1' : '10';
-                    });
-                });
-                
-                const rankBadge = index < 3 ? `<div class="rank-badge rank-${index + 1}" style="animation: bounceIn 0.8s ease-out ${index * 0.2 + 0.5}s both;">${rankEmojis[index]}</div>` : '';
-                const performanceIndicator = system.avg_quality >= 80 ? '<div style="position: absolute; top: 8px; left: 8px; font-size: 16px;">✨</div>' : 
-                                           system.avg_quality < 50 ? '<div style="position: absolute; top: 8px; left: 8px; font-size: 16px;">⚠️</div>' : '';
-                
-                card.innerHTML = `${rankBadge}${performanceIndicator}<div class="channel-icon" style="animation: pulse 2s infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">${icon}</div><div class="channel-name" style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 12px; margin: 8px 0; backdrop-filter: blur(10px);">${system.delivery_system_company}</div><div class="metrics"><div class="quality-score ${qualityClass}" style="font-size: 22px; background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 8px; margin-bottom: 6px; backdrop-filter: blur(5px);">${system.avg_quality.toFixed(1)}%</div><div class="volume" style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 6px; margin-bottom: 3px;">📊 ${system.total.toLocaleString()}</div><div class="market-share" style="background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 6px;">🌐 ${marketShare}%</div></div><div class="quality-bar" style="margin-top: 12px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);"><div class="quality-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,1)); border-radius: 3px; transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index * 0.2 + 0.5}s; box-shadow: 0 0 10px rgba(255,255,255,0.5);" data-width="${system.avg_quality}"></div></div>`;
-                
-                grid.appendChild(card);
-                
-                setTimeout(() => {
-                    const qualityFill = card.querySelector('.quality-fill');
-                    if (qualityFill) qualityFill.style.width = qualityFill.dataset.width + '%';
-                }, 100);
-            });
-            
-            if (!getElement('delivery-system-animations')) {
-                const style = createElement('style');
-                style.id = 'delivery-system-animations';
-                style.textContent = '@keyframes slideInUp{from{opacity:0;transform:translateY(30px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes bounceIn{0%{opacity:0;transform:scale(0.3)}50%{opacity:1;transform:scale(1.05)}70%{transform:scale(0.9)}100%{opacity:1;transform:scale(1)}}';
-                document.head.appendChild(style);
-            }
-        }
-
-        renderDeliverySystemCards();
+        initializeDeliverySystemChart();
         
         // Initialize office chart
         initializeOfficeChart();
@@ -792,21 +840,31 @@ function initDashboard(data) {
             });
         });
 
+        // Make the entire delivery system chart clickable
+        if (elements.deliverySystemChart) {
+            elements.deliverySystemChart.addEventListener('click', () => {
+                openDataModal('all_delivery_systems', 'Detailed PNRs by Delivery System');
+            });
+        }
+
         // --- MODAL FOR DETAILED DATA ---
-        const modal = getElement('data-modal');
-        const modalTitle = getElement('modal-title');
         const modalTableHead = getElement('modal-table')?.querySelector('thead tr');
-        const modalTableBody = getElement('modal-table-body');
         const modalExportBtn = getElement('modal-export-btn');
+        let currentModalMetric = ''; // Variable to store the metric for the currently open modal
 
         // Function to open the modal and fetch data
         async function openDataModal(metric, title) {
-            if (!modal || !modalTitle || !modalTableBody || !modalTableHead) return;
-
-            modalTitle.textContent = title;
-            modalTableBody.innerHTML = '<tr><td colspan="5">Loading data...</td></tr>';
-            modal.style.display = 'flex';
-
+            const modal = elements.modal;
+            if (!modal || !elements.modalTitle || !elements.modalTableBody || !modalTableHead) return;
+            
+            const modalSubtitle = getElement('modal-subtitle');
+            currentModalMetric = metric; // Store the metric
+            const modalDynamicFilters = getElement('modal-dynamic-filters');
+            modalDynamicFilters.innerHTML = ''; // Clear previous dynamic filters
+            elements.modalTitle.textContent = title;
+            modalSubtitle.textContent = 'Use the inputs in the column headers to filter data like in Excel. Click the export button to download the currently visible data.';
+            elements.modalTableBody.innerHTML = '<tr><td colspan="6">Loading data...</td></tr>';
+            modal.style.display = 'flex'; // Show modal
             try {
                 const params = new URLSearchParams(window.location.search);
                 params.set('metric', metric);
@@ -817,37 +875,72 @@ function initDashboard(data) {
                 // Populate table
                 modalTableHead.innerHTML = `
                     <th>PNR</th>
-                    <th class="sortable" data-column-index="1">Office ID</th>
+                    <th class="sortable" data-column-index="1">
+                        Office ID
+                        <input type="text" class="modal-filter-input" data-column-index="1" placeholder="Filter..." onkeyup="filterModalTable()">
+                    </th>
+                    <th>
+                        Delivery System
+                        <input type="text" class="modal-filter-input" data-column-index="2" placeholder="Filter..." onkeyup="filterModalTable()">
+                    </th>
                     <th>Agent ID</th>
                     <th>Contact Type</th>
                     <th>Contact Detail</th>
                 `;
 
-                modalTableBody.innerHTML = ''; // Clear loading message
+                elements.modalTableBody.innerHTML = ''; // Clear loading message
+                const fragment = document.createDocumentFragment();
                 if (detailedData.pnrs && detailedData.pnrs.length > 0) {
                     detailedData.pnrs.forEach(pnr => {
-                        const row = createElement('tr');
+                        const row = document.createElement('tr');
+                        // Add a data attribute for filtering
+                        row.dataset.filterCol1 = (pnr.office_id || '').toLowerCase();
+                        row.dataset.filterCol2 = (pnr.delivery_system || '').toLowerCase();
+
                         row.innerHTML = `
                             <td>${pnr.control_number || '-'}</td>
                             <td>${pnr.office_id || '-'}</td>
+                            <td>${pnr.delivery_system || '-'}</td>
                             <td>${pnr.agent || '-'}</td>
                             <td>${pnr.contact_type || '-'}</td>
                             <td>${pnr.contact_detail || '-'}</td>
                         `;
-                        modalTableBody.appendChild(row);
+                        fragment.appendChild(row);
                     });
+                    elements.modalTableBody.appendChild(fragment);
                 } else {
-                    modalTableBody.innerHTML = '<tr><td colspan="5">No data available for this metric.</td></tr>';
+                    elements.modalTableBody.innerHTML = '<tr><td colspan="6">No data available for this metric.</td></tr>';
                 }
 
                 // Add sorting to the new sortable header
                 modalTableHead.querySelector('.sortable').addEventListener('click', handleSort);
 
             } catch (error) {
-                console.error('Error fetching detailed data:', error);
-                modalTableBody.innerHTML = `<tr><td colspan="5">Error loading data.</td></tr>`;
+                elements.modalTableBody.innerHTML = `<tr><td colspan="6">Error loading data.</td></tr>`;
             }
         }
+
+        // Make the filter function globally accessible
+        window.filterModalTable = () => {
+            const filters = Array.from(modalTableHead.querySelectorAll('.modal-filter-input')).map(input => ({
+                index: parseInt(input.dataset.columnIndex),
+                value: input.value.toLowerCase()
+            }));
+
+            const rows = elements.modalTableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                let isVisible = true;
+                filters.forEach(filter => {
+                    if (filter.value) {
+                        const cellValue = row.dataset[`filterCol${filter.index}`];
+                        if (!cellValue || !cellValue.includes(filter.value)) {
+                            isVisible = false;
+                        }
+                    }
+                });
+                row.style.display = isVisible ? '' : 'none';
+            });
+        };
 
         // Sorting handler for modal table
         function handleSort(e) {
@@ -882,16 +975,15 @@ function initDashboard(data) {
         });
 
         // Close modal logic
-        getElement('modal-close-btn')?.addEventListener('click', () => modal.style.display = 'none');
-        modal?.addEventListener('click', (e) => {
-            if (e.target === modal) modal.style.display = 'none';
+        getElement('modal-close-btn')?.addEventListener('click', () => elements.modal.style.display = 'none');
+        elements.modal?.addEventListener('click', (e) => {
+            if (e.target === elements.modal) elements.modal.style.display = 'none';
         });
 
         // Export button logic
         modalExportBtn?.addEventListener('click', () => {
-            const params = new URLSearchParams(window.location.search);
-            const metric = modalTitle.textContent.includes('Total') ? 'all' : modalTitle.textContent.split(': ')[1].toLowerCase().replace(/ /g, '_');
-            params.set('type', metric);
+            const params = new URLSearchParams(window.location.search); // Re-read params
+            params.set('type', currentModalMetric); // Use the stored metric
             window.location.href = `${data.export_url}?${params.toString()}`;
         });
     });

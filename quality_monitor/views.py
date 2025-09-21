@@ -386,6 +386,8 @@ def export_pnrs_to_excel(request):
             pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count__lt=2)
         elif export_type == 'high_quality':
             pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count__gte=2)
+        elif export_type == 'all_delivery_systems':
+            pass # Use the base filtered PNRs
         
         # Build export data with prefetched relationships
         pnrs = pnrs.prefetch_related('contacts', 'passengers')
@@ -401,7 +403,7 @@ def export_pnrs_to_excel(request):
                 'Agent': pnr.agent,
                 'Creation_Date': pnr.creation_date,
                 'Quality_Score': pnr.quality_score,
-                'Is_Reachable': pnr.is_reachable,
+                'Is_Reachable': pnr.has_valid_contacts,
                 'Has_Wrong_Format': pnr.has_wrong_format_contacts,
                 'Has_Wrongly_Placed': pnr.has_wrongly_placed_contacts,
                 'Created_At': pnr.created_at.strftime('%Y-%m-%d %H:%M') if pnr.created_at else ''
@@ -518,6 +520,11 @@ def api_detailed_pnrs(request):
             (Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES)) |
             (Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES))
         ).distinct()
+    elif metric.startswith('delivery_system_'):
+        system_name = metric.replace('delivery_system_', '')
+        pnrs = pnrs.filter(delivery_system_company=system_name)
+    elif metric == 'all_delivery_systems':
+        pass # No additional filtering needed for all systems
     else:
         return JsonResponse({'error': 'Invalid metric'}, status=400)
 
@@ -530,6 +537,7 @@ def api_detailed_pnrs(request):
         pnr_list.append({
             'control_number': pnr.control_number,
             'office_id': pnr.office_id,
+            'delivery_system': pnr.delivery_system_company,
             'agent': pnr.agent,
             'contact_type': contact.contact_type if contact else 'N/A',
             'contact_detail': contact.contact_detail if contact else 'N/A',

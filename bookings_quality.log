@@ -549,3 +549,41 @@ INFO 2025-09-20 23:32:00,162 autoreload 19500 6060 C:\Users\jknjoroge\Documents\
 INFO 2025-09-20 23:32:06,783 autoreload 20616 18092 Watching for file changes with StatReloader
 ERROR 2025-09-20 23:33:27,399 log 20616 21640 Internal Server Error: /export/
 ERROR 2025-09-20 23:34:26,936 log 20616 4724 Internal Server Error: /export/
+INFO 2025-09-21 10:06:49,910 autoreload 12224 16092 Watching for file changes with StatReloader
+WARNING 2025-09-21 10:07:15,431 log 12224 22904 Not Found: /favicon.ico
+WARNING 2025-09-21 10:15:11,634 log 12224 18028 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 10:15:28,215 log 12224 18028 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 10:18:22,068 log 12224 21148 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 10:20:23,801 log 12224 21148 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 10:22:45,030 log 12224 11752 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 10:22:55,721 log 12224 20688 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-21 10:58:00,610 autoreload 12224 16092 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 10:58:14,228 autoreload 23864 20088 Watching for file changes with StatReloader
+INFO 2025-09-21 11:05:46,820 autoreload 23864 20088 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:05:59,031 autoreload 10948 12664 Watching for file changes with StatReloader
+INFO 2025-09-21 11:06:23,686 autoreload 10948 12664 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:06:33,675 autoreload 13376 2332 Watching for file changes with StatReloader
+INFO 2025-09-21 11:39:43,769 autoreload 13376 2332 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:39:54,731 autoreload 15276 20584 Watching for file changes with StatReloader
+INFO 2025-09-21 11:41:50,472 autoreload 15276 20584 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:42:07,616 autoreload 5832 11052 Watching for file changes with StatReloader
+INFO 2025-09-21 11:42:20,381 autoreload 5832 11052 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:42:25,834 autoreload 19064 15404 Watching for file changes with StatReloader
+ERROR 2025-09-21 11:42:41,193 log 19064 22328 Internal Server Error: /export/
+WARNING 2025-09-21 11:42:54,403 log 19064 22328 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-21 11:46:06,862 autoreload 19064 15404 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:46:16,292 autoreload 21944 13824 Watching for file changes with StatReloader
+INFO 2025-09-21 11:46:34,171 autoreload 21944 13824 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:46:50,537 autoreload 3204 1404 Watching for file changes with StatReloader
+WARNING 2025-09-21 11:46:58,168 log 3204 20488 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-21 11:47:03,490 autoreload 3204 1404 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:47:10,019 autoreload 17284 15944 Watching for file changes with StatReloader
+WARNING 2025-09-21 11:47:13,130 log 17284 18712 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 11:47:13,956 log 17284 18712 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 11:47:14,064 log 17284 18712 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-21 11:47:20,313 autoreload 17284 15944 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-21 11:47:25,372 autoreload 23320 7976 Watching for file changes with StatReloader
+WARNING 2025-09-21 11:47:30,585 log 23320 17668 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 11:47:38,215 log 23320 21560 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 11:49:01,094 log 23320 2108 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-21 11:49:14,030 log 23320 12672 Not Found: /.well-known/appspecific/com.chrome.devtools.json
