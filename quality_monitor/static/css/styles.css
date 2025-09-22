@@ -28,7 +28,7 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
 .header { 
     background: rgba(255,255,255,0.95); 
     backdrop-filter: blur(10px); 
-    padding: 8px 0; 
+    padding: 4px 0; /* Reduced padding */
     box-shadow: 0 2px 20px rgba(0,0,0,0.1); 
     position: sticky;
     top: 0;
@@ -49,7 +49,7 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
 .nav-tabs { 
     display: flex; 
     gap: 15px; 
-    margin: 0 auto; 
+    margin: 0 auto 10px auto; /* Reduced bottom margin */
     max-width: 1200px;
     padding: 8px 20px; 
     justify-content: center; 
@@ -57,7 +57,7 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
     background: rgba(255,255,255,0.8);
     backdrop-filter: blur(5px);
     position: sticky;
-    top: 64px; /* Adjusted height of the header */
+    top: 56px; /* Adjusted for new header height */
     z-index: 1009;
     border-bottom: 1px solid #eee;
 }
@@ -84,7 +84,7 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
 }
 
 /* CONTAINER */
-.container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+.container { max-width: 1200px; margin: 10px auto; padding: 0 20px; } /* Reduced top margin */
 .content-section { display: none; background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .content-section.active { display: block; animation: fadeIn 0.5s ease-in; }
 
@@ -311,7 +311,7 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
 }
 
 /* FILTERS */
-.filters { background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin: 20px auto; max-width: 1200px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+.filters { background: rgba(255,255,255,0.9); padding: 15px 20px; border-radius: 15px; margin: 10px auto; max-width: 1200px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; } /* Reduced padding and margin */
 .filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 200px; }
 .filter-group label { font-weight: 600; color: #333; font-size: 12px; }
 .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
@@ -831,6 +831,14 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
 
 .modal-header h3 {
     animation: title-fade-in 0.5s ease-out;
+}
+
+/* New styles for the overview header */
+.overview-header {
+    text-align: left;
+    margin-bottom: 20px;
+    padding: 0 8px;
+    animation: title-fade-in 0.6s ease-out;
 }
 
 /* Modal Filter Inputs */

@@ -120,6 +120,10 @@
 
         <!-- Overview Section -->
         <div id="overview" class="content-section active">
+            <div class="overview-header">
+                <h3 class="histogram-title">🔍 At a Glance: Key Performance Indicators</h3>
+                <p class="histogram-subtitle">A real-time snapshot of your booking data quality. Click on a card to drill down into the details.</p>
+            </div>
             <div class="enhanced-stats-grid">
                 <div class="enhanced-card card-overview clickable-card" data-metric="total_pnrs" tabindex="0" role="article" aria-label="Total PNRs Statistics">
                     <div class="card-header">
@@ -253,22 +257,11 @@
 
         <!-- Delivery System Performance Section -->
         <div id="delivery-systems" class="content-section">
-            <div class="enhanced-card card-delivery card-spacing">
-                <div class="card-header">
-                    <div class="card-icon success-gradient">🌐</div>
-                    <div class="card-badge">Performance</div>
+            <div class="enhanced-card card-spacing">
+                <div class="histogram-header" style="text-align: left; margin-bottom: 0;">
+                    <h3 class="histogram-title">🌐 Delivery Systems Performance</h3>
+                    <p class="histogram-subtitle">Comparing booking volume and average quality scores across different channels.</p>
                 </div>
-                <div class="card-title">Delivery Systems Performance</div>
-                <div class="card-subtitle">Top 10 systems ranked by booking volume with quality scores and market share analysis</div>
-                <div class="card-metric">
-                    <span class="metric-label">Analysis Type</span>
-                    <span class="metric-value">📊 Volume & Quality</span>
-                </div>
-                <div class="card-metric">
-                    <span class="metric-label">Ranking Criteria</span>
-                    <span class="metric-value">📈 Booking Volume</span>
-                </div>
-                <button class="card-button" onclick="document.getElementById('delivery-system-grid').scrollIntoView({behavior: 'smooth'})">View Analysis</button>
             </div>
             <div class="enhanced-card">
                 <canvas id="deliverySystemChart" height="120"></canvas>
@@ -320,20 +313,10 @@
 
         <!-- Office Performance Section -->
         <div id="offices" class="content-section">
-            <div class="enhanced-card card-offices card-spacing">
-                <div class="card-header">
-                    <div class="card-icon info-gradient">🏢</div>
-                    <div class="card-badge">Performance</div>
-                </div>
-                <div class="card-title">Top 15 Office Performance Comparison</div>
-                <div class="card-subtitle">Horizontal bar chart showing quality scores and booking volumes</div>
-                <div class="card-metric">
-                    <span class="metric-label">Offices Analyzed</span>
-                    <span class="metric-value">{{ office_stats|length }} Locations</span>
-                </div>
-                <div class="card-metric">
-                    <span class="metric-label">Visualization</span>
-                    <span class="metric-value">📊 Bar Chart</span>
+            <div class="enhanced-card card-spacing">
+                <div class="histogram-header" style="text-align: left; margin-bottom: 0;">
+                    <h3 class="histogram-title">🏢 Top 15 Office Performance</h3>
+                    <p class="histogram-subtitle">A breakdown of quality scores and booking volumes for the top-performing offices.</p>
                 </div>
             </div>
             <div class="enhanced-card">

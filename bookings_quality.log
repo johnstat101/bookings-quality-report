@@ -593,3 +593,62 @@ INFO 2025-09-22 20:24:13,682 views 14760 3332 Starting file upload process
 INFO 2025-09-22 20:24:16,554 views 14760 3332 Processing 186 unique PNRs
 ERROR 2025-09-22 20:24:17,085 views 14760 3332 Error importing file: bulk_create() prohibited to prevent data loss due to unsaved related object 'pnr'.
 INFO 2025-09-22 21:12:49,316 autoreload 19076 3108 Watching for file changes with StatReloader
+INFO 2025-09-22 21:43:23,395 autoreload 9136 18244 Watching for file changes with StatReloader
+INFO 2025-09-22 21:56:30,585 autoreload 9136 18244 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-22 21:56:37,755 autoreload 20540 13916 Watching for file changes with StatReloader
+INFO 2025-09-22 21:58:09,603 autoreload 20540 13916 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-22 21:58:14,595 autoreload 12096 13636 Watching for file changes with StatReloader
+ERROR 2025-09-22 21:58:23,943 log 12096 6976 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py", line 150, in home_view
+    stats = calculate_pnr_statistics(pnrs) # Use the un-annotated QuerySet for counts
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py", line 80, in calculate_pnr_statistics
+    return pnrs_with_score.aggregate(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        total_pnrs=Count('id', distinct=True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<25 lines>...
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 588, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 460, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+        self, allow_joins=True, reuse=None, summarize=True
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 902, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 2049, in resolve_ref
+    join_info = self.setup_joins(
+        field_list, self.get_meta(), self.get_initial_alias(), can_reuse=reuse
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1900, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ~~~~~~~~~~~~~~~~~~^
+        names[:pivot],
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        fail_on_missing=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'calculated_quality_score' into field. Choices are: agent, contacts, control_number, created_at, creation_date, creator_iata_code, delivery_system_company, delivery_system_location, id, office_id, passengers, total_pnrs
+INFO 2025-09-22 21:58:50,703 autoreload 12096 13636 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-22 21:59:00,611 autoreload 4384 16048 Watching for file changes with StatReloader

@@ -862,7 +862,7 @@ function initDashboard(data) {
             const modalDynamicFilters = getElement('modal-dynamic-filters');
             modalDynamicFilters.innerHTML = ''; // Clear previous dynamic filters
             elements.modalTitle.textContent = title;
-            modalSubtitle.textContent = 'Use the inputs in the column headers to filter data like in Excel. Click the export button to download the currently visible data.';
+            modalSubtitle.textContent = 'Use the inputs in the column headers to filter data. Click the export button to download the currently visible data.';
             elements.modalTableBody.innerHTML = '<tr><td colspan="6">Loading data...</td></tr>';
             modal.style.display = 'flex'; // Show modal
             try {
