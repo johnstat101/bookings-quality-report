@@ -18,18 +18,22 @@
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-[data-theme="ocean"] { --primary-color: #1565C0; --nav-gradient: linear-gradient(135deg, #1565C0 0%, #0277BD 100%); --nav-gradient-hover: linear-gradient(135deg, #0277BD 0%, #1565C0 100%); }
-[data-theme="light-dark"] { --primary-color: #546E7A; --nav-gradient: linear-gradient(135deg, #546E7A 0%, #37474F 100%); --nav-gradient-hover: linear-gradient(135deg, #37474F 0%, #546E7A 100%); }
-[data-theme="kenya"] { --primary-color: #C8102E; --nav-gradient: linear-gradient(135deg, #C8102E 0%, #003366 100%); --nav-gradient-hover: linear-gradient(135deg, #003366 0%, #C8102E 100%); }
 [data-theme="dark"] { --primary-color: #9C27B0; --bg-gradient: linear-gradient(135deg, #303030 0%, #1a1a1a 100%); --nav-gradient: linear-gradient(135deg, #303030 0%, #1a1a1a 100%); --nav-gradient-hover: linear-gradient(135deg, #1a1a1a 0%, #303030 100%); --card-bg: rgba(45, 55, 72, 0.9); --text-primary: #e2e8f0; --text-secondary: #a0aec0; --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
-[data-theme="grey"] { --primary-color: #455A64; --nav-gradient: linear-gradient(135deg, #607D8B 0%, #455A64 100%); --nav-gradient-hover: linear-gradient(135deg, #455A64 0%, #607D8B 100%); }
 
 /* GLOBAL STYLES */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: var(--font-primary); background: var(--bg-gradient); min-height: 100vh; transition: all 0.3s; }
 
 /* HEADER */
-.header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+.header { 
+    background: rgba(255,255,255,0.95); 
+    backdrop-filter: blur(10px); 
+    padding: 8px 0; 
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1); 
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+}
 .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
 .logo { font-size: 28px; font-weight: bold; color: #d32f2f !important; }
 
@@ -39,16 +43,45 @@ body { font-family: var(--font-primary); background: var(--bg-gradient); min-hei
 .theme-btn:hover { transform: scale(1.1); }
 .theme-btn.active { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3); }
 .theme-btn.default { background: var(--primary-gradient); }
-.theme-btn.ocean { background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%); }
-.theme-btn.light-dark { background: linear-gradient(135deg, #F5F5F5 0%, #B0BEC5 100%); }
-.theme-btn.kenya { background: linear-gradient(135deg, #C8102E 0%, #003366 100%); }
 .theme-btn.dark { background: linear-gradient(135deg, #424242 0%, #212121 100%); }
-.theme-btn.grey { background: linear-gradient(135deg, #90A4AE 0%, #607D8B 100%); }
 
 /* NAVIGATION */
-.nav-tabs { display: flex; gap: 15px; margin: 20px auto; max-width: 1200px; padding: 0 20px; justify-content: center; flex-wrap: wrap; }
-.nav-tab { padding: 15px 30px; background: var(--nav-gradient); border: none; border-radius: 30px; color: white; cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
-.nav-tab.active, .nav-tab:hover { background: var(--nav-gradient-hover); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+.nav-tabs { 
+    display: flex; 
+    gap: 15px; 
+    margin: 0 auto; 
+    max-width: 1200px;
+    padding: 8px 20px; 
+    justify-content: center; 
+    flex-wrap: wrap; 
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(5px);
+    position: sticky;
+    top: 64px; /* Adjusted height of the header */
+    z-index: 1009;
+    border-bottom: 1px solid #eee;
+}
+.nav-tab { 
+    padding: 12px 25px; 
+    background: transparent; 
+    border: 2px solid transparent;
+    border-radius: 30px; 
+    color: var(--text-secondary); 
+    cursor: pointer; 
+    transition: all 0.3s; 
+    font-weight: 600; 
+}
+.nav-tab:hover { 
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color);
+}
+.nav-tab.active {
+    background: var(--primary-gradient); 
+    color: white; 
+    border-color: transparent;
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); 
+}
 
 /* CONTAINER */
 .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }

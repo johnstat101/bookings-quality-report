@@ -587,3 +587,9 @@ WARNING 2025-09-21 11:47:30,585 log 23320 17668 Not Found: /.well-known/appspeci
 WARNING 2025-09-21 11:47:38,215 log 23320 21560 Not Found: /.well-known/appspecific/com.chrome.devtools.json
 WARNING 2025-09-21 11:49:01,094 log 23320 2108 Not Found: /.well-known/appspecific/com.chrome.devtools.json
 WARNING 2025-09-21 11:49:14,030 log 23320 12672 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-22 20:21:41,894 autoreload 14760 1028 Watching for file changes with StatReloader
+WARNING 2025-09-22 20:21:55,007 log 14760 20576 Not Found: /favicon.ico
+INFO 2025-09-22 20:24:13,682 views 14760 3332 Starting file upload process
+INFO 2025-09-22 20:24:16,554 views 14760 3332 Processing 186 unique PNRs
+ERROR 2025-09-22 20:24:17,085 views 14760 3332 Error importing file: bulk_create() prohibited to prevent data loss due to unsaved related object 'pnr'.
+INFO 2025-09-22 21:12:49,316 autoreload 19076 3108 Watching for file changes with StatReloader
