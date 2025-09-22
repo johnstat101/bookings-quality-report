@@ -660,3 +660,69 @@ INFO 2025-09-22 23:14:24,121 autoreload 24644 19452 Watching for file changes wi
 WARNING 2025-09-22 23:17:17,247 log 24644 22316 Not Found: /favicon.ico
 INFO 2025-09-22 23:33:19,967 autoreload 24644 19452 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\utils.py changed, reloading.
 INFO 2025-09-22 23:33:28,029 autoreload 4608 23812 Watching for file changes with StatReloader
+INFO 2025-09-23 00:16:02,635 autoreload 4608 23812 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-23 00:16:14,170 autoreload 22092 21780 Watching for file changes with StatReloader
+INFO 2025-09-23 00:17:19,814 autoreload 22092 21780 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-23 00:17:31,577 autoreload 2208 22160 Watching for file changes with StatReloader
+INFO 2025-09-23 00:19:07,182 autoreload 2208 22160 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-23 00:19:20,195 autoreload 24512 23568 Watching for file changes with StatReloader
+ERROR 2025-09-23 00:19:32,941 log 24512 24264 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py", line 144, in home_view
+    quality_score_annotation = get_quality_score_annotation()
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\utils.py", line 22, in get_quality_score_annotation
+    **Contact.get_valid_contact_q()
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'Contact' has no attribute 'get_valid_contact_q'
+INFO 2025-09-23 00:21:06,931 autoreload 24512 23568 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-23 00:21:17,708 autoreload 16844 17428 Watching for file changes with StatReloader
+ERROR 2025-09-23 00:22:12,186 log 16844 15748 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py", line 144, in home_view
+    quality_score_annotation = get_quality_score_annotation()
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\utils.py", line 20, in get_quality_score_annotation
+    Contact.objects.filter(
+    ~~~~~~~~~~~~~~~~~~~~~~^
+        pnr=OuterRef('pk'),
+        ^^^^^^^^^^^^^^^^^^^
+        **Contact.get_valid_contact_q()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: django.db.models.query.QuerySet.filter() argument after ** must be a mapping, not Q
+ERROR 2025-09-23 00:22:22,986 log 16844 24072 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py", line 144, in home_view
+    quality_score_annotation = get_quality_score_annotation()
+  File "C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\utils.py", line 20, in get_quality_score_annotation
+    Contact.objects.filter(
+    ~~~~~~~~~~~~~~~~~~~~~~^
+        pnr=OuterRef('pk'),
+        ^^^^^^^^^^^^^^^^^^^
+        **Contact.get_valid_contact_q()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: django.db.models.query.QuerySet.filter() argument after ** must be a mapping, not Q
+INFO 2025-09-23 00:24:14,243 autoreload 16844 17428 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\utils.py changed, reloading.
+INFO 2025-09-23 00:24:23,329 autoreload 6500 14028 Watching for file changes with StatReloader
+INFO 2025-09-23 00:27:03,269 autoreload 6500 14028 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\utils.py changed, reloading.
+INFO 2025-09-23 00:27:09,507 autoreload 12240 21360 Watching for file changes with StatReloader
+WARNING 2025-09-23 00:27:26,118 log 12240 424 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-23 00:29:02,429 views 12240 20100 Starting file upload process
+INFO 2025-09-23 00:29:05,526 views 12240 20100 Processing 186 unique PNRs
+ERROR 2025-09-23 00:29:06,038 views 12240 20100 Error importing file: bulk_create() prohibited to prevent data loss due to unsaved related object 'pnr'.
+INFO 2025-09-23 00:33:09,738 autoreload 12240 21360 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-23 00:33:21,776 autoreload 23008 2164 Watching for file changes with StatReloader

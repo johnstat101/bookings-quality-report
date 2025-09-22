@@ -1,5 +1,5 @@
-from django.db.models import Count, Case, When, IntegerField, Q
-from .models import Contact
+from django.db.models import Case, When, IntegerField, Q, Value
+from django.db.models.expressions import Exists, OuterRef
 
 def get_quality_score_annotation():
     """
@@ -13,27 +13,32 @@ def get_quality_score_annotation():
     
     Returns Django annotation expression for use in querysets.
     """
+    from .models import Contact, Passenger
+
+    # Subquery to check for at least one valid contact
+    has_valid_contact = Exists(
+        Contact.objects.filter(
+            Contact.get_valid_contact_q(),
+            pnr=OuterRef('pk')
+        )
+    )
+    
+    # Subquery to check for at least one passenger with a frequent flyer number
+    has_ff_number = Exists(Passenger.objects.filter(pnr=OuterRef('pk'), ff_number__isnull=False).exclude(ff_number=''))
+    
+    # Subquery to check for at least one passenger with a meal selection
+    has_meal = Exists(Passenger.objects.filter(pnr=OuterRef('pk'), meal__isnull=False).exclude(meal=''))
+    
+    # Subquery to check for at least one passenger with a seat assignment
+    has_seat = Exists(Passenger.objects.filter(pnr=OuterRef('pk'), seat_row_number__isnull=False, seat_column__isnull=False).exclude(seat_row_number='').exclude(seat_column=''))
+
     return (
-        # Contact validation (40 points): Email with @ or // operator, or valid phone
-        Case(
-            When(
-                Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, 
-                  contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+(@|//)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') |
-                Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, 
-                  contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$'),
-                then=40
-            ),
-            default=0,
-            output_field=IntegerField()
-        ) +
+        # Contact validation (40 points)
+        Case(When(has_valid_contact, then=Value(40)), default=Value(0), output_field=IntegerField()) +
         # Frequent Flyer number (20 points)
-        Case(When(Q(passengers__ff_number__isnull=False) & ~Q(passengers__ff_number=''), 
-                  then=20), default=0, output_field=IntegerField()) +
+        Case(When(has_ff_number, then=Value(20)), default=Value(0), output_field=IntegerField()) +
         # Meal selection (20 points)
-        Case(When(Q(passengers__meal__isnull=False) & ~Q(passengers__meal=''), 
-                  then=20), default=0, output_field=IntegerField()) +
+        Case(When(has_meal, then=Value(20)), default=Value(0), output_field=IntegerField()) +
         # Seat assignment (20 points): Both row and column required
-        Case(When(Q(passengers__seat_row_number__isnull=False) & ~Q(passengers__seat_row_number='') & 
-                  Q(passengers__seat_column__isnull=False) & ~Q(passengers__seat_column=''), 
-                  then=20), default=0, output_field=IntegerField())
+        Case(When(has_seat, then=Value(20)), default=Value(0), output_field=IntegerField())
     )

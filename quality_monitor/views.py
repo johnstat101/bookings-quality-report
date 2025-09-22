@@ -289,10 +289,7 @@ def upload_excel(request):
             else:
                 df = pd.read_excel(request.FILES['excel_file'], dtype=str).fillna('')
             
-            # Prepare bulk data
             pnrs_to_create = []
-            passengers_to_create = []
-            contacts_to_create = []
             pnr_map = {}
             
             # First pass: collect unique PNRs
@@ -300,62 +297,60 @@ def upload_excel(request):
             logger.info(f"Processing {len(unique_pnrs)} unique PNRs")
             
             for control_number in unique_pnrs:
-                pnr_data = df[df['ControlNumber'].str.strip() == control_number].iloc[0]
-                pnr = PNR(
-                    control_number=control_number,
-                    office_id=str(pnr_data.get('OfficeID', '')).strip(),
-                    agent=str(pnr_data.get('Agent', '')).strip(),
-                    creation_date=parse_date(str(pnr_data.get('creationDate', '')).strip()),
-                    delivery_system_company=str(pnr_data.get('DeliverySystemCompany', '')).strip(),
-                    delivery_system_location=str(pnr_data.get('DeliverySystemLocation', '')).strip(),
-                )
-                pnrs_to_create.append(pnr)
+                # Get the first row for this PNR to extract PNR-level data
+                pnr_rows = df[df['ControlNumber'].str.strip() == control_number]
+                if not pnr_rows.empty:
+                    pnr_data = pnr_rows.iloc[0]
+                    pnrs_to_create.append(PNR(
+                        control_number=control_number,
+                        office_id=str(pnr_data.get('OfficeID', '')).strip(),
+                        agent=str(pnr_data.get('Agent', '')).strip(),
+                        creation_date=parse_date(str(pnr_data.get('creationDate', ''))),
+                        delivery_system_company=str(pnr_data.get('DeliverySystemCompany', '')).strip(),
+                        delivery_system_location=str(pnr_data.get('DeliverySystemLocation', '')).strip(),
+                    ))
             
             # Bulk create PNRs
-            created_pnrs = PNR.objects.bulk_create(pnrs_to_create, ignore_conflicts=True)
+            PNR.objects.bulk_create(pnrs_to_create, batch_size=500, ignore_conflicts=True)
+            
+            # Retrieve all created PNRs to build a map for the next step
+            created_pnrs = PNR.objects.in_bulk(field_name='control_number')
             
             # Create mapping for foreign key relationships
-            for pnr in created_pnrs:
-                pnr_map[pnr.control_number] = pnr
+            pnr_map = created_pnrs
             
-            # Second pass: create passengers and contacts with optimized DataFrame lookup
-            control_number_to_rows = df.groupby('ControlNumber')
+            # Second pass: Create related Passenger and Contact objects
+            passengers_to_create = []
+            contacts_to_create = []
             
-            for control_number, group_df in control_number_to_rows:
-                control_number = str(control_number).strip()
-                if not control_number or control_number not in pnr_map:
-                    continue
-                
+            for _, row in df.iterrows():
+                control_number = str(row.get('ControlNumber', '')).strip()
+                if not control_number or control_number not in pnr_map: continue
+
                 pnr = pnr_map[control_number]
                 
-                # Process all rows for this PNR
-                for _, row in group_df.iterrows():
-                    # Prepare passenger data
-                    surname = str(row.get('Surname', '')).strip()
-                    first_name = str(row.get('FirstName', '')).strip()
-                    if surname or first_name:
-                        passengers_to_create.append(Passenger(
-                            pnr=pnr,
-                            surname=surname,
-                            first_name=first_name,
-                            ff_number=str(row.get('FF_NUMBER', '')).strip(),
-                            ff_tier=str(row.get('FF_TIER', '')).strip(),
-                            board_point=str(row.get('boardPoint', '')).strip(),
-                            off_point=str(row.get('offPoint', '')).strip(),
-                            seat_row_number=str(row.get('seatRowNumber', '')).strip(),
-                            seat_column=str(row.get('seatColumn', '')).strip(),
-                            meal=str(row.get('MEAL', '')).strip(),
-                        ))
-                    
-                    # Prepare contact data
-                    contact_type = str(row.get('ContactType', '')).strip()
-                    contact_detail = str(row.get('ContactDetail', '')).strip()
-                    if contact_type and contact_detail:
-                        contacts_to_create.append(Contact(
-                            pnr=pnr,
-                            contact_type=contact_type,
-                            contact_detail=contact_detail
-                        ))
+                # Passenger data
+                surname = str(row.get('Surname', '')).strip()
+                first_name = str(row.get('FirstName', '')).strip()
+                if surname or first_name:
+                    passengers_to_create.append(Passenger(
+                        pnr=pnr,
+                        surname=surname,
+                        first_name=first_name,
+                        ff_number=str(row.get('FF_NUMBER', '')).strip(),
+                        ff_tier=str(row.get('FF_TIER', '')).strip(),
+                        board_point=str(row.get('boardPoint', '')).strip(),
+                        off_point=str(row.get('offPoint', '')).strip(),
+                        seat_row_number=str(row.get('seatRowNumber', '')).strip(),
+                        seat_column=str(row.get('seatColumn', '')).strip(),
+                        meal=str(row.get('MEAL', '')).strip(),
+                    ))
+                
+                # Contact data
+                contact_type = str(row.get('ContactType', '')).strip()
+                contact_detail = str(row.get('ContactDetail', '')).strip()
+                if contact_type and contact_detail:
+                    contacts_to_create.append(Contact(pnr=pnr, contact_type=contact_type, contact_detail=contact_detail))
             
             # Bulk create passengers and contacts
             if passengers_to_create:

@@ -13,7 +13,7 @@ class PNR(models.Model):
     control_number = models.CharField(max_length=20, unique=True, db_index=True)
     office_id = models.CharField(max_length=20, blank=True, db_index=True)
     agent = models.CharField(max_length=20, blank=True)
-    creation_date = models.DateField(null=True, blank=True, db_index=True)
+    creation_date = models.DateField(null=True, blank=True, db_index=True) # Changed to DateField
     creator_iata_code = models.CharField(max_length=20, blank=True)
     delivery_system_company = models.CharField(max_length=10, blank=True, db_index=True)
     delivery_system_location = models.CharField(max_length=10, blank=True)
@@ -212,6 +212,16 @@ class Contact(models.Model):
         if self.is_phone and self.contact_type not in self.PHONE_VALID_TYPES:
             return True
         return False
+
+    @classmethod
+    def get_valid_contact_q(cls):
+        """
+        Returns a Q object for filtering valid contacts (email or phone).
+        """
+        valid_email_q = Q(contact_type__in=cls.EMAIL_VALID_TYPES, contact_detail__regex=r'^[a-zA-Z0-9._%+-]+(@|//)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        valid_phone_q = Q(contact_type__in=cls.PHONE_VALID_TYPES, contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+        return valid_email_q | valid_phone_q
+
     
     def __str__(self):
         return f"{self.contact_type}: {self.contact_detail}"
