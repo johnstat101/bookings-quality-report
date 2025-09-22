@@ -375,61 +375,45 @@ def upload_excel(request):
     return render(request, 'upload.html')
 
 def export_pnrs_to_excel(request):
+    """
+    Export filtered PNR data to an Excel file.
+    This view now handles both dashboard-level filters and specific
+    modal-based exports, including in-modal text filters.
+    """
     try:
-        pnrs = get_filtered_pnrs(request)
-        export_type = request.GET.get('type', 'all')
-        
-        if export_type == 'no_contacts':
-            pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count=0)
-        elif export_type == 'low_quality':
-            # This is an approximation. A more accurate filter would use the quality score.
-            pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count__lt=2)
-        elif export_type == 'high_quality':
-            pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count__gte=2)
-        elif export_type == 'all_delivery_systems':
-            pass # Use the base filtered PNRs
-        
-        # Build export data with prefetched relationships
-        pnrs = pnrs.prefetch_related('contacts', 'passengers')
+        # Get PNRs based on the detailed API logic to match the modal
+        pnrs, _ = get_detailed_pnrs_qs(request)
+
+        # Apply in-modal text filters if they are present
+        office_filter = request.GET.get('modal_office_id', '').strip()
+        delivery_system_filter = request.GET.get('modal_delivery_system', '').strip()
+
+        if office_filter:
+            pnrs = pnrs.filter(office_id__icontains=office_filter)
+        if delivery_system_filter:
+            pnrs = pnrs.filter(delivery_system_company__icontains=delivery_system_filter)
+
+        # Build the export data
+        pnrs = pnrs.prefetch_related('contacts', 'passengers').order_by('-creation_date')
         export_data = []
         for pnr in pnrs:
-            # Get contacts and passengers (already prefetched)
-            contacts = list(pnr.contacts.all())
-            passengers = list(pnr.passengers.all())
-            
+            contact = pnr.contacts.first()
             base_data = {
                 'PNR': pnr.control_number,
                 'Office_ID': pnr.office_id,
+                'Delivery_System': pnr.delivery_system_company,
                 'Agent': pnr.agent,
                 'Creation_Date': pnr.creation_date,
                 'Quality_Score': pnr.quality_score,
-                'Is_Reachable': pnr.has_valid_contacts,
-                'Has_Wrong_Format': pnr.has_wrong_format_contacts,
-                'Has_Wrongly_Placed': pnr.has_wrongly_placed_contacts,
-                'Created_At': pnr.created_at.strftime('%Y-%m-%d %H:%M') if pnr.created_at else ''
+                'Contact_Type': contact.contact_type if contact else 'N/A',
+                'Contact_Detail': contact.contact_detail if contact else 'N/A',
             }
-            
-            # Add contact details
-            for i, contact in enumerate(contacts[:3]):  # Limit to first 3 contacts
-                base_data[f'Contact_{i+1}_Type'] = contact.contact_type
-                base_data[f'Contact_{i+1}_Detail'] = contact.contact_detail
-                base_data[f'Contact_{i+1}_Valid_Email'] = contact.is_valid_email
-                base_data[f'Contact_{i+1}_Valid_Phone'] = contact.is_valid_phone
-                base_data[f'Contact_{i+1}_Wrongly_Placed'] = contact.is_wrongly_placed
-            
-            # Add passenger details
-            for i, passenger in enumerate(passengers[:2]):  # Limit to first 2 passengers
-                base_data[f'Passenger_{i+1}_Name'] = f"{passenger.surname}, {passenger.first_name}"
-                base_data[f'Passenger_{i+1}_FF_Number'] = passenger.ff_number
-                seat = f"{passenger.seat_row_number}{passenger.seat_column}" if passenger.seat_row_number and passenger.seat_column else ''
-                base_data[f'Passenger_{i+1}_Seat'] = seat
-                base_data[f'Passenger_{i+1}_Meal'] = passenger.meal
-            
             export_data.append(base_data)
         
         df = pd.DataFrame(export_data)
-        
-        filename = f'kq_pnrs_{export_type}_{timezone.now().strftime("%Y%m%d")}.xlsx'
+
+        export_type = request.GET.get('metric', 'data')
+        filename = f'kq_quality_report_{export_type}_{timezone.now().strftime("%Y%m%d")}.xlsx'
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         df.to_excel(response, index=False)
@@ -488,13 +472,9 @@ def api_offices_by_delivery_systems(request):
     offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in offices_from_pnr if o['office_id']]
     return JsonResponse({'offices': offices})
 
-def api_detailed_pnrs(request):
-    """
-    API endpoint to fetch detailed PNR lists for modal views.
-    """
+def get_detailed_pnrs_qs(request):
+    """Helper function to get the base QuerySet for detailed PNR views."""
     metric = request.GET.get('metric')
-    if not metric:
-        return JsonResponse({'error': 'Metric not specified'}, status=400)
 
     pnrs = get_filtered_pnrs(request)
 
@@ -526,7 +506,19 @@ def api_detailed_pnrs(request):
     elif metric == 'all_delivery_systems':
         pass # No additional filtering needed for all systems
     else:
-        return JsonResponse({'error': 'Invalid metric'}, status=400)
+        # This case handles if no valid metric is passed, returning the base filtered set.
+        # Or, it could return an empty set if that's preferred.
+        pass
+
+    return pnrs, metric
+
+def api_detailed_pnrs(request):
+    """
+    API endpoint to fetch detailed PNR lists for modal views.
+    """
+    pnrs, metric = get_detailed_pnrs_qs(request)
+    if not metric:
+        return JsonResponse({'error': 'Metric not specified'}, status=400)
 
     # Limit results for performance and select related data
     detailed_pnrs = pnrs.order_by('-creation_date').prefetch_related('contacts')[:200]
@@ -539,6 +531,7 @@ def api_detailed_pnrs(request):
             'office_id': pnr.office_id,
             'delivery_system': pnr.delivery_system_company,
             'agent': pnr.agent,
+            'creation_date': pnr.creation_date.strftime('%Y-%m-%d') if pnr.creation_date else 'N/A',
             'contact_type': contact.contact_type if contact else 'N/A',
             'contact_detail': contact.contact_detail if contact else 'N/A',
         })

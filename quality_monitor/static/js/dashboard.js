@@ -870,7 +870,7 @@ function initDashboard(data) {
                 params.set('metric', metric);
                 const response = await fetch(`/api/detailed-pnrs/?${params.toString()}`);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const detailedData = await response.json();
+                const detailedData = await response.json(); 
 
                 // Populate table
                 modalTableHead.innerHTML = `
@@ -884,6 +884,7 @@ function initDashboard(data) {
                         <input type="text" class="modal-filter-input" data-column-index="2" placeholder="Filter..." onkeyup="filterModalTable()">
                     </th>
                     <th>Agent ID</th>
+                    <th>Creation Date</th>
                     <th>Contact Type</th>
                     <th>Contact Detail</th>
                 `;
@@ -902,6 +903,7 @@ function initDashboard(data) {
                             <td>${pnr.office_id || '-'}</td>
                             <td>${pnr.delivery_system || '-'}</td>
                             <td>${pnr.agent || '-'}</td>
+                            <td>${pnr.creation_date || '-'}</td>
                             <td>${pnr.contact_type || '-'}</td>
                             <td>${pnr.contact_detail || '-'}</td>
                         `;
@@ -983,7 +985,14 @@ function initDashboard(data) {
         // Export button logic
         modalExportBtn?.addEventListener('click', () => {
             const params = new URLSearchParams(window.location.search); // Re-read params
-            params.set('type', currentModalMetric); // Use the stored metric
+            params.set('metric', currentModalMetric); // Use the stored metric for the base query
+
+            // Add modal-specific filter values to the export URL
+            const officeFilter = modalTableHead.querySelector('input[data-column-index="1"]');
+            const deliverySystemFilter = modalTableHead.querySelector('input[data-column-index="2"]');
+            if (officeFilter && officeFilter.value) params.set('modal_office_id', officeFilter.value);
+            if (deliverySystemFilter && deliverySystemFilter.value) params.set('modal_delivery_system', deliverySystemFilter.value);
+
             window.location.href = `${data.export_url}?${params.toString()}`;
         });
     });
