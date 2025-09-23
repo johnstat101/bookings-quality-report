@@ -82,15 +82,20 @@ def calculate_pnr_statistics(pnrs_with_score):
         overall_quality=Avg('calculated_quality_score'),
         reachable_pnrs=Count('pk', filter=Q(
             contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, 
-            contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            # Regex updated to ignore prefixes and suffixes for emails
+            contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$'
         ) | Q(
             contacts__contact_type__in=Contact.PHONE_VALID_TYPES, 
-            contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$'
+            # Regex updated to ignore prefixes and suffixes for phones
+            contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$'
         ), distinct=True),
         missing_contacts=Count('pk', filter=Q(contacts__isnull=True), distinct=True),
         wrong_format_contacts=Count('pk', filter=Q(contacts__contact_detail__isnull=False) & 
-            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') & 
-            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+            # Use the same updated, more flexible regex for exclusion
+            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, 
+              contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$') & 
+            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, 
+              contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')
         , distinct=True),
         wrongly_placed_contacts=Count('pk', filter=
             (Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES)) |
@@ -101,10 +106,10 @@ def calculate_pnr_statistics(pnrs_with_score):
         seat_count=Count('passengers', filter=Q(passengers__seat_row_number__isnull=False) & ~Q(passengers__seat_row_number='') & Q(passengers__seat_column__isnull=False) & ~Q(passengers__seat_column='')),
         email_total=Count('contacts', filter=Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')),
         phone_total=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}')),
-        email_wrong_format_count=Count('contacts', filter=(Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')) & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')),
-        phone_wrong_format_count=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')),
-        valid_phone_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')),
-        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')),
+        email_wrong_format_count=Count('contacts', filter=(Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')) & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$')),
+        phone_wrong_format_count=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')),
+        valid_phone_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')),
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$')),
     )
 
 def get_office_statistics(pnrs):
@@ -479,16 +484,16 @@ def get_detailed_pnrs_qs(request):
         pass
     elif metric == 'reachable_pnrs':
         pnrs = pnrs.filter(
-            Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') |
-            Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+            Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$') |
+            Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')
         ).distinct()
     elif metric == 'missing_contacts':
         pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count=0)
     elif metric == 'wrong_format_contacts':
         pnrs = pnrs.filter(
             Q(contacts__contact_detail__isnull=False) & 
-            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') & 
-            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^\+?[0-9\s-]{7,20}$')
+            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$') & 
+            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')
         ).distinct()
     elif metric == 'wrongly_placed_contacts':
         pnrs = pnrs.filter(
