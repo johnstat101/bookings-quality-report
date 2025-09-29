@@ -34,9 +34,9 @@ A sophisticated quality score (0-100%) is calculated for each PNR based on the p
 
 The system also identifies specific data quality issues:
 - **Missing Contacts**: PNRs with no phone or email.
-- **Wrongly Placed Contacts**: Detects when an email address is placed in a phone-only field (like `APM` or `CTCM`) or a phone number is in an email-only field (like `APE` or `CTCE`). The `AP` field is treated as generic and accepts both.
+- **Wrongly Placed Contacts**: Detects when an email address is placed in a phone-only field (`CTCM`) or a phone number is in an email-only field (`CTCE`). Generic fields (`AP`, `APE`, `APM`) are excluded from misplacement detection.
 - **Incorrect Format**: Flags contacts that do not match standard email or phone number patterns.
-operator '//' is allowed for emails as alternative to using @
+- **Advanced Email Support**: Recognizes '//' as alternative to '@' and './' as replacement for '-' in email addresses (e.g., `SG./OFFICE//AFRAA.ORG` equals `SG-OFFICE@AFRAA.ORG`).
 
 ### In-Depth Performance Analysis
 - **Delivery System Performance**: Compares the average quality score and booking volume across different delivery systems (e.g., GDS, Web).
@@ -47,17 +47,22 @@ operator '//' is allowed for emails as alternative to using @
 
 ### Data Management
 - **File Upload**: A user-friendly drag-and-drop interface for uploading SBR data in `.csv`, `.xlsx`, or `.xls` format. The system clears old data upon a new upload to ensure a fresh analysis.
-- **Data Export**: Allows users to export filtered data to Excel for offline analysis or reporting. Export options include:
-    - All Data
-    - PNRs with No Contacts
-    - Low-Quality PNRs
-    - High-Quality PNRs
+- **Interactive Data Export**: Click on any dashboard metric card to open a detailed modal view with:
+    - Filterable data table with search functionality
+    - Real-time filtering by office ID and delivery system
+    - Export to Excel button for currently visible/filtered data
+    - Duplicate removal based on PNR and contact detail combinations
+- **Bulk Export Options**: Traditional export functionality for complete datasets including all data, no contacts, low-quality, and high-quality PNRs.
 
 ### Intelligent Data Parsing
 - **Flexible Date Formats**: Automatically parses booking creation dates from common SBR formats like `ddmmyy` and `dmmyy`.
-- **Contact Identification**: Employs regular expressions and pattern matching to heuristically identify contacts as either phone numbers or emails, even with non-standard prefixes/suffixes (e.g., `KQ/M+`, `/EN`).
-- **Robust Cleaning**: Sanitizes contact details by removing common GDS artifacts, prefixes, and suffixes before validation to improve accuracy.
-- **Efficient Processing**: Utilizes bulk database operations to quickly process large SBR files, ensuring the dashboard is updated promptly after an upload.
+- **Advanced Contact Validation**: Sophisticated regex patterns identify emails and phones with airline industry-specific formats:
+    - Supports prefixes like `KQ/M+`, `KQ/E+` and suffixes like `/EN`, `/FR`
+    - Recognizes `//` as email separator (alternative to `@`)
+    - Handles `./ ` as replacement for `-` in both username and domain parts
+    - Validates contact placement in appropriate fields (CTCE for emails, CTCM for phones)
+- **Robust Data Processing**: Bulk database operations with deduplication logic for passengers and contacts, ensuring efficient processing of large SBR files.
+- **Multiple Passenger Support**: Handles PNRs with multiple passengers, tracking individual passenger details and quality metrics separately.
 
 ## Benefits
 - Improves booking data quality for enhanced customer communication.
@@ -78,6 +83,7 @@ operator '//' is allowed for emails as alternative to using @
 2.  **Upload Data**: Navigate to the "Upload" section of the application and upload the file.
 3.  **Analyze**: Once processing is complete, navigate back to the dashboard.
 4.  **Filter & Explore**: Use the filters and tabs to drill down into the data and gain insights.
-5.  **Export**: Download specific data segments for further reporting or action.
+5.  **Detailed Analysis**: Click on any metric card to open a modal with detailed PNR data, filterable by office and delivery system.
+6.  **Export**: Use the modal export button for filtered data or bulk export options for complete datasets.
 
 ---

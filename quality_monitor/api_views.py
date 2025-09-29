@@ -37,7 +37,7 @@ def get_offices_by_channels(request):
     """Get offices available for selected channels"""
     channels = request.GET.getlist('channels')
     
-    pnrs = PNR.objects.all()
+    pnrs = PNR.objects
     if channels:
         # Sanitize channel inputs
         clean_channels = [ch.strip() for ch in channels if ch.strip()]
@@ -56,7 +56,7 @@ def get_channel_office_stats(request):
     channels = request.GET.getlist('channels')
     office_ids = request.GET.getlist('offices')
     
-    pnrs = PNR.objects.all()
+    pnrs = PNR.objects
     
     # Sanitize and validate inputs
     if office_ids:

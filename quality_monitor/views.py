@@ -32,7 +32,7 @@ def parse_date(date_str):
 
 def get_filtered_pnrs(request):
     """Get filtered PNRs with proper validation and optimization."""
-    pnrs = PNR.objects.prefetch_related('contacts', 'passengers').all()
+    pnrs = PNR.objects.prefetch_related('contacts', 'passengers')
     
     # Date filters with validation
     start_date = request.GET.get('start_date')
@@ -69,6 +69,7 @@ def get_filtered_pnrs(request):
 def calculate_pnr_statistics(pnrs_with_score):
     """
     Calculate comprehensive PNR statistics for dashboard display.
+    Fixed to prevent percentage calculation errors and ensure accurate counts.
     
     Args:
         pnrs_with_score: QuerySet of PNRs annotated with quality scores
@@ -77,39 +78,33 @@ def calculate_pnr_statistics(pnrs_with_score):
         Dict containing aggregated statistics including counts, percentages,
         and quality metrics for contacts, passengers, and overall quality.
     """
+    # Use distinct=True for PNR-level counts to prevent duplicates from joins
     return pnrs_with_score.aggregate(
         total_pnrs=Count('id', distinct=True),
         overall_quality=Avg('calculated_quality_score'),
-        reachable_pnrs=Count('pk', filter=Q(
-            contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, 
-            # Regex updated to ignore prefixes and suffixes for emails
-            contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$'
-        ) | Q(
-            contacts__contact_type__in=Contact.PHONE_VALID_TYPES, 
-            # Regex updated to ignore prefixes and suffixes for phones
-            contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$'
+        reachable_pnrs=Count('pk', filter=Contact.get_valid_contact_q('contacts__'), distinct=True),
+        missing_contacts=Count('pk', filter=~Q(contacts__isnull=False), distinct=True),
+        wrong_format_contacts=Count('pk', filter=Q(contacts__contact_detail__isnull=False) & ~Contact.get_valid_contact_q('contacts__') & ~Q(
+            Q(contacts__contact_type__exact='CTCM', contacts__contact_detail__contains='@') |
+            Q(contacts__contact_type__exact='CTCM', contacts__contact_detail__contains='//') |
+            (Q(contacts__contact_type__exact='CTCE', contacts__contact_detail__regex=r'^(?:[A-Z]{2,3}/[A-Z]\+)?\+?[0-9][0-9\s\-\(\)]{6,}$') & ~Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_detail__contains='//'))
         ), distinct=True),
-        missing_contacts=Count('pk', filter=Q(contacts__isnull=True), distinct=True),
-        wrong_format_contacts=Count('pk', filter=Q(contacts__contact_detail__isnull=False) & 
-            # Use the same updated, more flexible regex for exclusion
-            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, 
-              contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$') & 
-            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, 
-              contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')
-        , distinct=True),
         wrongly_placed_contacts=Count('pk', filter=
-            (Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES)) |
-            (Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES))
+            Q(contacts__contact_type__exact='CTCM', contacts__contact_detail__contains='@') |
+            Q(contacts__contact_type__exact='CTCM', contacts__contact_detail__contains='//') |
+            (Q(contacts__contact_type__exact='CTCE', contacts__contact_detail__regex=r'^(?:[A-Z]{2,3}/[A-Z]\+)?\+?[0-9][0-9\s\-\(\)]{6,}$') & ~Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_detail__contains='//'))
         , distinct=True),
-        ff_count=Count('passengers', filter=Q(passengers__ff_number__isnull=False) & ~Q(passengers__ff_number='')),
-        meal_count=Count('passengers', filter=Q(passengers__meal__isnull=False) & ~Q(passengers__meal='')),
-        seat_count=Count('passengers', filter=Q(passengers__seat_row_number__isnull=False) & ~Q(passengers__seat_row_number='') & Q(passengers__seat_column__isnull=False) & ~Q(passengers__seat_column='')),
+        # PNR-level counts for passenger data (distinct PNRs with at least one passenger having the attribute)
+        ff_count=Count('pk', filter=Q(passengers__ff_number__isnull=False) & ~Q(passengers__ff_number=''), distinct=True),
+        meal_count=Count('pk', filter=Q(passengers__meal__isnull=False) & ~Q(passengers__meal=''), distinct=True),
+        seat_count=Count('pk', filter=Q(passengers__seat_row_number__isnull=False) & ~Q(passengers__seat_row_number='') & Q(passengers__seat_column__isnull=False) & ~Q(passengers__seat_column=''), distinct=True),
+        # Contact-level counts for format validation
         email_total=Count('contacts', filter=Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')),
         phone_total=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}')),
-        email_wrong_format_count=Count('contacts', filter=(Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')) & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$')),
-        phone_wrong_format_count=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')),
-        valid_phone_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')),
-        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$')),
+        email_wrong_format_count=Count('contacts', filter=(Q(contacts__contact_detail__contains='@') | Q(contacts__contact_detail__contains='//')) & ~Contact.get_valid_contact_q('contacts__') & ~Q(contacts__contact_type__exact='CTCM')),
+        phone_wrong_format_count=Count('contacts', filter=Q(contacts__contact_detail__regex=r'\d{7,}') & ~Contact.get_valid_contact_q('contacts__') & ~Q(contacts__contact_type__exact='CTCE')),
+        valid_phone_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES) & Contact.get_valid_contact_q('contacts__')),
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES) & Contact.get_valid_contact_q('contacts__')),
     )
 
 def get_office_statistics(pnrs):
@@ -147,7 +142,7 @@ def get_delivery_system_statistics(pnrs):
     )
 
 def home_view(request):
-    pnrs = get_filtered_pnrs(request)
+    pnrs = get_filtered_pnrs(request).select_related().prefetch_related('contacts', 'passengers')
     quality_score_annotation = get_quality_score_annotation()
     pnrs_with_score = pnrs.annotate(calculated_quality_score=quality_score_annotation)
     
@@ -167,11 +162,15 @@ def home_view(request):
     phone_count = stats.get('valid_phone_count', 0)
     email_count = stats.get('valid_email_count', 0)
 
-    # Calculate percentages safely
-    email_total = stats.get('email_total', 0)
-    phone_total = stats.get('phone_total', 0)
-    email_wrong_format_percent = (stats.get('email_wrong_format_count', 0) / email_total * 100) if email_total > 0 else 0
-    phone_wrong_format_percent = (stats.get('phone_wrong_format_count', 0) / phone_total * 100) if phone_total > 0 else 0
+    # Calculate percentages safely with bounds checking
+    email_total = max(stats.get('email_total', 0), 0)
+    phone_total = max(stats.get('phone_total', 0), 0)
+    email_wrong_format_count = max(stats.get('email_wrong_format_count', 0), 0)
+    phone_wrong_format_count = max(stats.get('phone_wrong_format_count', 0), 0)
+    
+    # Ensure percentages are within valid range [0, 100]
+    email_wrong_format_percent = min(100, max(0, (email_wrong_format_count / email_total * 100) if email_total > 0 else 0))
+    phone_wrong_format_percent = min(100, max(0, (phone_wrong_format_count / phone_total * 100) if phone_total > 0 else 0))
     
     # Office and delivery system statistics - cache quality annotation
     office_stats_raw = get_office_statistics(pnrs)
@@ -211,9 +210,13 @@ def home_view(request):
     current_offices = request.GET.getlist('offices')
     current_delivery_systems = request.GET.getlist('delivery_systems')
     
-    # Get distinct offices from PNR data
-    offices_from_pnr = PNR.objects.values('office_id').distinct().order_by('office_id')
+    # Get distinct offices from filtered PNR data for better performance
+    offices_from_pnr = pnrs.values('office_id').distinct().order_by('office_id')
     offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in offices_from_pnr if o['office_id']]
+    
+    # Get all offices for JavaScript (not filtered)
+    all_offices_raw = PNR.objects.values('office_id').distinct().order_by('office_id')
+    all_offices = [{'office_id': o['office_id'], 'name': o['office_id']} for o in all_offices_raw if o['office_id']]
     
     # Prepare data for JavaScript
     dashboard_data_json = json.dumps({
@@ -229,9 +232,10 @@ def home_view(request):
         'current_delivery_systems': current_delivery_systems,
         'current_offices': current_offices,
         'offices': offices,
+        'all_offices': all_offices,  # Add all offices for dynamic selection
         'office_stats': office_stats,
         'delivery_system_stats': delivery_system_stats,
-        'export_url': reverse('quality_monitor:export_pnrs_to_excel'), # This remains correct due to the app_name
+        'export_url': reverse('quality_monitor:export_pnrs_to_excel'),
     })
 
 
@@ -297,13 +301,23 @@ def upload_excel(request):
             pnrs_to_create = []
             pnr_map = {}
             
-            # First pass: collect unique PNRs
-            unique_pnrs = df['ControlNumber'].str.strip().replace('', pd.NA).dropna().unique()
+            # First pass: collect unique PNRs with validation
+            df_clean = df.dropna(subset=['ControlNumber'])
+            df_clean['ControlNumber'] = df_clean['ControlNumber'].astype(str).str.strip()
+            df_clean = df_clean[df_clean['ControlNumber'] != '']
+            
+            unique_pnrs = df_clean['ControlNumber'].unique()
             logger.info(f"Processing {len(unique_pnrs)} unique PNRs")
             
+            # Track processed PNRs to prevent duplicates
+            processed_pnrs = set()
+            
             for control_number in unique_pnrs:
+                if control_number in processed_pnrs:
+                    continue
+                    
                 # Get the first row for this PNR to extract PNR-level data
-                pnr_rows = df[df['ControlNumber'].str.strip() == control_number]
+                pnr_rows = df_clean[df_clean['ControlNumber'] == control_number]
                 if not pnr_rows.empty:
                     pnr_data = pnr_rows.iloc[0]
                     pnrs_to_create.append(PNR(
@@ -314,6 +328,7 @@ def upload_excel(request):
                         delivery_system_company=str(pnr_data.get('DeliverySystemCompany', '')).strip(),
                         delivery_system_location=str(pnr_data.get('DeliverySystemLocation', '')).strip(),
                     ))
+                    processed_pnrs.add(control_number)
             
             # Bulk create PNRs
             PNR.objects.bulk_create(pnrs_to_create, batch_size=500, ignore_conflicts=True)
@@ -324,38 +339,51 @@ def upload_excel(request):
             # Create mapping for foreign key relationships
             pnr_map = created_pnrs
             
-            # Second pass: Create related Passenger and Contact objects
+            # Second pass: Create related Passenger and Contact objects with deduplication
             passengers_to_create = []
             contacts_to_create = []
             
-            for _, row in df.iterrows():
+            # Track unique passengers and contacts to prevent duplicates
+            processed_passengers = set()
+            processed_contacts = set()
+            
+            for _, row in df_clean.iterrows():
                 control_number = str(row.get('ControlNumber', '')).strip()
-                if not control_number or control_number not in pnr_map: continue
+                if not control_number or control_number not in pnr_map: 
+                    continue
 
                 pnr = pnr_map[control_number]
                 
-                # Passenger data
+                # Passenger data with deduplication
                 surname = str(row.get('Surname', '')).strip()
                 first_name = str(row.get('FirstName', '')).strip()
                 if surname or first_name:
-                    passengers_to_create.append(Passenger(
-                        pnr=pnr,
-                        surname=surname,
-                        first_name=first_name,
-                        ff_number=str(row.get('FF_NUMBER', '')).strip(),
-                        ff_tier=str(row.get('FF_TIER', '')).strip(),
-                        board_point=str(row.get('boardPoint', '')).strip(),
-                        off_point=str(row.get('offPoint', '')).strip(),
-                        seat_row_number=str(row.get('seatRowNumber', '')).strip(),
-                        seat_column=str(row.get('seatColumn', '')).strip(),
-                        meal=str(row.get('MEAL', '')).strip(),
-                    ))
+                    # Create unique key for passenger
+                    passenger_key = (control_number, surname, first_name)
+                    if passenger_key not in processed_passengers:
+                        passengers_to_create.append(Passenger(
+                            pnr=pnr,
+                            surname=surname,
+                            first_name=first_name,
+                            ff_number=str(row.get('FF_NUMBER', '')).strip(),
+                            ff_tier=str(row.get('FF_TIER', '')).strip(),
+                            board_point=str(row.get('boardPoint', '')).strip(),
+                            off_point=str(row.get('offPoint', '')).strip(),
+                            seat_row_number=str(row.get('seatRowNumber', '')).strip(),
+                            seat_column=str(row.get('seatColumn', '')).strip(),
+                            meal=str(row.get('MEAL', '')).strip(),
+                        ))
+                        processed_passengers.add(passenger_key)
                 
-                # Contact data
+                # Contact data with deduplication
                 contact_type = str(row.get('ContactType', '')).strip()
                 contact_detail = str(row.get('ContactDetail', '')).strip()
                 if contact_type and contact_detail:
-                    contacts_to_create.append(Contact(pnr=pnr, contact_type=contact_type, contact_detail=contact_detail))
+                    # Create unique key for contact
+                    contact_key = (control_number, contact_type, contact_detail)
+                    if contact_key not in processed_contacts:
+                        contacts_to_create.append(Contact(pnr=pnr, contact_type=contact_type, contact_detail=contact_detail))
+                        processed_contacts.add(contact_key)
             
             # Bulk create passengers and contacts
             if passengers_to_create:
@@ -393,26 +421,47 @@ def export_pnrs_to_excel(request):
         if delivery_system_filter:
             pnrs = pnrs.filter(delivery_system_company__icontains=delivery_system_filter)
 
-        # Build the export data
+        # Build the export data with iterator for memory efficiency
         pnrs = pnrs.prefetch_related('contacts', 'passengers').order_by('-creation_date')
         export_data = []
-        for pnr in pnrs:
-            contact = pnr.contacts.first()
-            base_data = {
-                'PNR': pnr.control_number,
-                'Office_ID': pnr.office_id,
-                'Delivery_System': pnr.delivery_system_company,
-                'Agent': pnr.agent,
-                'Creation_Date': pnr.creation_date,
-                'Quality_Score': pnr.quality_score,
-                'Contact_Type': contact.contact_type if contact else 'N/A',
-                'Contact_Detail': contact.contact_detail if contact else 'N/A',
-            }
-            export_data.append(base_data)
+        
+        # Handle invalid contacts export differently to show all invalid contact rows
+        export_type = request.GET.get('metric', 'data')
+        
+        if export_type == 'wrong_format_contacts':
+            # Export all invalid contact rows (multiple rows per PNR if multiple invalid contacts)
+            for pnr in pnrs.iterator():
+                invalid_contacts = pnr.contacts.exclude(Contact.get_valid_contact_q())
+                for contact in invalid_contacts:
+                    export_data.append({
+                        'PNR': pnr.control_number,
+                        'Office_ID': pnr.office_id,
+                        'Delivery_System': pnr.delivery_system_company,
+                        'Agent': pnr.agent,
+                        'Creation_Date': pnr.creation_date,
+                        'Quality_Score': pnr.quality_score,
+                        'Contact_Type': contact.contact_type,
+                        'Contact_Detail': contact.contact_detail,
+                        'Passenger_Count': pnr.passengers.count(),
+                    })
+        else:
+            # Standard export - one row per PNR
+            for pnr in pnrs.iterator():
+                contact = pnr.contacts.first()
+                export_data.append({
+                    'PNR': pnr.control_number,
+                    'Office_ID': pnr.office_id,
+                    'Delivery_System': pnr.delivery_system_company,
+                    'Agent': pnr.agent,
+                    'Creation_Date': pnr.creation_date,
+                    'Quality_Score': pnr.quality_score,
+                    'Contact_Type': contact.contact_type if contact else 'N/A',
+                    'Contact_Detail': contact.contact_detail if contact else 'N/A',
+                    'Passenger_Count': pnr.passengers.count(),
+                })
         
         df = pd.DataFrame(export_data)
 
-        export_type = request.GET.get('metric', 'data')
         filename = f'kq_quality_report_{export_type}_{timezone.now().strftime("%Y%m%d")}.xlsx'
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename={filename}'
@@ -461,7 +510,7 @@ def api_offices_by_delivery_systems(request):
     """API endpoint to get offices, optionally filtered by delivery system."""
     delivery_systems = request.GET.getlist('delivery_systems')
     
-    pnrs = PNR.objects.all()
+    pnrs = PNR.objects
     if delivery_systems:
         # Sanitize delivery system inputs
         clean_systems = [ds.strip() for ds in delivery_systems if ds.strip()]
@@ -480,34 +529,29 @@ def get_detailed_pnrs_qs(request):
 
     # Apply metric-specific filtering
     if metric == 'total_pnrs':
-        # No additional filtering needed, but we might want to limit the initial list
         pass
     elif metric == 'reachable_pnrs':
-        pnrs = pnrs.filter(
-            Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$') |
-            Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')
-        ).distinct()
+        pnrs = pnrs.filter(Contact.get_valid_contact_q('contacts__')).distinct()
     elif metric == 'missing_contacts':
         pnrs = pnrs.annotate(contact_count=Count('contacts')).filter(contact_count=0)
     elif metric == 'wrong_format_contacts':
-        pnrs = pnrs.filter(
-            Q(contacts__contact_detail__isnull=False) & 
-            ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?' + Contact.EMAIL_PATTERN.pattern.replace('@', '(@|//)') + r'(?:/[A-Z]{2})?$') & 
-            ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES, contacts__contact_detail__regex=r'^(?:[A-Z]{2}/[A-Z]\+)?\+?[\d\s-]{7,25}(?:-[MS])?(?:/[A-Z]{2})?$')
-        ).distinct()
+        # Don't use distinct() to show all invalid contact rows per PNR
+        pnrs = pnrs.filter(Q(contacts__contact_detail__isnull=False) & ~Contact.get_valid_contact_q('contacts__'))
     elif metric == 'wrongly_placed_contacts':
+        # Only match CTCM and CTCE misplacements - exclude AP, APE, APM
         pnrs = pnrs.filter(
-            (Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES)) |
-            (Q(contacts__contact_detail__regex=r'\d{7,}') & ~Q(contacts__contact_type__in=Contact.PHONE_VALID_TYPES))
+            Q(contacts__contact_type__exact='CTCM', contacts__contact_detail__contains='@') |
+            Q(contacts__contact_type__exact='CTCM', contacts__contact_detail__contains='//') |
+            Q(contacts__contact_type__exact='CTCE', contacts__contact_detail__regex=r'^(?:[A-Z]{2,3}/[A-Z]\+)?\+?[0-9][0-9\s\-\(\)]{6,}$') & ~Q(contacts__contact_detail__contains='@') & ~Q(contacts__contact_detail__contains='//')
         ).distinct()
+    elif metric == 'multiple_passengers':
+        pnrs = pnrs.annotate(passenger_count=Count('passengers')).filter(passenger_count__gt=1)
     elif metric.startswith('delivery_system_'):
         system_name = metric.replace('delivery_system_', '')
         pnrs = pnrs.filter(delivery_system_company=system_name)
     elif metric == 'all_delivery_systems':
-        pass # No additional filtering needed for all systems
+        pass
     else:
-        # This case handles if no valid metric is passed, returning the base filtered set.
-        # Or, it could return an empty set if that's preferred.
         pass
 
     return pnrs, metric
@@ -515,25 +559,73 @@ def get_detailed_pnrs_qs(request):
 def api_detailed_pnrs(request):
     """
     API endpoint to fetch detailed PNR lists for modal views.
+    Handles multiple passengers per PNR and invalid contact filtering.
     """
     pnrs, metric = get_detailed_pnrs_qs(request)
     if not metric:
         return JsonResponse({'error': 'Metric not specified'}, status=400)
 
-    # Limit results for performance and select related data
-    detailed_pnrs = pnrs.order_by('-creation_date').prefetch_related('contacts')[:200]
-
-    pnr_list = []
-    for pnr in detailed_pnrs:
-        contact = pnr.contacts.first()
-        pnr_list.append({
-            'control_number': pnr.control_number,
-            'office_id': pnr.office_id,
-            'delivery_system': pnr.delivery_system_company,
-            'agent': pnr.agent,
-            'creation_date': pnr.creation_date.strftime('%Y-%m-%d') if pnr.creation_date else 'N/A',
-            'contact_type': contact.contact_type if contact else 'N/A',
-            'contact_detail': contact.contact_detail if contact else 'N/A',
-        })
+    # For invalid contacts, show all contact rows (not distinct PNRs)
+    if metric == 'wrong_format_contacts':
+        detailed_data = pnrs.order_by('-creation_date').prefetch_related('contacts')[:200]
+        pnr_list = []
+        seen_combinations = set()
+        for pnr in detailed_data:
+            # Show each invalid contact as separate row
+            invalid_contacts = pnr.contacts.exclude(Contact.get_valid_contact_q())
+            for contact in invalid_contacts:
+                # Create unique key for PNR + contact detail combination
+                combo_key = (pnr.control_number, contact.contact_detail)
+                if combo_key not in seen_combinations:
+                    seen_combinations.add(combo_key)
+                    pnr_list.append({
+                        'control_number': pnr.control_number,
+                        'office_id': pnr.office_id,
+                        'delivery_system': pnr.delivery_system_company,
+                        'agent': pnr.agent,
+                        'creation_date': pnr.creation_date.strftime('%Y-%m-%d') if pnr.creation_date else 'N/A',
+                        'contact_type': contact.contact_type,
+                        'contact_detail': contact.contact_detail,
+                        'passenger_count': pnr.passengers.count(),
+                    })
+    elif metric == 'reachable_pnrs':
+        # For reachable PNRs, show only valid contacts (not all PNR data)
+        detailed_data = pnrs.order_by('-creation_date').prefetch_related('contacts')[:200]
+        pnr_list = []
+        seen_combinations = set()
+        for pnr in detailed_data:
+            # Show each valid contact as separate row
+            valid_contacts = pnr.contacts.filter(Contact.get_valid_contact_q())
+            for contact in valid_contacts:
+                # Create unique key for PNR + contact detail combination
+                combo_key = (pnr.control_number, contact.contact_detail)
+                if combo_key not in seen_combinations:
+                    seen_combinations.add(combo_key)
+                    pnr_list.append({
+                        'control_number': pnr.control_number,
+                        'office_id': pnr.office_id,
+                        'delivery_system': pnr.delivery_system_company,
+                        'agent': pnr.agent,
+                        'creation_date': pnr.creation_date.strftime('%Y-%m-%d') if pnr.creation_date else 'N/A',
+                        'contact_type': contact.contact_type,
+                        'contact_detail': contact.contact_detail,
+                        'passenger_count': pnr.passengers.count(),
+                    })
+    else:
+        # Standard PNR listing
+        detailed_pnrs = pnrs.order_by('-creation_date').prefetch_related('contacts', 'passengers')[:200]
+        pnr_list = []
+        for pnr in detailed_pnrs:
+            contact = pnr.contacts.first()
+            pnr_list.append({
+                'control_number': pnr.control_number,
+                'office_id': pnr.office_id,
+                'delivery_system': pnr.delivery_system_company,
+                'agent': pnr.agent,
+                'creation_date': pnr.creation_date.strftime('%Y-%m-%d') if pnr.creation_date else 'N/A',
+                'contact_type': contact.contact_type if contact else 'N/A',
+                'contact_detail': contact.contact_detail if contact else 'N/A',
+                'passenger_count': pnr.passengers.count(),
+            })
 
     return JsonResponse({'pnrs': pnr_list})

@@ -2293,3 +2293,528 @@ Traceback (most recent call last):
 AttributeError: 'str' object has no attribute 'pattern'
 INFO 2025-09-23 11:26:52,026 autoreload 22436 15528 C:\Users\jknjoroge\Documents\KQ\web\bookings-quality-report\quality_monitor\models.py changed, reloading.
 INFO 2025-09-23 11:27:13,917 autoreload 17596 22540 Watching for file changes with StatReloader
+INFO 2025-09-26 11:34:23,840 autoreload 20592 3500 Watching for file changes with StatReloader
+WARNING 2025-09-26 11:35:05,215 log 20592 24552 Not Found: /favicon.ico
+INFO 2025-09-26 11:52:28,399 autoreload 20592 3500 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 11:52:56,074 autoreload 5264 16612 Watching for file changes with StatReloader
+INFO 2025-09-26 12:01:09,860 autoreload 26908 20476 Watching for file changes with StatReloader
+INFO 2025-09-26 12:03:38,002 autoreload 2208 11404 Watching for file changes with StatReloader
+INFO 2025-09-26 12:04:51,922 autoreload 2208 11404 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 12:05:01,325 autoreload 5168 12420 Watching for file changes with StatReloader
+INFO 2025-09-26 12:17:22,933 autoreload 5168 12420 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 12:17:46,825 autoreload 24868 21688 Watching for file changes with StatReloader
+INFO 2025-09-26 12:18:43,134 autoreload 24868 21688 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 12:19:01,027 autoreload 11600 17712 Watching for file changes with StatReloader
+ERROR 2025-09-26 12:19:30,374 log 11600 17176 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 141, in home_view
+    stats = calculate_pnr_statistics(pnrs_with_score)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 80, in calculate_pnr_statistics
+    return pnrs_with_score.aggregate(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        total_pnrs=Count('id', distinct=True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<16 lines>...
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES) & Contact.get_valid_contact_q()),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 588, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 460, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+        self, allow_joins=True, reuse=None, summarize=True
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 176, in resolve_expression
+    result = super().resolve_expression(*args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query_utils.py", line 91, in resolve_expression
+    clause, joins = query._add_q(
+                    ~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        summarize=summarize,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1503, in build_filter
+    return self._add_q(
+           ~~~~~~~~~~~^
+        filter_expr,
+        ^^^^^^^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'contact_detail' into field. Choices are: agent, calculated_quality_score, contacts, control_number, created_at, creation_date, creator_iata_code, delivery_system_company, delivery_system_location, id, office_id, overall_quality, passengers, total_pnrs
+INFO 2025-09-26 12:19:40,608 autoreload 11600 17712 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 12:19:49,127 autoreload 20396 2192 Watching for file changes with StatReloader
+ERROR 2025-09-26 12:23:03,253 log 20396 21196 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 141, in home_view
+    stats = calculate_pnr_statistics(pnrs_with_score)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 80, in calculate_pnr_statistics
+    return pnrs_with_score.aggregate(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        total_pnrs=Count('id', distinct=True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<16 lines>...
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES) & Contact.get_valid_contact_q()),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 588, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 460, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+        self, allow_joins=True, reuse=None, summarize=True
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 176, in resolve_expression
+    result = super().resolve_expression(*args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query_utils.py", line 91, in resolve_expression
+    clause, joins = query._add_q(
+                    ~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        summarize=summarize,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1503, in build_filter
+    return self._add_q(
+           ~~~~~~~~~~~^
+        filter_expr,
+        ^^^^^^^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'contact_detail' into field. Choices are: agent, calculated_quality_score, contacts, control_number, created_at, creation_date, creator_iata_code, delivery_system_company, delivery_system_location, id, office_id, overall_quality, passengers, total_pnrs
+ERROR 2025-09-26 12:23:18,203 log 20396 23484 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 141, in home_view
+    stats = calculate_pnr_statistics(pnrs_with_score)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 80, in calculate_pnr_statistics
+    return pnrs_with_score.aggregate(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        total_pnrs=Count('id', distinct=True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<16 lines>...
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES) & Contact.get_valid_contact_q()),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 588, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 460, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+        self, allow_joins=True, reuse=None, summarize=True
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 176, in resolve_expression
+    result = super().resolve_expression(*args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query_utils.py", line 91, in resolve_expression
+    clause, joins = query._add_q(
+                    ~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        summarize=summarize,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1503, in build_filter
+    return self._add_q(
+           ~~~~~~~~~~~^
+        filter_expr,
+        ^^^^^^^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'contact_detail' into field. Choices are: agent, calculated_quality_score, contacts, control_number, created_at, creation_date, creator_iata_code, delivery_system_company, delivery_system_location, id, office_id, overall_quality, passengers, total_pnrs
+INFO 2025-09-26 12:23:54,445 autoreload 16260 26556 Watching for file changes with StatReloader
+ERROR 2025-09-26 12:24:18,074 log 16260 26140 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 141, in home_view
+    stats = calculate_pnr_statistics(pnrs_with_score)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 80, in calculate_pnr_statistics
+    return pnrs_with_score.aggregate(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        total_pnrs=Count('id', distinct=True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<16 lines>...
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES) & Contact.get_valid_contact_q()),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 588, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 460, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+        self, allow_joins=True, reuse=None, summarize=True
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 176, in resolve_expression
+    result = super().resolve_expression(*args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query_utils.py", line 91, in resolve_expression
+    clause, joins = query._add_q(
+                    ~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        summarize=summarize,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1503, in build_filter
+    return self._add_q(
+           ~~~~~~~~~~~^
+        filter_expr,
+        ^^^^^^^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'contact_detail' into field. Choices are: agent, calculated_quality_score, contacts, control_number, created_at, creation_date, creator_iata_code, delivery_system_company, delivery_system_location, id, office_id, overall_quality, passengers, total_pnrs
+INFO 2025-09-26 12:25:20,515 autoreload 16260 26556 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 12:25:27,511 autoreload 27680 8172 Watching for file changes with StatReloader
+ERROR 2025-09-26 12:25:39,076 log 27680 25812 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 141, in home_view
+    stats = calculate_pnr_statistics(pnrs_with_score)
+  File "C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py", line 80, in calculate_pnr_statistics
+    return pnrs_with_score.aggregate(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        total_pnrs=Count('id', distinct=True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<16 lines>...
+        valid_email_count=Count('contacts', filter=Q(contacts__contact_type__in=Contact.EMAIL_VALID_TYPES) & Contact.get_valid_contact_q('contacts__')),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query.py", line 588, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 460, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+        self, allow_joins=True, reuse=None, summarize=True
+    )
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 176, in resolve_expression
+    result = super().resolve_expression(*args, **kwargs)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\query_utils.py", line 91, in resolve_expression
+    clause, joins = query._add_q(
+                    ~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        summarize=summarize,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1503, in build_filter
+    return self._add_q(
+           ~~~~~~~~~~~^
+        filter_expr,
+        ^^^^^^^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jknjoroge\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'contact_detail' into field. Choices are: agent, calculated_quality_score, contacts, control_number, created_at, creation_date, creator_iata_code, delivery_system_company, delivery_system_location, id, office_id, overall_quality, passengers, total_pnrs
+INFO 2025-09-26 12:25:42,326 autoreload 27680 8172 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-26 12:25:50,571 autoreload 19316 20084 Watching for file changes with StatReloader
+INFO 2025-09-26 12:31:15,118 views 19316 24104 Starting file upload process
+INFO 2025-09-26 12:31:15,377 views 19316 24104 Processing 190 unique PNRs
+INFO 2025-09-26 12:31:18,639 views 19316 24104 Successfully processed 190 PNRs
+INFO 2025-09-26 12:58:31,723 autoreload 19316 20084 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-26 12:58:49,057 autoreload 18820 14000 Watching for file changes with StatReloader
+INFO 2025-09-26 12:59:51,428 autoreload 18820 14000 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 13:00:18,543 autoreload 10192 6308 Watching for file changes with StatReloader
+INFO 2025-09-26 15:11:07,797 autoreload 13616 20664 Watching for file changes with StatReloader
+WARNING 2025-09-26 15:21:07,806 log 13616 25328 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 15:36:33,122 log 13616 24300 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 15:40:23,123 log 13616 11860 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 15:51:26,412 log 13616 22856 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-26 15:55:44,810 autoreload 13616 20664 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-26 15:56:08,986 autoreload 3940 18156 Watching for file changes with StatReloader
+INFO 2025-09-26 15:56:55,118 autoreload 3940 18156 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 15:57:18,248 autoreload 25328 6388 Watching for file changes with StatReloader
+WARNING 2025-09-26 16:01:36,460 log 25328 10484 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:02:20,863 log 25328 3440 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:02:41,118 log 25328 4796 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:03:29,617 log 25328 13512 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:04:13,640 log 25328 6652 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-26 16:06:49,273 autoreload 25328 6388 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 16:08:19,799 autoreload 20232 17608 Watching for file changes with StatReloader
+WARNING 2025-09-26 16:09:44,597 log 20232 15584 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:10:15,011 log 20232 28520 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-26 16:17:14,572 autoreload 20232 17608 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-26 16:17:27,439 autoreload 11016 20592 Watching for file changes with StatReloader
+WARNING 2025-09-26 16:19:38,164 log 11016 25784 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:21:29,116 log 11016 15188 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-26 16:22:26,493 autoreload 11016 20592 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-26 16:22:51,611 autoreload 23032 18116 Watching for file changes with StatReloader
+WARNING 2025-09-26 16:23:27,224 log 23032 24172 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+INFO 2025-09-29 11:48:22,485 autoreload 18780 12228 Watching for file changes with StatReloader
+WARNING 2025-09-29 11:48:57,997 log 18780 24624 Not Found: /favicon.ico
+INFO 2025-09-29 11:55:05,600 autoreload 18780 12228 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 11:55:15,146 autoreload 27668 20580 Watching for file changes with StatReloader
+INFO 2025-09-29 11:56:13,934 autoreload 27668 20580 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 11:56:19,490 autoreload 29424 12700 Watching for file changes with StatReloader
+INFO 2025-09-29 12:00:06,419 autoreload 29424 12700 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 12:00:12,047 autoreload 25444 16776 Watching for file changes with StatReloader
+INFO 2025-09-29 12:00:30,745 autoreload 25444 16776 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 12:00:35,532 autoreload 19492 7544 Watching for file changes with StatReloader
+INFO 2025-09-29 12:01:38,166 autoreload 19492 7544 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-29 12:01:46,173 autoreload 5824 13292 Watching for file changes with StatReloader
+INFO 2025-09-29 12:09:18,033 autoreload 5824 13292 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 12:09:23,471 autoreload 1612 9196 Watching for file changes with StatReloader
+INFO 2025-09-29 12:09:36,118 autoreload 1612 9196 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 12:09:41,815 autoreload 20316 17016 Watching for file changes with StatReloader
+INFO 2025-09-29 12:10:10,147 autoreload 20316 17016 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-29 12:10:15,692 autoreload 16772 26832 Watching for file changes with StatReloader
+INFO 2025-09-29 12:10:57,251 autoreload 16772 26832 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 12:11:02,202 autoreload 12944 16688 Watching for file changes with StatReloader
+WARNING 2025-09-29 12:19:36,437 log 12944 28888 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-29 12:19:49,962 log 12944 13904 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-29 12:22:40,490 log 12944 29040 Not Found: /favicon.ico
+INFO 2025-09-29 14:11:10,718 autoreload 12944 16688 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 14:11:28,173 autoreload 22560 25208 Watching for file changes with StatReloader
+INFO 2025-09-29 14:12:16,338 autoreload 22560 25208 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 14:12:21,728 autoreload 16800 6180 Watching for file changes with StatReloader
+INFO 2025-09-29 14:12:34,400 autoreload 16800 6180 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-29 14:12:39,996 autoreload 6796 19512 Watching for file changes with StatReloader
+INFO 2025-09-29 14:15:47,715 autoreload 6796 19512 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 14:15:53,332 autoreload 17372 10760 Watching for file changes with StatReloader
+INFO 2025-09-29 14:16:05,885 autoreload 17372 10760 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 14:16:12,129 autoreload 23520 15936 Watching for file changes with StatReloader
+INFO 2025-09-29 14:25:24,968 autoreload 23520 15936 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-29 14:25:32,849 autoreload 21032 3528 Watching for file changes with StatReloader
+INFO 2025-09-29 14:32:27,660 autoreload 21032 3528 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 14:32:34,591 autoreload 17572 16880 Watching for file changes with StatReloader
+INFO 2025-09-29 14:40:48,955 autoreload 17572 16880 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-29 14:41:00,371 autoreload 28060 27868 Watching for file changes with StatReloader
+INFO 2025-09-29 14:51:22,711 autoreload 28060 27868 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 14:51:28,708 autoreload 27196 26792 Watching for file changes with StatReloader
+INFO 2025-09-29 15:13:03,230 autoreload 27196 26792 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 15:13:26,666 autoreload 27320 29424 Watching for file changes with StatReloader
+INFO 2025-09-29 15:21:56,139 views 27320 1440 Starting file upload process
+INFO 2025-09-29 15:21:56,886 views 27320 1440 Processing 376 unique PNRs
+INFO 2025-09-29 15:21:59,518 views 27320 1440 Successfully processed 376 PNRs
+INFO 2025-09-29 15:36:42,328 autoreload 27320 29424 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 15:36:56,492 autoreload 21376 480 Watching for file changes with StatReloader
+INFO 2025-09-29 15:56:39,211 autoreload 21376 480 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 15:57:07,825 autoreload 22636 27252 Watching for file changes with StatReloader
+INFO 2025-09-29 16:03:52,505 autoreload 22636 27252 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 16:04:03,286 autoreload 15920 26564 Watching for file changes with StatReloader
+INFO 2025-09-29 16:04:33,542 autoreload 15920 26564 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\views.py changed, reloading.
+INFO 2025-09-29 16:04:40,806 autoreload 4968 15572 Watching for file changes with StatReloader
+INFO 2025-09-29 16:04:57,515 views 4968 22880 Starting file upload process
+INFO 2025-09-29 16:04:58,203 views 4968 22880 Processing 376 unique PNRs
+INFO 2025-09-29 16:05:02,358 views 4968 22880 Successfully processed 376 PNRs
+INFO 2025-09-29 16:18:33,998 autoreload 4968 15572 C:\Users\jknjoroge\Documents\KQ\Bookings Quality Report\quality_monitor\models.py changed, reloading.
+INFO 2025-09-29 16:19:03,827 autoreload 1368 15576 Watching for file changes with StatReloader

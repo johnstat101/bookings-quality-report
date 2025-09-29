@@ -6,6 +6,11 @@ function initDashboard(data) {
         // --- UTILITY FUNCTIONS ---
         const getElement = id => document.getElementById(id);
         const getElements = selector => document.querySelectorAll(selector);
+        const sanitizeInput = input => {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML;
+        };
 
         // --- CACHED DOM ELEMENTS ---
         const elements = { // This should be inside DOMContentLoaded
@@ -40,9 +45,14 @@ function initDashboard(data) {
         // --- CHART INITIALIZATION ---
         function createDoughnutChart(ctx, label, value, total, wrongFormatPercent = 0) {
             if (!ctx) return null;
-            const percentage = total > 0 ? (value / total * 100).toFixed(1) : 0;
-            const missingPercentage = total > 0 ? ((total - value) / total * 100).toFixed(1) : 0;
-            const colors = getQualityColors(percentage);
+            
+            // Ensure values are non-negative and within bounds
+            value = Math.max(0, Math.min(value, total));
+            total = Math.max(1, total); // Prevent division by zero
+            
+            const percentage = Math.min(100, Math.max(0, (value / total * 100))).toFixed(1);
+            const missingPercentage = Math.min(100, Math.max(0, ((total - value) / total * 100))).toFixed(1);
+            const colors = getQualityColors(parseFloat(percentage));
             
             return new Chart(ctx, {
                 type: 'doughnut',
@@ -82,7 +92,7 @@ function initDashboard(data) {
                                     const percentage = ((currentValue / total) * 100).toFixed(1);
                                     return `${context.label}: ${currentValue} (${percentage}%)`;
                                 },
-                                footer: () => wrongFormatPercent > 0 ? `⚠️ ${wrongFormatPercent.toFixed(1)}% have wrong format` : ''
+                                footer: () => wrongFormatPercent > 0 && wrongFormatPercent <= 100 ? `⚠️ ${Math.min(100, Math.max(0, wrongFormatPercent)).toFixed(1)}% have wrong format` : ''
                             }
                         }
                     },
@@ -107,11 +117,8 @@ function initDashboard(data) {
                         ctx.fillStyle = '#666';
                         ctx.fillText(label, centerX, centerY + 6);
                         
-                        if (missingPercentage > 0 && percentage < 100) {
-                            ctx.font = '500 8px Segoe UI';
-                            ctx.fillStyle = '#999';
-                            ctx.fillText(`${missingPercentage}% missing`, centerX, centerY + 16);
-                        }
+                        // Remove extraneous text below charts as requested
+                        // Only show essential information within the chart itself
                         
                         ctx.restore();
                     }
@@ -119,19 +126,25 @@ function initDashboard(data) {
             });
         }
 
-        // Initialize charts
+        // Initialize charts with error handling
         if (data.total_pnrs > 0) {
-            const chartData = [
-                ['phoneChart', 'Phone', data.valid_phone_count, data.phone_wrong_format_pct],
-                ['emailChart', 'Email', data.valid_email_count, data.email_wrong_format_pct],
-                ['ffChart', 'FF#', data.ff_count, 0],
-                ['mealChart', 'Meal', data.meal_count, 0],
-                ['seatChart', 'Seat', data.seat_count, 0]
-            ];
+            const chartConfigs = {
+                phoneChart: { label: 'Phone', value: data.valid_phone_count, wrongFormat: data.phone_wrong_format_pct },
+                emailChart: { label: 'Email', value: data.valid_email_count, wrongFormat: data.email_wrong_format_pct },
+                ffChart: { label: 'FF#', value: data.ff_count, wrongFormat: 0 },
+                mealChart: { label: 'Meal', value: data.meal_count, wrongFormat: 0 },
+                seatChart: { label: 'Seat', value: data.seat_count, wrongFormat: 0 }
+            };
             
-            chartData.forEach(([id, label, value, wrongFormat]) => {
+            Object.entries(chartConfigs).forEach(([id, config]) => {
                 const ctx = getElement(id)?.getContext('2d');
-                if (ctx) charts[id] = createDoughnutChart(ctx, label, value, data.total_pnrs, wrongFormat);
+                if (ctx) {
+                    try {
+                        charts[id] = createDoughnutChart(ctx, config.label, config.value, data.total_pnrs, config.wrongFormat);
+                    } catch (error) {
+                        console.error(`Failed to create chart ${id}:`, error);
+                    }
+                }
             });
         }
 
@@ -142,29 +155,24 @@ function initDashboard(data) {
             const bars = elements.qualityHistogram.querySelectorAll('.histogram-bar');
             const fragment = document.createDocumentFragment();
 
-            const counts = Array.from(bars).map(bar => parseInt(bar.dataset.count) || 0);
+            const counts = Array.from(bars).map(bar => Math.max(0, parseInt(bar.dataset.count) || 0));
             const maxCount = Math.max(...counts, 1);
-            const totalCount = counts.reduce((a, b) => a + b, 0);
+            const totalCount = Math.max(1, counts.reduce((a, b) => a + b, 0));
             const categories = ['Critical', 'Poor', 'Fair', 'Good', 'Excellent'];
             
             bars.forEach((bar, index) => {
                 if (bar.querySelector('.histogram-tooltip')) return;
                 
                 const count = counts[index];
-                const percentage = (count / maxCount) * 100;
-                const totalPercentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : 0;
+                const percentage = Math.min(100, Math.max(0, (count / maxCount) * 100));
+                const totalPercentage = Math.min(100, Math.max(0, (count / totalCount) * 100)).toFixed(1);
                 const height = count > 0 ? Math.max(30, (percentage / 100) * 180) : 10;
                 
                 // Update existing bar-text to show count inside bar
                 const barText = bar.querySelector('.bar-text');
                 if (barText) barText.innerHTML = `${count} PNRs`;
                 
-                // Add tooltip only
-                const tooltip = document.createElement('div');
-                tooltip.className = 'histogram-tooltip';
-                tooltip.textContent = `${categories[index]}: ${count} PNRs (${totalPercentage}% of total)`;
-                
-                fragment.appendChild(tooltip);
+                // Remove extraneous tooltip text as requested - keep only essential chart information
                 
                 // Animate bar height
                 setTimeout(() => {
@@ -492,8 +500,9 @@ function initDashboard(data) {
                 if (elements.officeTags) elements.officeTags.innerHTML = '';
             }
             
+            // If no delivery systems selected or all selected, show all offices
             if (selectedDeliverySystems.length === 0 || selectedDeliverySystems.length === allDeliverySystems.length) {
-                allOffices = data.all_offices || [];
+                allOffices = data.all_offices || data.offices || [];
                 populateOfficeDropdown();
                 updateOfficeDisplay();
                 return Promise.resolve();
@@ -511,7 +520,8 @@ function initDashboard(data) {
                 return Promise.resolve();
             } catch (error) {
                 console.error('Error loading offices:', error);
-                allOffices = data.all_offices || [];
+                // Fallback to all offices if API fails
+                allOffices = data.all_offices || data.offices || [];
                 populateOfficeDropdown();
                 updateOfficeDisplay();
                 return Promise.resolve();
@@ -586,6 +596,8 @@ function initDashboard(data) {
 
         function toggleDeliverySystem(dsId, dsLabel) {
             const checkbox = document.getElementById(`ds-${dsId}`);
+            if (!checkbox) return;
+            
             checkbox.checked = !checkbox.checked;
             
             if (checkbox.checked) {
@@ -620,22 +632,28 @@ function initDashboard(data) {
         }
 
         // Consolidated tag management
-        const addTag = (containerId, tagClass, id, label, removeFunction) => {
+        const addTag = (containerId, tagClass, id, label) => {
             const container = elements[containerId];
             if (!container) return;
             
+            // Check if tag already exists
+            const existingTag = container.querySelector(`[data-id="${id}"]`);
+            if (existingTag) return;
+            
             const tag = document.createElement('div');
             tag.className = tagClass;
-            tag.id = `${tagClass.split('-')[0]}-tag-${id}`;
             tag.dataset.id = id;
-            tag.innerHTML = `${label} <span class="close" data-action="remove-tag">&times;</span>`;
+            tag.innerHTML = `${sanitizeInput(label)} <span class="close">&times;</span>`;
             container.appendChild(tag);
         };
         
         const removeTag = (id, type) => {
-            const tagId = type === 'ds' ? 'delivery-system-tag' : 'office-tag';
-            const tag = getElement(`${tagId}-${id}`);
-            if (tag) tag.remove();
+            // Find and remove the tag from DOM
+            const container = type === 'ds' ? elements.deliverySystemTags : elements.officeTags;
+            if (container) {
+                const tag = container.querySelector(`[data-id="${id}"]`);
+                if (tag) tag.remove();
+            }
             
             const checkboxId = type === 'ds' ? `ds-${id}` : `office-${id}`;
             const checkbox = getElement(checkboxId);
@@ -644,13 +662,15 @@ function initDashboard(data) {
             if (type === 'ds') {
                 selectedDeliverySystems = selectedDeliverySystems.filter(item => item !== id);
                 updateDeliverySystemDisplay();
-                updateAvailableOffices(true); // Re-fetch offices when a system is removed
+                updateAvailableOffices(true);
             } else {
                 selectedOffices = selectedOffices.filter(item => item !== id);
                 updateOfficeDisplay();
             }
         };
         
+        const removeDeliverySystemTag = (dsId) => removeTag(dsId, 'ds');
+        const removeOfficeTag = (officeId) => removeTag(officeId, 'office');
         const addDeliverySystemTag = (dsId, dsLabel) => addTag('deliverySystemTags', 'delivery-system-tag', dsId, dsLabel);
         const addOfficeTag = (officeId, officeName) => addTag('officeTags', 'office-tag', officeId, officeName);
 
@@ -698,14 +718,20 @@ function initDashboard(data) {
 
         // Event delegation for removing tags
         elements.deliverySystemTags?.addEventListener('click', e => {
-            if (e.target.dataset.action === 'remove-tag') {
-                removeTag(e.target.parentElement.dataset.id, 'ds');
+            if (e.target.classList.contains('close') || e.target.dataset.action === 'remove-tag') {
+                const tag = e.target.closest('.delivery-system-tag');
+                if (tag && tag.dataset.id) {
+                    removeTag(tag.dataset.id, 'ds');
+                }
             }
         });
 
         elements.officeTags?.addEventListener('click', e => {
-            if (e.target.dataset.action === 'remove-tag') {
-                removeTag(e.target.parentElement.dataset.id, 'office');
+            if (e.target.classList.contains('close') || e.target.dataset.action === 'remove-tag') {
+                const tag = e.target.closest('.office-tag');
+                if (tag && tag.dataset.id) {
+                    removeTag(tag.dataset.id, 'office');
+                }
             }
         });
 
@@ -784,12 +810,27 @@ function initDashboard(data) {
             ];
             
             dropdowns.forEach(([toggle, dropdown, id]) => {
-                if (!e.target.closest(toggle) && !e.target.closest(dropdown)) {
+                // Don't close if clicking on search input or dropdown content
+                if (!e.target.closest(toggle) && !e.target.closest(dropdown) && !e.target.classList.contains('office-search-input')) {
                     const el = getElement(id);
                     if (el) el.style.display = 'none';
                 }
             });
         });
+        
+        // Prevent office dropdown from closing when clicking search input
+        const officeSearchInput = getElement('office-search-input');
+        if (officeSearchInput) {
+            officeSearchInput.addEventListener('click', e => e.stopPropagation());
+            officeSearchInput.addEventListener('input', e => {
+                const searchTerm = e.target.value.toLowerCase();
+                const officeOptions = elements.officeDropdownContent?.querySelectorAll('.office-option');
+                officeOptions?.forEach(option => {
+                    const label = option.querySelector('label')?.textContent.toLowerCase() || '';
+                    option.style.display = label.includes(searchTerm) ? 'block' : 'none';
+                });
+            });
+        }
 
         // Load delivery systems and initialize filters
         Promise.all([
@@ -899,13 +940,13 @@ function initDashboard(data) {
                         row.dataset.filterCol2 = (pnr.delivery_system || '').toLowerCase();
 
                         row.innerHTML = `
-                            <td>${pnr.control_number || '-'}</td>
-                            <td>${pnr.office_id || '-'}</td>
-                            <td>${pnr.delivery_system || '-'}</td>
-                            <td>${pnr.agent || '-'}</td>
-                            <td>${pnr.creation_date || '-'}</td>
-                            <td>${pnr.contact_type || '-'}</td>
-                            <td>${pnr.contact_detail || '-'}</td>
+                            <td>${sanitizeInput(pnr.control_number || '-')}</td>
+                            <td>${sanitizeInput(pnr.office_id || '-')}</td>
+                            <td>${sanitizeInput(pnr.delivery_system || '-')}</td>
+                            <td>${sanitizeInput(pnr.agent || '-')}</td>
+                            <td>${sanitizeInput(pnr.creation_date || '-')}</td>
+                            <td>${sanitizeInput(pnr.contact_type || '-')}</td>
+                            <td>${sanitizeInput(pnr.contact_detail || '-')}</td>
                         `;
                         fragment.appendChild(row);
                     });
@@ -922,8 +963,8 @@ function initDashboard(data) {
             }
         }
 
-        // Make the filter function globally accessible
-        window.filterModalTable = () => {
+        // Make the filter function globally accessible - secure implementation
+        window.filterModalTable = function() {
             const filters = Array.from(modalTableHead.querySelectorAll('.modal-filter-input')).map(input => ({
                 index: parseInt(input.dataset.columnIndex),
                 value: input.value.toLowerCase()
