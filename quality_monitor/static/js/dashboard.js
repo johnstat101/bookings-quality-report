@@ -2,6 +2,16 @@ function initDashboard(data) {
     let selectedDeliverySystems = [], selectedOffices = [], allDeliverySystems = [], allOffices = [];
     const charts = {};
     
+    console.log('=== DASHBOARD DEBUG START ===');
+    console.log('Dashboard data received:', data);
+    console.log('Total PNRs:', data.total_pnrs);
+    console.log('Valid phone count:', data.valid_phone_count);
+    console.log('Valid email count:', data.valid_email_count);
+    console.log('FF count:', data.ff_count);
+    console.log('Meal count:', data.meal_count);
+    console.log('Seat count:', data.seat_count);
+    console.log('=== DASHBOARD DEBUG END ===');
+    
     document.addEventListener('DOMContentLoaded', () => {
         // --- UTILITY FUNCTIONS ---
         const getElement = id => document.getElementById(id);
@@ -44,27 +54,32 @@ function initDashboard(data) {
 
         // --- CHART INITIALIZATION ---
         function createDoughnutChart(ctx, label, value, total, wrongFormatPercent = 0) {
-            if (!ctx) return null;
+            console.log(`Creating doughnut chart for ${label}: ${value}/${total} (${wrongFormatPercent}% wrong format)`);
             
-            // Ensure values are non-negative and within bounds
+            if (!ctx) {
+                console.error(`Canvas context not found for ${label}`);
+                return null;
+            }
+            
             value = Math.max(0, Math.min(value, total));
-            total = Math.max(1, total); // Prevent division by zero
+            total = Math.max(1, total);
             
             const percentage = Math.min(100, Math.max(0, (value / total * 100))).toFixed(1);
-            const missingPercentage = Math.min(100, Math.max(0, ((total - value) / total * 100))).toFixed(1);
             const colors = getQualityColors(parseFloat(percentage));
+            
+            console.log(`Chart ${label}: ${percentage}% with colors:`, colors);
             
             return new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: [`${label} Present (${percentage}%)`, `${label} Missing (${missingPercentage}%)`],
                     datasets: [{
                         data: [value, total - value],
                         backgroundColor: [colors.present, colors.missing],
                         borderColor: ['#ffffff', '#ffffff'],
-                        borderWidth: 3,
-                        hoverBorderWidth: 4,
-                        hoverOffset: 8
+                        borderWidth: 4,
+                        hoverBorderWidth: 6,
+                        hoverOffset: 12,
+                        borderRadius: 8
                     }]
                 },
                 options: {
@@ -72,25 +87,25 @@ function initDashboard(data) {
                     maintainAspectRatio: true,
                     cutout: '65%',
                     plugins: {
-                        legend: { 
-                            display: true,
-                            position: 'bottom',
-                            labels: { padding: 15, font: { size: 11, weight: '600' }, color: '#555', usePointStyle: true, pointStyle: 'circle' }
-                        },
+                        legend: { display: false },
                         tooltip: { 
                             enabled: true,
-                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            backgroundColor: 'rgba(0,0,0,0.9)',
                             titleColor: '#fff',
                             bodyColor: '#fff',
                             borderColor: colors.present,
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: true,
+                            borderWidth: 2,
+                            cornerRadius: 12,
+                            displayColors: false,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
                             callbacks: {
+                                title: () => label,
                                 label: context => {
                                     const currentValue = context.dataset.data[context.dataIndex];
                                     const percentage = ((currentValue / total) * 100).toFixed(1);
-                                    return `${context.label}: ${currentValue} (${percentage}%)`;
+                                    return context.dataIndex === 0 ? `Present: ${currentValue} (${percentage}%)` : `Missing: ${currentValue} (${percentage}%)`;
                                 },
                                 footer: () => wrongFormatPercent > 0 && wrongFormatPercent <= 100 ? `⚠️ ${Math.min(100, Math.max(0, wrongFormatPercent)).toFixed(1)}% have wrong format` : ''
                             }
@@ -109,16 +124,13 @@ function initDashboard(data) {
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         
-                        ctx.font = 'bold 16px Segoe UI';
+                        ctx.font = 'bold 20px Segoe UI';
                         ctx.fillStyle = colors.text;
-                        ctx.fillText(`${percentage}%`, centerX, centerY - 4);
+                        ctx.fillText(`${percentage}%`, centerX, centerY - 6);
                         
-                        ctx.font = '600 10px Segoe UI';
-                        ctx.fillStyle = '#666';
-                        ctx.fillText(label, centerX, centerY + 6);
-                        
-                        // Remove extraneous text below charts as requested
-                        // Only show essential information within the chart itself
+                        ctx.font = '600 12px Segoe UI';
+                        ctx.fillStyle = '#555';
+                        ctx.fillText(label, centerX, centerY + 8);
                         
                         ctx.restore();
                     }
@@ -126,7 +138,9 @@ function initDashboard(data) {
             });
         }
 
-        // Initialize charts with error handling
+        // Initialize charts with comprehensive debugging
+        console.log('=== CHART INITIALIZATION START ===');
+        
         if (data.total_pnrs > 0) {
             const chartConfigs = {
                 phoneChart: { label: 'Phone', value: data.valid_phone_count, wrongFormat: data.phone_wrong_format_pct },
@@ -136,17 +150,35 @@ function initDashboard(data) {
                 seatChart: { label: 'Seat', value: data.seat_count, wrongFormat: 0 }
             };
             
+            console.log('Chart configs:', chartConfigs);
+            
             Object.entries(chartConfigs).forEach(([id, config]) => {
-                const ctx = getElement(id)?.getContext('2d');
-                if (ctx) {
-                    try {
-                        charts[id] = createDoughnutChart(ctx, config.label, config.value, data.total_pnrs, config.wrongFormat);
-                    } catch (error) {
-                        console.error(`Failed to create chart ${id}:`, error);
+                console.log(`Processing chart ${id}:`, config);
+                const element = getElement(id);
+                console.log(`Element ${id} found:`, !!element);
+                
+                if (element) {
+                    const ctx = element.getContext('2d');
+                    console.log(`Context for ${id} found:`, !!ctx);
+                    
+                    if (ctx) {
+                        try {
+                            charts[id] = createDoughnutChart(ctx, config.label, config.value, data.total_pnrs, config.wrongFormat);
+                            console.log(`Chart ${id} created successfully:`, !!charts[id]);
+                        } catch (error) {
+                            console.error(`Failed to create chart ${id}:`, error);
+                        }
                     }
+                } else {
+                    console.error(`Element ${id} not found in DOM`);
                 }
             });
+        } else {
+            console.log('No PNRs found, skipping chart initialization');
         }
+        
+        console.log('=== CHART INITIALIZATION END ===');
+        console.log('Created charts:', Object.keys(charts));
 
         // --- QUALITY HISTOGRAM ---
         function initializeQualityHistogram() {
